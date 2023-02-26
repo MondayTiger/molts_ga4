@@ -1,5 +1,5 @@
 {
-  "name": "molts_bi",
+  "name": "molts_ga4",
   "dependencies": {
     "@dataform/core": "2.0.1"
   }
