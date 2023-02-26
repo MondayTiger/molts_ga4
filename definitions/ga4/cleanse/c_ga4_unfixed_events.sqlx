@@ -10,7 +10,7 @@ config {
 SELECT
 
     -- timestamp
-    event_date,
+    PARSE_DATE("%Y%m%d", event_date) AS event_date,
     event_timestamp,
     CAST(FORMAT_TIMESTAMP('%Y-%m-%d %H:%M:%S', TIMESTAMP_MICROS(event_timestamp), 'Asia/Tokyo') AS DATETIME) AS event_timestamp_jst,
 
