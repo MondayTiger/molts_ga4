@@ -1,0 +1,11 @@
+-- Config blocks
+config {
+    type: "incremental",
+    schema: "df_molts_ga4_mart_new",
+    description: "GA4マートデータ　イベント用"
+}
+
+
+-- Query blocks
+SELECT * FROM ${ref("s_ga4_event")}
+${ when(incremental(), `WHERE event_date > (select max(event_date) FROM ${self()})`)}
