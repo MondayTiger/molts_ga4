@@ -1,0 +1,18 @@
+-- Config blocks
+config {
+    type: "table",
+    schema: "df_molts_ga4_staging_new",
+    description: "GA4ステージングデータ クレンジングしたデータを統合"
+}
+
+
+-- Query blocks
+SELECT * FROM ${ref("c_ga4_fixed_events")}
+
+UNION ALL
+
+SELECT * FROM ${ref("c_ga4_unfixed_events")}
+
+UNION ALL
+
+SELECT * FROM ${ref("c_ga4_unfixed_events_intraday")}

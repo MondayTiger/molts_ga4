@@ -1,0 +1,50 @@
+-- Config blocks
+config {
+    type: "view",
+    schema: "df_molts_ga4_staging_new",
+    description: "GA4ステージングデータ 不要イベントの追加・リネーム・削除"
+}
+
+
+-- Query blocks
+SELECT
+    *,
+FROM
+    ${ref("s_ga4_events_union")}
+
+/**** 以下、処理を行う場合のサンプルコード ***
+
+delete_event AS (
+    SELECT
+        *,
+    FROM
+        ${ref(constants.GA4_TABLE_STAGING)}
+    WHERE
+        event_name NOT IN ('event_name_here')
+),
+
+rename_event AS (
+    SELECT
+        *,
+        CASE
+            WHEN event_name = 'event_name_here' THEN 'new_event_name_here'
+            ELSE event_name END AS event_name_new,
+    FROM
+        delete_event
+),
+
+ga_add_event AS (
+    SELECT
+        *,
+        CASE
+            WHEN event_name = 'event_name_here' THEN 'new_event_name_here'
+            ELSE NULL END AS event_name_new,
+    FROM
+        delete_event
+)
+
+SELECT * FROM rename_event
+UNION ALL
+SELECT * FROM ga_add_event
+
+*/
