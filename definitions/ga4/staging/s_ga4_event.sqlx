@@ -1,0 +1,385 @@
+-- Config blocks
+config {
+    type: "view",
+    schema: "df_molts_ga4_staging_new",
+    description: "GA4ステージングデータ 全イベント更新差分データ",
+    columns: {
+        // timestamp
+        event_date: "日付",
+        event_timestamp: "タイムスタンプ（マイクロ秒）",
+        event_timestamp_jst: "タイムスタンプ_日本時間",
+        entrance_timestamp: "タイムスタンプ（セッション開始）（マイクロ秒）",
+        entrance_timestamp_jst: "タイムスタンプ（セッション開始）_日本時間",
+        exit_timestamp: "タイムスタンプ（離脱）（マイクロ秒）",
+        exit_timestamp_jst: "タイムスタンプ（離脱）_日本時間",
+
+        // event
+        event_name: "イベント名",
+        event_bundle_sequence_id: "これらのイベントをまとめたアップロード用バンドルのシーケンシャル ID",
+
+        // stream / platform
+        stream_id: "ストリームID",
+        platform: "プラットフォーム",
+
+        // user
+        user_id: "ユーザーID",
+        user_pseudo_id: "ユニークユーザ識別用ID",
+        user_first_touch_timestamp: "ユーザーが初めてアプリを起動したか、サイトに訪れた時刻（マイクロ秒単位）",
+
+        // user_acquistion_channel
+        user_traffic_source: "集客：ユーザー獲得参照元",
+        user_traffic_medium: "集客：ユーザー獲得メディア",
+        user_traffic_campaign: "集客：ユーザー獲得キャンペーン",
+
+        // session
+        ga_session_id: "セッションID",
+        ga_session_number: "通算セッション数",
+        session_duration: "セッション時間（秒）",
+        session_total_engagement_time: "セッション合計エンゲージメント時間（秒）",
+        session_total_page_view: "セッション合計ページビュー",
+        session_total_screen_view: "セッション合計スクリーンビュー",
+        is_bounce_no_transition: "直帰_遷移なし",
+        is_bounce_no_engagement: "直帰_エンゲージメントなし",
+
+        // event_acquisition_channel
+        event_traffic_source: "集客：イベントの参照元",
+        event_traffic_medium: "集客：イベントのメディア",
+        event_traffic_campaign: "集客：イベントのキャンペーン",
+        event_traffic_content: "集客：イベントの広告のコンテンツ",
+        event_traffic_term: "集客：イベントの検索キーワード",
+        event_source_platform: "集客：イベントの参照元プラットフォーム",
+        event_creative_format: "集客：イベントのクリエイティブのタイプ",
+        event_marketing_tactic: "集客：イベントのターゲティング条件",
+        event_traffic_campaign_id: "集客：イベントのキャンペーンID（utm_id）",
+        event_traffic_gclid: "集客：イベントのgclid",
+
+        // session_acquisition_channel
+        session_traffic_source: "集客：セッションの参照元",
+        session_traffic_medium: "集客：セッションのメディア",
+        session_traffic_campaign: "集客：セッションのキャンペーン",
+        session_traffic_content: "集客：セッションの広告のコンテンツ",
+        session_traffic_term: "集客：セッションの検索キーワード",
+        session_traffic_platform: "集客：セッションの参照元プラットフォーム",
+        session_creative_format: "集客：セッションのクリエイティブのタイプ",
+        session_marketing_tactic: "集客：セッションのターゲティング条件",
+        session_traffic_campaign_id: "集客：セッションのキャンペーンID（utm_id）",
+        session_traffic_gclid: "集客：セッションのgclid",
+
+        // session_acquisition_channel_last
+        session_traffic_source_last: "集客：セッション（ラストクリック）の参照元",
+        session_traffic_medium_last: "集客：セッション（ラストクリック）のメディア",
+        session_traffic_campaign_last: "集客：セッション（ラストクリック）のキャンペーン",
+        session_traffic_content_last: "集客：セッション（ラストクリック）の広告のコンテンツ",
+        session_traffic_term_last: "集客：セッション（ラストクリック）の検索キーワード",
+        session_traffic_platform_last: "集客：セッション（ラストクリック）の参照元プラットフォーム",
+        session_creative_format_last: "集客：セッション（ラストクリック）のクリエイティブのタイプ",
+        session_marketing_tactic_last: "集客：セッション（ラストクリック）のターゲティング条件",
+        session_traffic_campaign_id_last: "集客：セッション（ラストクリック）のキャンペーンID（utm_id）",
+        session_traffic_gclid_last: "集客：セッション（ラストクリック）のgclid",
+
+        // device
+        device_category: "デバイス カテゴリ",
+        device_mobile_brand_name: "デバイスのブランド名",
+        device_mobile_model_name: "デバイスのモデル名",
+        device_mobile_marketing_name: "デバイスのマーケティング名",
+        device_mobile_os_hardware_model: "オペレーティング システムから直接取得したデバイスのモデル情報",
+        operating_system: "OS",
+        operating_system_version: "OSのバージョン",
+        device_vendor_id: "IDFV（IDFA を収集していない場合にのみ使用）",
+        device_advertising_id: "広告 ID または IDFA",
+        language: "言語",
+        is_limited_ad_tracking: "デバイスの広告トラッキング制限の設定 iOS14 以降では、IDFA がゼロ以外の場合、false が返される",
+        time_zone_offset_seconds: "GMT との時差（秒単位）",
+        browser: "ブラウザ",
+        browser_version: "ブラウザのバージョン",
+
+        // geo
+        geo_continent: "大陸",
+        geo_sub_continent: "亜大陸",
+        geo_country: "国",
+        geo_region: "地域",
+        geo_metro: "大都市圏",
+        geo_city: "市区町村",
+
+        // privacy_info
+        privacy_info_analytics_storage: "ユーザーに対してアナリティクスのデータ保存が有効になっているかどうか",
+        privacy_info_ads_storage: "ユーザーに対して広告ターゲティングが有効になっているかどうか",
+        privacy_info_uses_transient_token: "ウェブユーザーがアナリティクスでのデータ保存を拒否し、デベロッパーがサーバーデータの一時的なトークンに基づいて Cookie を使用しない測定を有効にしているかどうか",
+
+        // page
+        hostname: "ホスト名",
+        page_location: "URL",
+        page_location_canonicalize: "正規化URL",
+        content_group: "コンテンツグループ",
+        page_title: "ページタイトル",
+        entrances: "閲覧開始フラグ",
+        flg_reload: "リロードフラグ",
+        entrance_page: "閲覧開始ページ",
+
+        // page_path_analytics
+        pv_sequence: "ページパス分析用：ページビューの順序",
+        prev_path_3: "ページパス分析用：3つ前のページ",
+        prev_path_2: "ページパス分析用：2つ前のページ",
+        prev_path_1: "ページパス分析用：前のページ",
+        next_path_1: "ページパス分析用：次のページ",
+        next_path_2: "ページパス分析用：２つ次のページ",
+        next_path_3: "ページパス分析用：３つ次のページ",
+        is_entrance: "ページパス分析用：閲覧開始ページ（計算に基づく）",
+        is_exit: "ページパス分析用：離脱ページ",
+        is_bounce: "ページパス分析用：直帰ページ）",
+        page_duration: "ページパス分析用：ページ滞在時間",
+
+        // referrer
+        page_referrer: "リファラー",
+
+        // scroll
+        percent_scrolled: "スクロールの割合",
+
+        // event_tracking (Click Tracking)
+        event_category: "イベント カテゴリ",
+        event_action: "イベント アクション",
+        event_label: "イベント ラベル",
+        link_id: "要素ID",
+        link_classes: "要素クラス",
+        link_domain: "リンク先ドメイン",
+        link_url: "リンク先URL",
+        link_url_canonicalize: "正規化リンク先URL",
+        link_text: "リンクテキスト",
+        outbound: "アウトバウンド",
+        file_extension: "ファイルの拡張子",
+        file_name: "ファイル名",
+
+        // video
+        video_title: "動画タイトル",
+        video_provider: "動画プロバイダー",
+        video_url: "動画URL",
+        visible: "動画ビジブル",
+        video_current_time: "動画の現在の時間",
+        video_duration: "動画の長さ",
+        video_percent: "動画再生率",
+
+        // search_results
+        search_term: "サイト内検索キーワード",
+
+        // engagement_time
+        engagement_time_msec: "エンゲージメント時間（ミリ秒）",
+
+        // add_column
+        is_fixed_data: "FIXしたデータか"
+    }
+}
+
+
+-- Query blocks
+WITH ga AS (
+    SELECT
+        *
+    FROM
+        ${ref("s_ga4_events_exclude_internal")}
+    WHERE
+        event_name NOT IN ('exclude_event')
+),
+
+pv_data_1 AS (
+    SELECT
+        event_name,
+        event_timestamp,
+        user_pseudo_id,
+        ga_session_id,
+        page_location,
+        ${helpers.setNumber('pv_sequence')},
+        ${helpers.getNextPath('event_timestamp', 1, 'next_event_timestamp')},
+        ${helpers.getPreviousPath('page_location_canonicalize', 3, 'prev_path_3')},
+        ${helpers.getPreviousPath('page_location_canonicalize', 2, 'prev_path_2')},
+        ${helpers.getPreviousPath('page_location_canonicalize', 1, 'prev_path_1')},
+        ${helpers.getNextPath('page_location_canonicalize', 1, 'next_path_1')},
+        ${helpers.getNextPath('page_location_canonicalize', 2, 'next_path_2')},
+        ${helpers.getNextPath('page_location_canonicalize', 3, 'next_path_3')},
+    FROM
+        ga
+    WHERE
+        event_name IN ('page_view', 'screen_view')
+),
+
+pv_data_2 AS (
+    SELECT
+        *,
+        IF(pv_sequence = 1, 1, NULL) AS is_entrance,
+        IF(next_path_1 IS NULL, 1, NULL) AS is_exit,
+        IF(pv_sequence = 1 AND next_path_1 IS NULL, 1, NULL) AS is_bounce,
+        IF(next_event_timestamp IS NULL, NULL, (next_event_timestamp - event_timestamp) / 1000000) AS page_duration,
+    FROM
+        pv_data_1
+)
+
+SELECT
+    -- timestamp
+    g.event_date,
+    g.event_timestamp,
+    g.event_timestamp_jst,
+    g.entrance_timestamp,
+    g.entrance_timestamp_jst,
+    g.exit_timestamp,
+    g.exit_timestamp_jst,
+
+    -- event
+    g.event_name,
+    g.event_bundle_sequence_id,
+
+    -- stream / platform
+    g.stream_id,
+    g.platform,
+
+    -- user
+    g.user_id,
+    g.user_pseudo_id,
+    g.user_first_touch_timestamp,
+
+    -- user_acquistion_channel
+    g.user_traffic_source,
+    g.user_traffic_medium,
+    g.user_traffic_campaign,
+
+    -- session
+    g.ga_session_id,
+    g.ga_session_number,
+    g.session_duration,
+    g.session_total_engagement_time,
+    g.session_total_page_view,
+    g.session_total_screen_view,
+    g.is_bounce_no_transition,
+    g.is_bounce_no_engagement,
+
+    -- event_acquisition_channel
+    g.event_traffic_source,
+    g.event_traffic_medium,
+    g.event_traffic_campaign,
+    g.event_traffic_content,
+    g.event_traffic_term,
+    g.event_source_platform,
+    g.event_creative_format,
+    g.event_marketing_tactic,
+    g.event_traffic_campaign_id,
+    g.event_traffic_gclid,
+
+    -- session_acquisition_channel
+    g.session_traffic_source,
+    g.session_traffic_medium,
+    g.session_traffic_campaign,
+    g.session_traffic_content,
+    g.session_traffic_term,
+    g.session_traffic_platform,
+    g.session_creative_format,
+    g.session_marketing_tactic,
+    g.session_traffic_campaign_id,
+    g.session_traffic_gclid,
+
+    -- session_acquisition_channel_last
+    g.session_traffic_source_last,
+    g.session_traffic_medium_last,
+    g.session_traffic_campaign_last,
+    g.session_traffic_content_last,
+    g.session_traffic_term_last,
+    g.session_traffic_platform_last,
+    g.session_creative_format_last,
+    g.session_marketing_tactic_last,
+    g.session_traffic_campaign_id_last,
+    g.session_traffic_gclid_last,
+
+    -- device
+    g.device_category,
+    g.device_mobile_brand_name,
+    g.device_mobile_model_name,
+    g.device_mobile_marketing_name,
+    g.device_mobile_os_hardware_model,
+    g.operating_system,
+    g.operating_system_version,
+    g.device_vendor_id,
+    g.device_advertising_id,
+    g.language,
+    g.is_limited_ad_tracking,
+    g.time_zone_offset_seconds,
+    g.browser,
+    g.browser_version,
+
+    -- geo
+    g.geo_continent,
+    g.geo_country,
+    g.geo_region,
+    g.geo_city,
+    g.geo_sub_continent,
+    g.geo_metro,
+
+    -- privacy_info
+    g.privacy_info_analytics_storage,
+    g.privacy_info_ads_storage,
+    g.privacy_info_uses_transient_token,
+
+    -- page
+    g.hostname,
+    g.page_location,
+    g.page_location_canonicalize,
+    g.content_group,
+    g.page_title,
+    g.entrances,
+    g.flg_reload, -- original
+    g.entrance_page,
+    p.pv_sequence,
+    p.prev_path_3,
+    p.prev_path_2,
+    p.prev_path_1,
+    p.next_path_1,
+    p.next_path_2,
+    p.next_path_3,
+    p.is_entrance,
+    p.is_exit,
+    p.is_bounce,
+    p.page_duration,
+
+    -- referrer
+    g.page_referrer,
+
+    -- scroll
+    g.percent_scrolled,
+
+    -- event_tracking (Click Tracking)
+    g.event_category,
+    g.event_action,
+    g.event_label,
+    g.link_id,
+    g.link_classes,
+    g.link_domain,
+    g.link_url,
+    g.link_url_canonicalize,
+    g.link_text,
+    g.outbound,
+    g.file_extension,
+    g.file_name,
+
+    -- video
+    g.video_title,
+    g.video_provider,
+    g.video_url,
+    g.visible,
+    g.video_current_time,
+    g.video_duration,
+    g.video_percent,
+
+    -- search_results
+    g.search_term,
+
+    -- engagement_time
+    g.engagement_time_msec,
+
+    -- add_column
+    g.is_fixed_data,
+
+FROM
+    ga AS g
+    LEFT JOIN pv_data_2 AS p
+        ON  g.event_name = p.event_name
+        AND g.event_timestamp = p.event_timestamp
+        AND g.user_pseudo_id = p.user_pseudo_id
+        AND g.page_location = p.page_location
+WHERE
+    event_date >= (SELECT MAX(event_date) FROM ga WHERE is_fixed_data = true) -- is_fixed_data のうち古い2日分を削除

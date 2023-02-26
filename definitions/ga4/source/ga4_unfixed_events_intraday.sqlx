@@ -1,0 +1,140 @@
+-- Config blocks
+config {
+    type: "view",
+    schema: "df_ga4_source_new",
+    description: "GA4データソース ストリーミングデータ",
+}
+
+
+-- Query blocks
+SELECT
+
+    -- timestamp
+    event_date,
+    event_timestamp,
+
+    -- event
+    event_name,
+    event_bundle_sequence_id,
+
+    -- stream / platform
+    stream_id,
+    platform,
+
+    -- user
+    ${helpers.getEventParamAll('user_id','string')},
+    user_pseudo_id,
+    user_first_touch_timestamp,
+
+    -- user_acquistion_channel
+    traffic_source.source AS user_traffic_source,
+    traffic_source.medium AS user_traffic_medium,
+    traffic_source.name AS user_traffic_campaign,
+
+    -- session
+    ${helpers.getEventParamAll('ga_session_id','string')},
+    ${helpers.getEventParam('ga_session_number','int')},
+
+    -- event_acquisition_channel
+    ${helpers.getEventParamAll('source','string','event_traffic_source')},
+    ${helpers.getEventParamAll('medium','string','event_traffic_medium')},
+    ${helpers.getEventParamAll('campaign','string','event_traffic_campaign')},
+    ${helpers.getEventParamAll('content','string','event_traffic_content')},
+    ${helpers.getEventParamAll('term','string','event_traffic_term')},
+    ${helpers.getEventParamAll('campaign_id','string','event_traffic_campaign_id')}, -- utm_id
+    ${helpers.getEventParamAll('gclid','string','event_traffic_gclid')},
+
+    -- device
+    device.category AS device_category,
+    device.mobile_brand_name AS device_mobile_brand_name,
+    device.mobile_model_name AS device_mobile_model_name,
+    device.mobile_marketing_name AS device_mobile_marketing_name,
+    device.mobile_os_hardware_model AS device_mobile_os_hardware_model,
+    device.operating_system,
+    device.operating_system_version,
+    device.vendor_id AS device_vendor_id,
+    device.advertising_id AS device_advertising_id,
+    device.language,
+    device.is_limited_ad_tracking AS is_limited_ad_tracking,
+    device.time_zone_offset_seconds AS time_zone_offset_seconds,
+    device.web_info.browser,
+    device.web_info.browser_version AS browser_version,
+
+    -- geo
+    geo.continent AS geo_continent,
+    geo.sub_continent AS geo_sub_continent,
+    geo.country AS geo_country,
+    geo.region AS geo_region,
+    geo.metro AS geo_metro,
+    geo.city AS geo_city,
+
+    -- privacy_info
+    privacy_info.analytics_storage AS privacy_info_analytics_storage,
+    privacy_info.ads_storage AS privacy_info_ads_storage,
+    privacy_info.uses_transient_token AS privacy_info_uses_transient_token,
+
+    -- page
+    device.web_info.hostname,
+    ${helpers.getEventParam('page_location')},
+    ${helpers.getEventParamAll('content_group','string')},
+    ${helpers.getEventParamAll('page_title','string')},
+    ${helpers.getEventParam('entrances','int')},
+    ${helpers.getEventParam('flg_reload')}, -- original
+
+    -- referrer
+    ${helpers.getEventParam('page_referrer')},
+
+    -- scroll
+    ${helpers.getEventParam('percent_scrolled','int')},
+
+    -- event_tracking (Click Tracking)
+    ${helpers.getEventParamAll('event_category','string')},
+    ${helpers.getEventParamAll('event_action','string')},
+    ${helpers.getEventParamAll('event_label','string')},
+    ${helpers.getEventParamAll('link_id','string')},
+    ${helpers.getEventParamAll('link_classes','string')},
+    ${helpers.getEventParam('link_domain')},
+    ${helpers.getEventParam('link_url')},
+    ${helpers.getEventParamAll('link_text','string')},
+    ${helpers.getEventParam('outbound')},
+    ${helpers.getEventParam('file_extension')},
+    ${helpers.getEventParamAll('file_name','string')},
+
+    -- video
+    ${helpers.getEventParamAll('video_title','string')},
+    ${helpers.getEventParamAll('video_provider','string')},
+    ${helpers.getEventParam('video_url')},
+    ${helpers.getEventParam('visible')},
+    ${helpers.getEventParam('video_current_time','int')},
+    ${helpers.getEventParam('video_duration','int')},
+    ${helpers.getEventParam('video_percent','int')},
+
+    -- search_results
+    ${helpers.getEventParamAll('search_term','string')},
+
+    -- engagement_time
+    ${helpers.getEventParam('engagement_time_msec','int')},
+
+    -- traffic_type (excluding IP address)
+    ${helpers.getEventParamAll('traffic_type','string')},
+
+    -- debug_mode
+    ${helpers.getEventParam('debug_mode')},
+
+
+    -- event_parameter
+    -- ${helpers.getEventParamAll('event_parameter_name','string')},
+    -- ${helpers.getEventParamAll('event_parameter_name','int')},
+    -- ${helpers.getEventParamAll('event_parameter_name','double')},
+
+    -- user_property
+    -- ${helpers.getUserPropertyAll('user_property_name','string')},
+    -- ${helpers.getUserPropertyAll('user_property_name','int')},
+    -- ${helpers.getUserPropertyAll('user_property_name','double')},
+
+FROM                    
+	${ref(constants.GA4_INTRADAY_TABLE)}
+WHERE
+    _table_suffix BETWEEN
+        (SELECT FORMAT_DATE("%Y%m%d",PARSE_DATE("%Y%m%d", MAX(event_date)) + 1) FROM ${ref("ga4_unfixed_events")})
+        AND FORMAT_DATE("%Y%m%d",(CURRENT_DATE('Asia/Tokyo')))
