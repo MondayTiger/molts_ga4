@@ -1,17 +1,18 @@
 -- Config blocks
 config {
-    //typeは初期構築時はtable、増分更新時は"incremental"とする。増分更新時は最終行のコメントアウトも外すこと。
-    type: "table",
+    //typeは初期構築時はtable、増分更新時は"incremental"とする。初期構築時はdependenciesと最終行をコメントアウトすること。
+    type: "incremental",
     bigquery: {
         // パーティションとクラスタリングを設定
         partitionBy: "event_date",
-        clusterBy: ["user_pseudo_id", "ga_session_id", "event_name"]
+        clusterBy: ["user_pseudo_id", "ga_session_id"]
     },
     schema: "df_molts_ga4_mart_new",
-    description: "GA4マートデータ　イベント用"
+    description: "GA4マートデータ　セッションデータ用",
+    dependencies: ["m_ga4_session_delete_unfixed"]
 }
 
 
 -- Query blocks
 SELECT * FROM ${ref("s_ga4_session")}
---${ when(incremental(), `WHERE event_date > (select max(event_date) FROM ${self()})`)}
+${ when(incremental(), `WHERE event_date > (SELECT MAX(event_date) FROM ${self()})`)}
