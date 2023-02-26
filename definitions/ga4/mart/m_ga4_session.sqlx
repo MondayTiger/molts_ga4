@@ -1,0 +1,105 @@
+-- Config blocks
+config {
+    //typeは初期構築時は"table"、増分更新時は"incremental"とする。初期構築時は最終行をコメントアウトすること。
+    type: "incremental",
+    bigquery: {
+        // パーティションとクラスタリングを設定
+        partitionBy: "event_date",
+        clusterBy: ["user_pseudo_id", "ga_session_id"]
+    },
+    schema: "df_molts_ga4_mart_new",
+    description: "GA4マートデータ　セッションデータ用",
+    dependencies: ["m_ga4_session_delete_unfixed"],
+    columns: {
+        // timestamp
+        event_date: "日付",
+        entrance_timestamp: "タイムスタンプ（セッション開始）（マイクロ秒）",
+        entrance_timestamp_jst: "タイムスタンプ（セッション開始）_日本時間",
+        exit_timestamp: "タイムスタンプ（離脱）（マイクロ秒）",
+        exit_timestamp_jst: "タイムスタンプ（離脱）_日本時間",
+
+        // stream / platform
+        stream_id: "ストリームID",
+        platform: "プラットフォーム",
+
+        // user
+        user_id: "ユーザーID",
+        user_pseudo_id: "ユニークユーザ識別用ID",
+        user_first_touch_timestamp: "ユーザーが初めてアプリを起動したか、サイトに訪れた時刻（マイクロ秒単位）",
+
+        // user_acquistion_channel
+        user_traffic_source: "集客：ユーザー獲得参照元",
+        user_traffic_medium: "集客：ユーザー獲得メディア",
+        user_traffic_campaign: "集客：ユーザー獲得キャンペーン",
+
+        // session
+        ga_session_id: "セッションID",
+        ga_session_number: "通算セッション数",
+        session_duration: "セッション時間（秒）",
+        session_total_engagement_time: "セッション合計エンゲージメント時間（秒）",
+        session_total_page_view: "セッション合計ページビュー",
+        session_total_screen_view: "セッション合計スクリーンビュー",
+        is_bounce_no_transition: "直帰_遷移なし",
+        is_bounce_no_engagement: "直帰_エンゲージメントなし",
+
+        // session_acquisition_channel
+        session_traffic_source: "集客：セッションの参照元",
+        session_traffic_medium: "集客：セッションのメディア",
+        session_traffic_campaign: "集客：セッションのキャンペーン",
+        session_traffic_content: "集客：セッションの広告のコンテンツ",
+        session_traffic_term: "集客：セッションの検索キーワード",
+        session_traffic_platform: "集客：セッションの参照元プラットフォーム",
+        session_creative_format: "集客：セッションのクリエイティブのタイプ",
+        session_marketing_tactic: "集客：セッションのターゲティング条件",
+        session_traffic_campaign_id: "集客：セッションのキャンペーンID（utm_id）",
+        session_traffic_gclid: "集客：セッションのgclid",
+
+        // session_acquisition_channel_last
+        session_traffic_source_last: "集客：セッション（ラストクリック）の参照元",
+        session_traffic_medium_last: "集客：セッション（ラストクリック）のメディア",
+        session_traffic_campaign_last: "集客：セッション（ラストクリック）のキャンペーン",
+        session_traffic_content_last: "集客：セッション（ラストクリック）の広告のコンテンツ",
+        session_traffic_term_last: "集客：セッション（ラストクリック）の検索キーワード",
+        session_traffic_platform_last: "集客：セッション（ラストクリック）の参照元プラットフォーム",
+        session_creative_format_last: "集客：セッション（ラストクリック）のクリエイティブのタイプ",
+        session_marketing_tactic_last: "集客：セッション（ラストクリック）のターゲティング条件",
+        session_traffic_campaign_id_last: "集客：セッション（ラストクリック）のキャンペーンID（utm_id）",
+        session_traffic_gclid_last: "集客：セッション（ラストクリック）のgclid",
+
+        // device
+        device_category: "デバイス カテゴリ",
+        device_mobile_brand_name: "デバイスのブランド名",
+        device_mobile_model_name: "デバイスのモデル名",
+        device_mobile_marketing_name: "デバイスのマーケティング名",
+        device_mobile_os_hardware_model: "オペレーティング システムから直接取得したデバイスのモデル情報",
+        operating_system: "OS",
+        operating_system_version: "OSのバージョン",
+        device_vendor_id: "IDFV（IDFA を収集していない場合にのみ使用）",
+        device_advertising_id: "広告 ID または IDFA",
+        language: "言語",
+        is_limited_ad_tracking: "デバイスの広告トラッキング制限の設定 iOS14 以降では、IDFA がゼロ以外の場合、false が返される",
+        browser: "ブラウザ",
+        browser_version: "ブラウザのバージョン",
+
+        // geo
+        geo_continent: "大陸",
+        geo_sub_continent: "亜大陸",
+        geo_country: "国",
+        geo_region: "地域",
+        geo_metro: "大都市圏",
+        geo_city: "市区町村",
+
+        // privacy_info
+        privacy_info_analytics_storage: "ユーザーに対してアナリティクスのデータ保存が有効になっているかどうか",
+        privacy_info_ads_storage: "ユーザーに対して広告ターゲティングが有効になっているかどうか",
+        privacy_info_uses_transient_token: "ウェブユーザーがアナリティクスでのデータ保存を拒否し、デベロッパーがサーバーデータの一時的なトークンに基づいて Cookie を使用しない測定を有効にしているかどうか",
+
+        // add_column
+        is_fixed_data: "FIXしたデータか"
+    }
+}
+
+
+-- Query blocks
+SELECT * FROM ${ref("s_ga4_session")}
+${ when(incremental(), `WHERE event_date > (SELECT MAX(event_date) FROM ${self()})`)}
