@@ -13,5 +13,5 @@ config {
 
 
 -- Query blocks
-SELECT * FROM ${ref("s_ga4_event")}
+SELECT * FROM ${ref("s_ga4_session")}
 --${ when(incremental(), `WHERE event_date > (select max(event_date) FROM ${self()})`)}
