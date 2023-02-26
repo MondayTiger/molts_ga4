@@ -1,6 +1,6 @@
 -- Config blocks
 config {
-    //typeは初期構築時はtable、増分更新時は"incremental"とする。初期構築時はdependenciesと最終行をコメントアウトすること。
+    //typeは初期構築時は"table"、増分更新時は"incremental"とする。初期構築時は最終行をコメントアウトすること。
     type: "incremental",
     bigquery: {
         // パーティションとクラスタリングを設定
