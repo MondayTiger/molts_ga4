@@ -1,6 +1,0 @@
-{
-  "name": "molts_bi",
-  "dependencies": {
-    "@dataform/core": "2.0.1"
-  }
-}
