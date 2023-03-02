@@ -1,7 +1,7 @@
 -- Config blocks
 config {
     type: "view",
-    schema: "df_molts_ga4_staging_new",
+    schema: "df_molts_ga4_staging",
     description: "GA4ステージングデータ 全イベント更新差分データ",
     columns: {
         // timestamp
@@ -40,6 +40,8 @@ config {
         session_total_screen_view: "セッション合計スクリーンビュー",
         is_bounce_no_transition: "直帰_遷移なし",
         is_bounce_no_engagement: "直帰_エンゲージメントなし",
+        entrance_page: "閲覧開始ページ",
+        exit_page: "離脱ページ",
 
         // event_acquisition_channel
         event_traffic_source: "集客：イベントの参照元",
@@ -64,18 +66,6 @@ config {
         session_marketing_tactic: "集客：セッションのターゲティング条件",
         session_traffic_campaign_id: "集客：セッションのキャンペーンID（utm_id）",
         session_traffic_gclid: "集客：セッションのgclid",
-
-        // session_acquisition_channel_last
-        session_traffic_source_last: "集客：セッション（ラストクリック）の参照元",
-        session_traffic_medium_last: "集客：セッション（ラストクリック）のメディア",
-        session_traffic_campaign_last: "集客：セッション（ラストクリック）のキャンペーン",
-        session_traffic_content_last: "集客：セッション（ラストクリック）の広告のコンテンツ",
-        session_traffic_term_last: "集客：セッション（ラストクリック）の検索キーワード",
-        session_traffic_platform_last: "集客：セッション（ラストクリック）の参照元プラットフォーム",
-        session_creative_format_last: "集客：セッション（ラストクリック）のクリエイティブのタイプ",
-        session_marketing_tactic_last: "集客：セッション（ラストクリック）のターゲティング条件",
-        session_traffic_campaign_id_last: "集客：セッション（ラストクリック）のキャンペーンID（utm_id）",
-        session_traffic_gclid_last: "集客：セッション（ラストクリック）のgclid",
 
         // device
         device_category: "デバイス カテゴリ",
@@ -114,7 +104,6 @@ config {
         page_title: "ページタイトル",
         entrances: "閲覧開始フラグ",
         flg_reload: "リロードフラグ",
-        entrance_page: "閲覧開始ページ",
 
         // page_path_analytics
         pv_sequence: "ページパス分析用：ページビューの順序",
@@ -187,6 +176,8 @@ pv_data_1 AS (
         user_pseudo_id,
         ga_session_id,
         page_location,
+        entrance_timestamp,
+        exit_timestamp,
         ${helpers.setNumber('pv_sequence')},
         ${helpers.getNextPath('event_timestamp', 1, 'next_event_timestamp')},
         ${helpers.getPreviousPath('page_location_canonicalize', 3, 'prev_path_3')},
@@ -207,7 +198,14 @@ pv_data_2 AS (
         IF(pv_sequence = 1, 1, NULL) AS is_entrance,
         IF(next_path_1 IS NULL, 1, NULL) AS is_exit,
         IF(pv_sequence = 1 AND next_path_1 IS NULL, 1, NULL) AS is_bounce,
-        IF(next_event_timestamp IS NULL, NULL, (next_event_timestamp - event_timestamp) / 1000000) AS page_duration,
+        CASE
+            WHEN pv_sequence = 1 AND next_event_timestamp IS NOT NULL THEN (next_event_timestamp - entrance_timestamp) / 1000000
+            WHEN pv_sequence = 1 AND next_event_timestamp IS NULL THEN (exit_timestamp - entrance_timestamp) / 1000000
+            WHEN pv_sequence >= 2 AND next_event_timestamp IS NOT NULL THEN (next_event_timestamp - event_timestamp) / 1000000
+            WHEN pv_sequence >= 2 AND next_event_timestamp IS NULL THEN (exit_timestamp - event_timestamp) / 1000000
+            ELSE NULL END AS page_duration,
+        IF(pv_sequence >= 2,event_timestamp,entrance_timestamp) AS pv_start_time,
+        IFNULL(LEAD(event_timestamp, 1) OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp),exit_timestamp) AS pv_end_time,
     FROM
         pv_data_1
 )
@@ -249,6 +247,8 @@ SELECT
     g.session_total_screen_view,
     g.is_bounce_no_transition,
     g.is_bounce_no_engagement,
+    g.entrance_page,
+    g.exit_page,
 
     -- event_acquisition_channel
     g.event_traffic_source,
@@ -273,18 +273,6 @@ SELECT
     g.session_marketing_tactic,
     g.session_traffic_campaign_id,
     g.session_traffic_gclid,
-
-    -- session_acquisition_channel_last
-    g.session_traffic_source_last,
-    g.session_traffic_medium_last,
-    g.session_traffic_campaign_last,
-    g.session_traffic_content_last,
-    g.session_traffic_term_last,
-    g.session_traffic_platform_last,
-    g.session_creative_format_last,
-    g.session_marketing_tactic_last,
-    g.session_traffic_campaign_id_last,
-    g.session_traffic_gclid_last,
 
     -- device
     g.device_category,
@@ -323,18 +311,17 @@ SELECT
     g.page_title,
     g.entrances,
     g.flg_reload, -- original
-    g.entrance_page,
-    p.pv_sequence,
-    p.prev_path_3,
-    p.prev_path_2,
-    p.prev_path_1,
-    p.next_path_1,
-    p.next_path_2,
-    p.next_path_3,
-    p.is_entrance,
-    p.is_exit,
-    p.is_bounce,
-    p.page_duration,
+    IFNULL(IFNULL(p1.pv_sequence,p2.pv_sequence),1) AS pv_sequence,
+    IFNULL(p1.prev_path_3,p2.prev_path_3) AS prev_path_3,
+    IFNULL(p1.prev_path_2,p2.prev_path_2) AS prev_path_2,
+    IFNULL(p1.prev_path_1,p2.prev_path_1) AS prev_path_1,
+    IFNULL(p1.next_path_1,p2.next_path_1) AS next_path_1,
+    IFNULL(p1.next_path_2,p2.next_path_2) AS next_path_2,
+    IFNULL(p1.next_path_3,p2.next_path_3) AS next_path_3,
+    IFNULL(p1.is_entrance,p2.is_entrance) AS is_entrance,
+    IFNULL(p1.is_exit,p2.is_exit) AS is_exit,
+    IFNULL(p1.is_bounce,p2.is_bounce) AS is_bounce,
+    IFNULL(p1.page_duration,p2.page_duration) AS page_duration,
 
     -- referrer
     g.page_referrer,
@@ -376,10 +363,14 @@ SELECT
 
 FROM
     ga AS g
-    LEFT JOIN pv_data_2 AS p
-        ON  g.event_name = p.event_name
-        AND g.event_timestamp = p.event_timestamp
-        AND g.user_pseudo_id = p.user_pseudo_id
-        AND g.page_location = p.page_location
+    LEFT JOIN pv_data_2 AS p1
+        ON  g.event_timestamp = p1.event_timestamp
+        AND g.user_pseudo_id = p1.user_pseudo_id
+        AND g.ga_session_id = p1.ga_session_id
+    LEFT JOIN pv_data_2 AS p2
+        ON  g.event_timestamp > p2.pv_start_time
+        AND g.event_timestamp <= p2.pv_end_time
+        AND g.user_pseudo_id = p2.user_pseudo_id
+        AND g.ga_session_id = p2.ga_session_id
 WHERE
     event_date >= (SELECT MAX(event_date) FROM ga WHERE is_fixed_data = true) -- is_fixed_data のうち古い2日分を削除

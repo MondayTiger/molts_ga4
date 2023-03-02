@@ -1,7 +1,7 @@
 -- Config blocks
 config {
     type: "view",
-    schema: "df_molts_ga4_staging_new",
+    schema: "df_molts_ga4_staging",
     description: "GA4ステージングデータ セッションデータを追加",
     columns: {
         // timestamp
@@ -65,18 +65,6 @@ config {
         session_traffic_campaign_id: "集客：セッションのキャンペーンID（utm_id）",
         session_traffic_gclid: "集客：セッションのgclid",
 
-        // session_acquisition_channel_last
-        session_traffic_source_last: "集客：セッション（ラストクリック）の参照元",
-        session_traffic_medium_last: "集客：セッション（ラストクリック）のメディア",
-        session_traffic_campaign_last: "集客：セッション（ラストクリック）のキャンペーン",
-        session_traffic_content_last: "集客：セッション（ラストクリック）の広告のコンテンツ",
-        session_traffic_term_last: "集客：セッション（ラストクリック）の検索キーワード",
-        session_traffic_platform_last: "集客：セッション（ラストクリック）の参照元プラットフォーム",
-        session_creative_format_last: "集客：セッション（ラストクリック）のクリエイティブのタイプ",
-        session_marketing_tactic_last: "集客：セッション（ラストクリック）のターゲティング条件",
-        session_traffic_campaign_id_last: "集客：セッション（ラストクリック）のキャンペーンID（utm_id）",
-        session_traffic_gclid_last: "集客：セッション（ラストクリック）のgclid",
-
         // device
         device_category: "デバイス カテゴリ",
         device_mobile_brand_name: "デバイスのブランド名",
@@ -113,8 +101,9 @@ config {
         content_group: "コンテンツグループ",
         page_title: "ページタイトル",
         entrances: "閲覧開始フラグ",
-        flg_reload: "リロードフラグ",
         entrance_page: "閲覧開始ページ",
+        exit_page: "離脱ページ",
+        flg_reload: "リロードフラグ",
 
         // referrer
         page_referrer: "リファラー",
@@ -168,6 +157,7 @@ config {
 WITH ga AS (
     SELECT
         *,
+
         -- Entrance/Exit Timestamp
         ${helpers.getFirstValue('event_timestamp','entrance_timestamp')},
         ${helpers.getLastValue('event_timestamp','exit_timestamp')},
@@ -180,7 +170,6 @@ WITH ga AS (
 
         -- traffic_source
         ${helpers.getFirstValue('event_traffic_campaign','session_traffic_campaign')},
-        ${helpers.getLastValue('event_traffic_campaign','session_traffic_campaign_last')},
 
     FROM
 	    ${ref("s_ga4_events_event_update")}
@@ -192,13 +181,12 @@ agg_campaign AS (
         user_pseudo_id,
         ga_session_id,
         session_traffic_campaign,
-        session_traffic_campaign_last,
     FROM
         ga
     WHERE
         event_traffic_campaign IS NOT NULL
     GROUP BY
-        1,2,3,4
+        1,2,3
 ),
 
 agg_campaign_first AS (
@@ -230,61 +218,12 @@ agg_campaign_first AS (
         1,2,3,4,5,6,7,8,9,10,11,12
 ),
 
-agg_campaign_last AS (
-    SELECT
-        g.user_pseudo_id,
-        g.ga_session_id,
-
-        -- session_acquisition_channel
-        g.event_traffic_source AS session_traffic_source_last,
-        g.event_traffic_medium AS session_traffic_medium_last,
-        g.event_traffic_campaign AS session_traffic_campaign_last,
-        g.event_traffic_content AS session_traffic_content_last,
-        g.event_traffic_term AS session_traffic_term_last,
-        g.event_source_platform AS session_traffic_platform_last,
-        g.event_creative_format AS session_creative_format_last,
-        g.event_marketing_tactic AS session_marketing_tactic_last,
-        g.event_traffic_campaign_id AS session_traffic_campaign_id_last,
-        g.event_traffic_gclid AS session_traffic_gclid_last,
-
-        MAX(event_timestamp) -- 一番遅いイベントに突合し、utm_campaignがかぶった場合にも正しい参照元に紐づける
-
-    FROM
-        ga AS g
-        INNER JOIN agg_campaign AS a
-            ON  g.user_pseudo_id = a.user_pseudo_id
-            AND g.ga_session_id = a.ga_session_id
-            AND g.event_traffic_campaign = a.session_traffic_campaign_last
-    GROUP BY
-        1,2,3,4,5,6,7,8,9,10,11,12
-),
-
-agg_campaign2 AS (
-    SELECT
-        f.*,
-        l.session_traffic_source_last,
-        l.session_traffic_medium_last,
-        l.session_traffic_campaign_last,
-        l.session_traffic_content_last,
-        l.session_traffic_term_last,
-        l.session_traffic_platform_last,
-        l.session_creative_format_last,
-        l.session_marketing_tactic_last,
-        l.session_traffic_campaign_id_last,
-        l.session_traffic_gclid_last,
-    FROM
-        agg_campaign_first AS f
-        LEFT JOIN agg_campaign_last AS l
-            ON  f.user_pseudo_id = l.user_pseudo_id
-            AND f.ga_session_id = l.ga_session_id
-),
-
-agg_campaign3 AS (
+agg_campaign_first_2 AS (
     SELECT
         *,
         ROW_NUMBER() OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY ga_session_id) AS row_num
     FROM
-        agg_campaign2
+        agg_campaign_first
 ),
 
 add_traffic_source AS (
@@ -365,10 +304,9 @@ add_traffic_source AS (
         g.content_group,
         g.page_title,
         g.entrances,
-        g.flg_reload, -- original
-
-        -- Landing Page
         g.entrance_page,
+        g.exit_page,
+        g.flg_reload, -- original
 
         -- referrer
         g.page_referrer,
@@ -425,18 +363,6 @@ add_traffic_source AS (
         a.session_traffic_campaign_id,
         a.session_traffic_gclid,
 
-        -- session_acquisition_channel_last
-        a.session_traffic_source_last,
-        a.session_traffic_medium_last,
-        a.session_traffic_campaign_last,
-        a.session_traffic_content_last,
-        a.session_traffic_term_last,
-        a.session_traffic_platform_last,
-        a.session_creative_format_last,
-        a.session_marketing_tactic_last,
-        a.session_traffic_campaign_id_last,
-        a.session_traffic_gclid_last,
-
         -- debug_mode
         g.debug_mode,
 
@@ -445,7 +371,7 @@ add_traffic_source AS (
 
     FROM
         ga AS g
-        LEFT JOIN (SELECT * FROM agg_campaign3 WHERE row_num = 1) AS a
+        LEFT JOIN (SELECT * FROM agg_campaign_first_2 WHERE row_num = 1) AS a
             ON  g.user_pseudo_id = a.user_pseudo_id
             AND g.ga_session_id = a.ga_session_id
         
@@ -509,9 +435,9 @@ join_data AS (
         v.session_total_screen_view,
         IF(v.session_total_page_view + v.session_total_screen_view <= 1, true, false) AS is_bounce_no_transition, --page_viewとscreen_viewの和が1以下のユーザーを直帰判定（true）とする
         CASE
-            WHEN s.session_duration <= 10 THEN true -- エンゲージメント秒数の定義。10秒を変更している場合は 10 を変更する。
-            WHEN v.session_total_page_view + v.session_total_screen_view >= 2 THEN true
-            ELSE false END AS is_bounce_no_engagement,
+            WHEN s.session_duration < 10 THEN true -- エンゲージメント秒数の定義。10秒を変更している場合は 10 を変更する。
+            WHEN v.session_total_page_view + v.session_total_screen_view <= 1 THEN true
+            ELSE false END AS is_bounce_no_engagement
     FROM
         add_traffic_source as t
     LEFT JOIN　calculate_session_duration as s
@@ -587,18 +513,6 @@ SELECT
     session_traffic_campaign_id,
     session_traffic_gclid,
 
-    -- session_acquisition_channel_last
-    session_traffic_source_last,
-    session_traffic_medium_last,
-    session_traffic_campaign_last,
-    session_traffic_content_last,
-    session_traffic_term_last,
-    session_traffic_platform_last,
-    session_creative_format_last,
-    session_marketing_tactic_last,
-    session_traffic_campaign_id_last,
-    session_traffic_gclid_last,
-
     -- device
     device_category,
     device_mobile_brand_name,
@@ -635,8 +549,9 @@ SELECT
     content_group,
     page_title,
     entrances,
-    flg_reload, -- original
     entrance_page,
+    exit_page,
+    flg_reload, -- original
 
     -- referrer
     page_referrer,

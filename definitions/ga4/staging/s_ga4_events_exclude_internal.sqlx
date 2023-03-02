@@ -1,7 +1,7 @@
 -- Config blocks
 config {
     type: "view",
-    schema: "df_molts_ga4_staging_new",
+    schema: "df_molts_ga4_staging",
     description: "GA4ステージングデータ 内部アクセスの除外",
     columns: {
         // timestamp
@@ -65,18 +65,6 @@ config {
         session_traffic_campaign_id: "集客：セッションのキャンペーンID（utm_id）",
         session_traffic_gclid: "集客：セッションのgclid",
 
-        // session_acquisition_channel_last
-        session_traffic_source_last: "集客：セッション（ラストクリック）の参照元",
-        session_traffic_medium_last: "集客：セッション（ラストクリック）のメディア",
-        session_traffic_campaign_last: "集客：セッション（ラストクリック）のキャンペーン",
-        session_traffic_content_last: "集客：セッション（ラストクリック）の広告のコンテンツ",
-        session_traffic_term_last: "集客：セッション（ラストクリック）の検索キーワード",
-        session_traffic_platform_last: "集客：セッション（ラストクリック）の参照元プラットフォーム",
-        session_creative_format_last: "集客：セッション（ラストクリック）のクリエイティブのタイプ",
-        session_marketing_tactic_last: "集客：セッション（ラストクリック）のターゲティング条件",
-        session_traffic_campaign_id_last: "集客：セッション（ラストクリック）のキャンペーンID（utm_id）",
-        session_traffic_gclid_last: "集客：セッション（ラストクリック）のgclid",
-
         // device
         device_category: "デバイス カテゴリ",
         device_mobile_brand_name: "デバイスのブランド名",
@@ -113,8 +101,9 @@ config {
         content_group: "コンテンツグループ",
         page_title: "ページタイトル",
         entrances: "閲覧開始フラグ",
-        flg_reload: "リロードフラグ",
         entrance_page: "閲覧開始ページ",
+        exit_page: "離脱ページ",
+        flg_reload: "リロードフラグ",
 
         // referrer
         page_referrer: "リファラー",
@@ -231,18 +220,6 @@ SELECT
     session_traffic_campaign_id,
     session_traffic_gclid,
 
-    -- session_acquisition_channel_last
-    session_traffic_source_last,
-    session_traffic_medium_last,
-    session_traffic_campaign_last,
-    session_traffic_content_last,
-    session_traffic_term_last,
-    session_traffic_platform_last,
-    session_creative_format_last,
-    session_marketing_tactic_last,
-    session_traffic_campaign_id_last,
-    session_traffic_gclid_last,
-
     -- device
     device_category,
     device_mobile_brand_name,
@@ -279,8 +256,9 @@ SELECT
     content_group,
     page_title,
     entrances,
-    flg_reload, -- original
     entrance_page,
+    exit_page,
+    flg_reload, -- original
 
     -- referrer
     page_referrer,
