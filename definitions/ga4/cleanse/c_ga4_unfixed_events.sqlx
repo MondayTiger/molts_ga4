@@ -3,6 +3,7 @@ config {
     type: "view",
     schema: "df_molts_ga4_cleanse_new",
     description: "GA4クレンジングデータ 未確定データ",
+    tags: ["daily", "cleanse"]
 }
 
 
@@ -129,6 +130,18 @@ SELECT
 
     -- add_column
     false AS is_fixed_data,
+
+    -- event_parameter clarity
+    claritydimension,
+
+    -- event_parameter article
+    estimate_read_time,
+    estimate_read_time_percent,
+
+    -- event_parameter core web vitals
+    cwv_id,
+    cwv_value,
+    cwv_delta,
 
 FROM                    
 	${ref("ga4_unfixed_events")}

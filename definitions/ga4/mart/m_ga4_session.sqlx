@@ -10,6 +10,7 @@ config {
     schema: "df_molts_ga4_mart_new",
     description: "GA4マートデータ　セッションデータ用",
     dependencies: ["m_ga4_session_delete_unfixed"],
+    tags: ["daily", "mart"],
     columns: {
         // timestamp
         event_date: "日付",
@@ -43,8 +44,8 @@ config {
         is_bounce_no_engagement: "直帰_エンゲージメントなし",
 
         // entrance_exit_page
-        entrance_page: "閲覧開始ページ",
-        exit_page: "離脱ページ",
+        entrance_page: "セッション内の閲覧開始ページ",
+        exit_page: "セッション内の離脱ページ",
 
         // session_acquisition_channel
         session_traffic_source: "集客：セッションの参照元",

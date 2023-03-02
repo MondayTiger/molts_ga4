@@ -1,8 +1,9 @@
 -- Config blocks
 config {
     type: "view",
-    schema: "df_molts_ga4_staging",
+    schema: "df_molts_ga4_staging_new",
     description: "GA4ステージングデータ セッションデータを追加",
+    tags: ["daily", "staging"],
     columns: {
         // timestamp
         event_date: "日付",
@@ -100,9 +101,9 @@ config {
         page_location_canonicalize: "正規化URL",
         content_group: "コンテンツグループ",
         page_title: "ページタイトル",
-        entrances: "閲覧開始フラグ",
-        entrance_page: "閲覧開始ページ",
-        exit_page: "離脱ページ",
+        entrances: "閲覧開始フラグ(GA4の entrances イベントパラメータ)",
+        entrance_page: "セッション内の閲覧開始ページ",
+        exit_page: "セッション内の離脱ページ",
         flg_reload: "リロードフラグ",
 
         // referrer
@@ -147,7 +148,19 @@ config {
         debug_mode: "デバッグモード",
 
         // add_column
-        is_fixed_data: "FIXしたデータか"
+        is_fixed_data: "FIXしたデータか",
+
+        // event_parameter clarity
+        claritydimension: "Microsoft ClarityのURL",
+
+        // event_parameter article
+        estimate_read_time: "推定読了時間",
+        estimate_read_time_percent: "読了割合",
+
+        // event_parameter core web vitals
+        cwv_id: "Core Web VitalsのID",
+        cwv_value: "Core Web Vitalsのvalue",
+        cwv_delta: "Core Web Vitalsのdelta"
     }
 }
 
@@ -369,11 +382,23 @@ add_traffic_source AS (
         -- add_column
         g.is_fixed_data,
 
-    FROM
-        ga AS g
-        LEFT JOIN (SELECT * FROM agg_campaign_first_2 WHERE row_num = 1) AS a
-            ON  g.user_pseudo_id = a.user_pseudo_id
-            AND g.ga_session_id = a.ga_session_id
+        -- event_parameter clarity
+        g.claritydimension,
+
+        -- event_parameter article
+        g.estimate_read_time,
+        g.estimate_read_time_percent,
+
+        -- event_parameter core web vitals
+        g.cwv_id,
+        g.cwv_value,
+        g.cwv_delta,
+
+        FROM
+            ga AS g
+            LEFT JOIN (SELECT * FROM agg_campaign_first_2 WHERE row_num = 1) AS a
+                ON  g.user_pseudo_id = a.user_pseudo_id
+                AND g.ga_session_id = a.ga_session_id
         
 ),
 
@@ -596,5 +621,18 @@ SELECT
 
     -- add_column
     is_fixed_data,
+
+    -- event_parameter clarity
+    claritydimension,
+
+    -- event_parameter article
+    estimate_read_time,
+    estimate_read_time_percent,
+
+    -- event_parameter core web vitals
+    cwv_id,
+    cwv_value,
+    cwv_delta,
+
 FROM
     join_data

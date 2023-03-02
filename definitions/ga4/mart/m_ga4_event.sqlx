@@ -10,6 +10,7 @@ config {
     schema: "df_molts_ga4_mart_new",
     description: "GA4マートデータ　イベントデータ用",
     dependencies: ["m_ga4_event_delete_unfixed"],
+    tags: ["daily", "mart"],
     columns: {
         // timestamp
         event_date: "日付",
@@ -47,8 +48,6 @@ config {
         session_total_screen_view: "セッション合計スクリーンビュー",
         is_bounce_no_transition: "直帰_遷移なし",
         is_bounce_no_engagement: "直帰_エンゲージメントなし",
-        entrance_page: "閲覧開始ページ",
-        exit_page: "離脱ページ",
 
         // event_acquisition_channel
         event_traffic_source: "集客：イベントの参照元",
@@ -109,7 +108,9 @@ config {
         page_location_canonicalize: "正規化URL",
         content_group: "コンテンツグループ",
         page_title: "ページタイトル",
-        entrances: "閲覧開始フラグ",
+        entrances: "閲覧開始フラグ(GA4の entrances イベントパラメータ)",
+        entrance_page: "セッション内の閲覧開始ページ",
+        exit_page: "セッション内の離脱ページ",
         flg_reload: "リロードフラグ",
 
         // page_path_analytics
@@ -161,7 +162,20 @@ config {
         engagement_time_msec: "エンゲージメント時間（ミリ秒）",
 
         // add_column
-        is_fixed_data: "FIXしたデータか"
+        is_fixed_data: "FIXしたデータか",
+
+        // event_parameter clarity
+        claritydimension: "Microsoft ClarityのURL",
+
+        // event_parameter article
+        estimate_read_time: "推定読了時間",
+        estimate_read_time_percent: "読了割合",
+
+        // event_parameter core web vitals
+        cwv_id: "Core Web VitalsのID",
+        cwv_value: "Core Web Vitalsのvalue",
+        cwv_delta: "Core Web Vitalsのdelta"
+
     }
 }
 

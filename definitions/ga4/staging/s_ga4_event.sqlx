@@ -1,8 +1,9 @@
 -- Config blocks
 config {
     type: "view",
-    schema: "df_molts_ga4_staging",
+    schema: "df_molts_ga4_staging_new",
     description: "GA4ステージングデータ 全イベント更新差分データ",
+    tags: ["daily", "staging"],
     columns: {
         // timestamp
         event_date: "日付",
@@ -40,8 +41,6 @@ config {
         session_total_screen_view: "セッション合計スクリーンビュー",
         is_bounce_no_transition: "直帰_遷移なし",
         is_bounce_no_engagement: "直帰_エンゲージメントなし",
-        entrance_page: "閲覧開始ページ",
-        exit_page: "離脱ページ",
 
         // event_acquisition_channel
         event_traffic_source: "集客：イベントの参照元",
@@ -102,7 +101,9 @@ config {
         page_location_canonicalize: "正規化URL",
         content_group: "コンテンツグループ",
         page_title: "ページタイトル",
-        entrances: "閲覧開始フラグ",
+        entrances: "閲覧開始フラグ(GA4の entrances イベントパラメータ)",
+        entrance_page: "セッション内の閲覧開始ページ",
+        exit_page: "セッション内の離脱ページ",
         flg_reload: "リロードフラグ",
 
         // page_path_analytics
@@ -154,7 +155,20 @@ config {
         engagement_time_msec: "エンゲージメント時間（ミリ秒）",
 
         // add_column
-        is_fixed_data: "FIXしたデータか"
+        is_fixed_data: "FIXしたデータか",
+
+        // event_parameter clarity
+        claritydimension: "Microsoft ClarityのURL",
+
+        // event_parameter article
+        estimate_read_time: "推定読了時間",
+        estimate_read_time_percent: "読了割合",
+
+        // event_parameter core web vitals
+        cwv_id: "Core Web VitalsのID",
+        cwv_value: "Core Web Vitalsのvalue",
+        cwv_delta: "Core Web Vitalsのdelta"
+
     }
 }
 
@@ -164,9 +178,7 @@ WITH ga AS (
     SELECT
         *
     FROM
-        ${ref("s_ga4_events_exclude_internal")}
-    WHERE
-        event_name NOT IN ('exclude_event')
+        ${ref("s_ga4_events_add_session_item")}
 ),
 
 pv_data_1 AS (
@@ -247,9 +259,7 @@ SELECT
     g.session_total_screen_view,
     g.is_bounce_no_transition,
     g.is_bounce_no_engagement,
-    g.entrance_page,
-    g.exit_page,
-
+    
     -- event_acquisition_channel
     g.event_traffic_source,
     g.event_traffic_medium,
@@ -310,6 +320,8 @@ SELECT
     g.content_group,
     g.page_title,
     g.entrances,
+    g.entrance_page,
+    g.exit_page,
     g.flg_reload, -- original
     IFNULL(IFNULL(p1.pv_sequence,p2.pv_sequence),1) AS pv_sequence,
     IFNULL(p1.prev_path_3,p2.prev_path_3) AS prev_path_3,
@@ -360,6 +372,18 @@ SELECT
 
     -- add_column
     g.is_fixed_data,
+
+    -- event_parameter clarity
+    g.claritydimension,
+
+    -- event_parameter article
+    g.estimate_read_time,
+    g.estimate_read_time_percent,
+
+    -- event_parameter core web vitals
+    g.cwv_id,
+    g.cwv_value,
+    g.cwv_delta,
 
 FROM
     ga AS g

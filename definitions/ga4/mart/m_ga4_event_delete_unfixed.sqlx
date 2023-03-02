@@ -3,7 +3,8 @@ config {
     //typeは初期構築時はtable、増分更新時は"incremental"とする。増分更新時は最終行のコメントアウトも外すこと。
     type: "operations",
     schema: "df_molts_ga4_mart_new",
-    description: "GA4マートデータ　イベント用"
+    description: "GA4マートデータ　イベント用",
+    tags: ["daily", "mart"],
 }
 
 

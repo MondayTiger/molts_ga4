@@ -1,8 +1,9 @@
 -- Config blocks
 config {
     type: "view",
-    schema: "df_molts_ga4_staging",
+    schema: "df_molts_ga4_staging_new",
     description: "GA4ステージングデータ 全セッション更新差分データ",
+    tags: ["daily", "staging"],
     columns: {
         // timestamp
         event_date: "日付",
@@ -36,8 +37,8 @@ config {
         is_bounce_no_engagement: "直帰_エンゲージメントなし",
 
         // entrance_exit_page
-        entrance_page: "閲覧開始ページ",
-        exit_page: "離脱ページ",
+        entrance_page: "セッション内の閲覧開始ページ",
+        exit_page: "セッション内の離脱ページ",
 
         // session_acquisition_channel
         session_traffic_source: "集客：セッションの参照元",
@@ -167,7 +168,7 @@ WITH ga AS (
         is_fixed_data,
 
     FROM
-        ${ref("s_ga4_events_exclude_internal")}
+        ${ref("s_ga4_events_add_session_item")}
     WHERE
         event_date >= (SELECT MAX(event_date) FROM ${ref("s_ga4_events_exclude_internal")} WHERE is_fixed_data = true) -- is_fixed_data のうち古い2日分を削除
 )
