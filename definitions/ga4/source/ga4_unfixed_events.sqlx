@@ -115,6 +115,10 @@ SELECT
     -- search_results
     ${helpers.getEventParamAll('search_term','string')},
 
+    -- experiment (a/b testing)
+    ${helpers.getEventParamAll('experiment_id','string')},
+    ${helpers.getEventParamAll('variant_id','string')},
+
     -- engagement_time
     ${helpers.getEventParam('engagement_time_msec','int')},
 

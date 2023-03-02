@@ -151,6 +151,10 @@ config {
         // search_results
         search_term: "サイト内検索キーワード",
 
+        // experiment (a/b testing)
+        experiment_id: "A/BテストのテストID",
+        variant_id: "A/BテストのバリエーションID",
+
         // engagement_time
         engagement_time_msec: "エンゲージメント時間（ミリ秒）",
 
@@ -366,6 +370,10 @@ SELECT
 
     -- search_results
     g.search_term,
+
+    -- experiment (a/b testing)
+    experiment_id,
+    variant_id,
 
     -- engagement_time
     g.engagement_time_msec,

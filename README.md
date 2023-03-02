@@ -1,5 +1,22 @@
 # GA4->BigQuery export data gereral queries made by Dataform.
 
+### イベントパラメータを追加する場合
+以下のテーブル定義を更新する
+- source
+    - ga4_fixed_events.sqlx
+    - ga4_unfixed_events_intraday.sqlx
+    - ga4_unfixed_events.sqlx
+- cleanse
+    - c_ga4_fixed_events.sqlx
+    - c_ga4_unfixed_events_intraday.sqlx
+    - c_ga4_unfixed_events.sqlx
+-staging
+    - s_ga4_event.sqlx
+    - s_ga4_events_add_session_item.sqlx
+- mart
+    - m_ga4_event.sqlx
+    - m_ga4_session.sqlx *必要に応じ
+
 ### Data flow
 ```mermaid
 erDiagram

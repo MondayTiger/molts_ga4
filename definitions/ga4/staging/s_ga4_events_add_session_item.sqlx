@@ -138,6 +138,10 @@ config {
         // search_results
         search_term: "サイト内検索キーワード",
 
+        // experiment (a/b testing)
+        experiment_id: "A/BテストのテストID",
+        variant_id: "A/BテストのバリエーションID",
+
         // engagement_time
         engagement_time_msec: "エンゲージメント時間（ミリ秒）",
 
@@ -246,6 +250,10 @@ add_traffic_source AS (
         g.event_date,
         g.event_timestamp,
         g.event_timestamp_jst,
+        g.entrance_timestamp,
+        g.exit_timestamp,
+        g.entrance_timestamp_jst,
+        g.exit_timestamp_jst,
 
         -- event
         g.event_name,
@@ -353,16 +361,15 @@ add_traffic_source AS (
         -- view_search_results
         g.search_term,
 
+        -- experiment (a/b testing)
+        experiment_id,
+        variant_id,
+
         -- engagement_time_msec
         g.engagement_time_msec,
 
         -- traffic_type (excluding IP address)
         g.traffic_type,
-
-        g.entrance_timestamp,
-        g.exit_timestamp,
-        g.entrance_timestamp_jst,
-        g.exit_timestamp_jst,
 
         -- session_acquisition_channel
         a.session_traffic_source,
@@ -609,6 +616,10 @@ SELECT
 
     -- search_results
     search_term,
+
+    -- experiment (a/b testing)
+    experiment_id,
+    variant_id,
 
     -- engagement_time
     engagement_time_msec,

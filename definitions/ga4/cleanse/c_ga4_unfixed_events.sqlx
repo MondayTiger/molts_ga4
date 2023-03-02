@@ -119,6 +119,10 @@ SELECT
     -- search_results
     search_term,
 
+    -- experiment (a/b testing)
+    experiment_id,
+    variant_id,
+
     -- engagement_time
     engagement_time_msec,
 
