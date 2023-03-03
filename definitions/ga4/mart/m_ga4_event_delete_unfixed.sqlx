@@ -4,7 +4,7 @@ config {
     type: "operations",
     schema: "df_molts_ga4_mart",
     description: "GA4マートデータ　イベント用",
-    tags: ["daily", "mart"],
+    tags: ["daily", "mart", "deletion_query"],
 }
 
 
