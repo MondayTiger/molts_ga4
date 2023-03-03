@@ -3,6 +3,7 @@ config {
     type: "view",
     schema: "df_molts_ga4_source_new",
     description: "GA4データソース 確定データ",
+    tags: ["daily", "source"]
 }
 
 
@@ -112,6 +113,10 @@ SELECT
     -- search_results
     ${helpers.getEventParamAll('search_term','string')},
 
+    -- experiment (a/b testing)
+    ${helpers.getEventParamAll('experiment_id','string')},
+    ${helpers.getEventParamAll('variant_id','string')},
+
     -- engagement_time
     ${helpers.getEventParam('engagement_time_msec','int')},
 
@@ -121,6 +126,17 @@ SELECT
     -- debug_mode
     ${helpers.getEventParam('debug_mode')},
 
+    -- event_parameter clarity
+    ${helpers.getEventParamAll('claritydimension','string')},
+
+    -- event_parameter article
+    ${helpers.getEventParamAll('estimate_read_time','int')},
+    ${helpers.getEventParamAll('estimate_read_time_percent','int')},
+
+    -- event_parameter core web vitals
+    ${helpers.getEventParamAll('cwv_id','string')},
+    ${helpers.getEventParamAll('cwv_value','double')},
+    ${helpers.getEventParamAll('cwv_delta','double')},
 
     -- event_parameter
     -- ${helpers.getEventParamAll('event_parameter_name','string')},

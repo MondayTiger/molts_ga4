@@ -3,6 +3,7 @@ config {
     type: "view",
     schema: "df_molts_ga4_staging_new",
     description: "GA4ステージングデータ 全セッション更新差分データ",
+    tags: ["daily", "staging"],
     columns: {
         // timestamp
         event_date: "日付",
@@ -35,6 +36,10 @@ config {
         is_bounce_no_transition: "直帰_遷移なし",
         is_bounce_no_engagement: "直帰_エンゲージメントなし",
 
+        // entrance_exit_page
+        entrance_page: "セッション内の閲覧開始ページ",
+        exit_page: "セッション内の離脱ページ",
+
         // session_acquisition_channel
         session_traffic_source: "集客：セッションの参照元",
         session_traffic_medium: "集客：セッションのメディア",
@@ -46,18 +51,6 @@ config {
         session_marketing_tactic: "集客：セッションのターゲティング条件",
         session_traffic_campaign_id: "集客：セッションのキャンペーンID（utm_id）",
         session_traffic_gclid: "集客：セッションのgclid",
-
-        // session_acquisition_channel_last
-        session_traffic_source_last: "集客：セッション（ラストクリック）の参照元",
-        session_traffic_medium_last: "集客：セッション（ラストクリック）のメディア",
-        session_traffic_campaign_last: "集客：セッション（ラストクリック）のキャンペーン",
-        session_traffic_content_last: "集客：セッション（ラストクリック）の広告のコンテンツ",
-        session_traffic_term_last: "集客：セッション（ラストクリック）の検索キーワード",
-        session_traffic_platform_last: "集客：セッション（ラストクリック）の参照元プラットフォーム",
-        session_creative_format_last: "集客：セッション（ラストクリック）のクリエイティブのタイプ",
-        session_marketing_tactic_last: "集客：セッション（ラストクリック）のターゲティング条件",
-        session_traffic_campaign_id_last: "集客：セッション（ラストクリック）のキャンペーンID（utm_id）",
-        session_traffic_gclid_last: "集客：セッション（ラストクリック）のgclid",
 
         // device
         device_category: "デバイス カテゴリ",
@@ -127,6 +120,10 @@ WITH ga AS (
         is_bounce_no_transition,
         is_bounce_no_engagement,
 
+        -- entrance_exit_page
+        entrance_page,
+        exit_page,
+
         -- session_acquisition_channel
         session_traffic_source,
         session_traffic_medium,
@@ -138,18 +135,6 @@ WITH ga AS (
         session_marketing_tactic,
         session_traffic_campaign_id,
         session_traffic_gclid,
-
-        -- session_acquisition_channel_last
-        session_traffic_source_last,
-        session_traffic_medium_last,
-        session_traffic_campaign_last,
-        session_traffic_content_last,
-        session_traffic_term_last,
-        session_traffic_platform_last,
-        session_creative_format_last,
-        session_marketing_tactic_last,
-        session_traffic_campaign_id_last,
-        session_traffic_gclid_last,
 
         -- device
         ${helpers.getFirstValue('device_category','device_category')},
@@ -183,7 +168,7 @@ WITH ga AS (
         is_fixed_data,
 
     FROM
-        ${ref("s_ga4_events_exclude_internal")}
+        ${ref("s_ga4_events_add_session_item")}
     WHERE
         event_date >= (SELECT MAX(event_date) FROM ${ref("s_ga4_events_exclude_internal")} WHERE is_fixed_data = true) -- is_fixed_data のうち古い2日分を削除
 )
@@ -193,4 +178,4 @@ SELECT
 FROM
     ga
 GROUP BY
-    1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64
+    1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56

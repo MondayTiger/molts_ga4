@@ -2,7 +2,8 @@
 config {
     type: "view",
     schema: "df_molts_ga4_staging_new",
-    description: "GA4ステージングデータ 不要イベントの追加・リネーム・削除"
+    description: "GA4ステージングデータ 不要イベントの追加・リネーム・削除",
+    tags: ["daily", "staging"],
 }
 
 
@@ -10,7 +11,7 @@ config {
 SELECT
     *,
 FROM
-    ${ref("s_ga4_events_union")}
+    ${ref("s_ga4_events_exclude_internal")}
 
 /**** 以下、処理を行う場合のサンプルコード ***
 

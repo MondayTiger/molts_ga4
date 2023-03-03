@@ -2,7 +2,8 @@
 config {
     type: "table",
     schema: "df_molts_ga4_staging_new",
-    description: "GA4ステージングデータ クレンジングしたデータを統合"
+    description: "GA4ステージングデータ クレンジングしたデータを統合",
+    tags: ["daily", "staging"]
 }
 
 

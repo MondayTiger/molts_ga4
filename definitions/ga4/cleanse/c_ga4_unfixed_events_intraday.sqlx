@@ -3,6 +3,7 @@ config {
     type: "view",
     schema: "df_molts_ga4_cleanse_new",
     description: "GA4クレンジングデータ ストリーミングデータ",
+    tags: ["daily", "cleanse"]
 }
 
 
@@ -118,6 +119,10 @@ SELECT
     -- search_results
     search_term,
 
+    -- experiment (a/b testing)
+    experiment_id,
+    variant_id,
+
     -- engagement_time
     engagement_time_msec,
 
@@ -129,6 +134,19 @@ SELECT
 
     -- add_column
     false AS is_fixed_data,
+
+    -- event_parameter clarity
+    claritydimension,
+
+    -- event_parameter article
+    estimate_read_time,
+    estimate_read_time_percent,
+
+    -- event_parameter core web vitals
+    cwv_id,
+    cwv_value,
+    cwv_delta,
+
 
 FROM                    
 	${ref("ga4_unfixed_events_intraday")}

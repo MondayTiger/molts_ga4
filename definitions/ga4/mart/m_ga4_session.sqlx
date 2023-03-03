@@ -10,6 +10,7 @@ config {
     schema: "df_molts_ga4_mart_new",
     description: "GA4マートデータ　セッションデータ用",
     dependencies: ["m_ga4_session_delete_unfixed"],
+    tags: ["daily", "mart"],
     columns: {
         // timestamp
         event_date: "日付",
@@ -42,6 +43,10 @@ config {
         is_bounce_no_transition: "直帰_遷移なし",
         is_bounce_no_engagement: "直帰_エンゲージメントなし",
 
+        // entrance_exit_page
+        entrance_page: "セッション内の閲覧開始ページ",
+        exit_page: "セッション内の離脱ページ",
+
         // session_acquisition_channel
         session_traffic_source: "集客：セッションの参照元",
         session_traffic_medium: "集客：セッションのメディア",
@@ -53,18 +58,6 @@ config {
         session_marketing_tactic: "集客：セッションのターゲティング条件",
         session_traffic_campaign_id: "集客：セッションのキャンペーンID（utm_id）",
         session_traffic_gclid: "集客：セッションのgclid",
-
-        // session_acquisition_channel_last
-        session_traffic_source_last: "集客：セッション（ラストクリック）の参照元",
-        session_traffic_medium_last: "集客：セッション（ラストクリック）のメディア",
-        session_traffic_campaign_last: "集客：セッション（ラストクリック）のキャンペーン",
-        session_traffic_content_last: "集客：セッション（ラストクリック）の広告のコンテンツ",
-        session_traffic_term_last: "集客：セッション（ラストクリック）の検索キーワード",
-        session_traffic_platform_last: "集客：セッション（ラストクリック）の参照元プラットフォーム",
-        session_creative_format_last: "集客：セッション（ラストクリック）のクリエイティブのタイプ",
-        session_marketing_tactic_last: "集客：セッション（ラストクリック）のターゲティング条件",
-        session_traffic_campaign_id_last: "集客：セッション（ラストクリック）のキャンペーンID（utm_id）",
-        session_traffic_gclid_last: "集客：セッション（ラストクリック）のgclid",
 
         // device
         device_category: "デバイス カテゴリ",

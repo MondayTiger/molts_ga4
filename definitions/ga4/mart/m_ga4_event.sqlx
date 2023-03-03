@@ -10,6 +10,7 @@ config {
     schema: "df_molts_ga4_mart_new",
     description: "GA4マートデータ　イベントデータ用",
     dependencies: ["m_ga4_event_delete_unfixed"],
+    tags: ["daily", "mart"],
     columns: {
         // timestamp
         event_date: "日付",
@@ -72,18 +73,6 @@ config {
         session_traffic_campaign_id: "集客：セッションのキャンペーンID（utm_id）",
         session_traffic_gclid: "集客：セッションのgclid",
 
-        // session_acquisition_channel_last
-        session_traffic_source_last: "集客：セッション（ラストクリック）の参照元",
-        session_traffic_medium_last: "集客：セッション（ラストクリック）のメディア",
-        session_traffic_campaign_last: "集客：セッション（ラストクリック）のキャンペーン",
-        session_traffic_content_last: "集客：セッション（ラストクリック）の広告のコンテンツ",
-        session_traffic_term_last: "集客：セッション（ラストクリック）の検索キーワード",
-        session_traffic_platform_last: "集客：セッション（ラストクリック）の参照元プラットフォーム",
-        session_creative_format_last: "集客：セッション（ラストクリック）のクリエイティブのタイプ",
-        session_marketing_tactic_last: "集客：セッション（ラストクリック）のターゲティング条件",
-        session_traffic_campaign_id_last: "集客：セッション（ラストクリック）のキャンペーンID（utm_id）",
-        session_traffic_gclid_last: "集客：セッション（ラストクリック）のgclid",
-
         // device
         device_category: "デバイス カテゴリ",
         device_mobile_brand_name: "デバイスのブランド名",
@@ -119,9 +108,10 @@ config {
         page_location_canonicalize: "正規化URL",
         content_group: "コンテンツグループ",
         page_title: "ページタイトル",
-        entrances: "閲覧開始フラグ",
+        entrances: "閲覧開始フラグ(GA4の entrances イベントパラメータ)",
+        entrance_page: "セッション内の閲覧開始ページ",
+        exit_page: "セッション内の離脱ページ",
         flg_reload: "リロードフラグ",
-        entrance_page: "閲覧開始ページ",
 
         // page_path_analytics
         pv_sequence: "ページパス分析用：ページビューの順序",
@@ -168,11 +158,28 @@ config {
         // search_results
         search_term: "サイト内検索キーワード",
 
+        // experiment (a/b testing)
+        experiment_id: "A/BテストのテストID",
+        variant_id: "A/BテストのバリエーションID",
+
         // engagement_time
         engagement_time_msec: "エンゲージメント時間（ミリ秒）",
 
         // add_column
-        is_fixed_data: "FIXしたデータか"
+        is_fixed_data: "FIXしたデータか",
+
+        // event_parameter clarity
+        claritydimension: "Microsoft ClarityのURL",
+
+        // event_parameter article
+        estimate_read_time: "推定読了時間",
+        estimate_read_time_percent: "読了割合",
+
+        // event_parameter core web vitals
+        cwv_id: "Core Web VitalsのID",
+        cwv_value: "Core Web Vitalsのvalue",
+        cwv_delta: "Core Web Vitalsのdelta"
+
     }
 }
 
