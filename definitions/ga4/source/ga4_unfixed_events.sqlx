@@ -1,7 +1,7 @@
 -- Config blocks
 config {
     type: "view",
-    schema: "df_molts_ga4_source_new",
+    schema: "df_molts_ga4_source",
     description: "GA4データソース 未確定データ",
     tags: ["daily", "source"]
 }
