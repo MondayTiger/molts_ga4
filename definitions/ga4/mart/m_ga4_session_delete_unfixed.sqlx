@@ -9,4 +9,4 @@ config {
 
 
 -- Query blocks
-DELETE FROM `molts-data-project.df_molts_ga4_mart_new.m_ga4_session` WHERE is_fixed_data = false
+DELETE FROM `molts-data-project.df_molts_ga4_mart.m_ga4_session` WHERE is_fixed_data = false
