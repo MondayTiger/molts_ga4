@@ -194,7 +194,7 @@ WITH ga AS (
 
 -- 参照元の追加処理
 agg_campaign AS (
-    SELECT
+    SELECT DISTINCT
         user_pseudo_id,
         ga_session_id,
         session_traffic_campaign,
@@ -202,8 +202,6 @@ agg_campaign AS (
         ga
     WHERE
         event_traffic_campaign IS NOT NULL
-    GROUP BY
-        1,2,3
 ),
 
 agg_campaign_first AS (
