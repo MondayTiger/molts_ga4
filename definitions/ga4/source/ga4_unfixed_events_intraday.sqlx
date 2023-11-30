@@ -36,7 +36,24 @@ SELECT
     ${helpers.getEventParamAll('ga_session_id','string')},
     ${helpers.getEventParam('ga_session_number','int')},
 
-    -- event_acquisition_channel
+    -- event_acquisition_channel    -- event_acquisition_channel
+   -- 2023/12/1 以降のテーブルに関してはここから
+   -- collected_traffic_sourceから参照元などを取得。ない場合はイベントパラメータから取得 
+    COALESCE(collected_traffic_source.manual_source, ${helpers.getEventParamNoColumnName('source','string')}) AS event_traffic_source,
+    COALESCE(collected_traffic_source.manual_medium, ${helpers.getEventParamNoColumnName('medium','string')}) AS event_traffic_medium,
+    COALESCE(collected_traffic_source.manual_campaign_name, ${helpers.getEventParamNoColumnName('campaign','string')}) AS event_traffic_campaign,
+    COALESCE(collected_traffic_source.manual_content, ${helpers.getEventParamNoColumnName('content','string')}) AS event_traffic_content,
+    COALESCE(collected_traffic_source.manual_term, ${helpers.getEventParamNoColumnName('term','string')}) AS event_traffic_term,
+    COALESCE(collected_traffic_source.manual_campaign_id, ${helpers.getEventParamNoColumnName('campaign_id','string')}) AS event_traffic_campaign_id,
+    COALESCE(collected_traffic_source.gclid, ${helpers.getEventParamNoColumnName('gclid','string')}) AS event_traffic_gclid,
+/*
+    COALESCE(collected_traffic_source.srsltid, ${helpers.getEventParamNoColumnName('srsltid','string')}) AS event_traffic_gclid, -- Google Merchant Center ID
+    COALESCE(collected_traffic_source.dclid, ${helpers.getEventParamNoColumnName('dclid','string')}) AS event_traffic_dclid, -- 拡張アトリビューション
+*/
+   -- 2023/12/1 以降のテーブルに関してはここまで
+
+   -- 2023/11/30 までのテーブルに関してはここから
+/* -- event_acquisition_channel -- 旧パターン
     ${helpers.getEventParamAll('source','string','event_traffic_source')},
     ${helpers.getEventParamAll('medium','string','event_traffic_medium')},
     ${helpers.getEventParamAll('campaign','string','event_traffic_campaign')},
@@ -44,7 +61,9 @@ SELECT
     ${helpers.getEventParamAll('term','string','event_traffic_term')},
     ${helpers.getEventParamAll('campaign_id','string','event_traffic_campaign_id')}, -- utm_id
     ${helpers.getEventParamAll('gclid','string','event_traffic_gclid')},
-
+*/
+   -- 2023/11/30 までのテーブルに関してはここまで
+   
     -- device
     device.category AS device_category,
     device.mobile_brand_name AS device_mobile_brand_name,
