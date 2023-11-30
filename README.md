@@ -17,18 +17,6 @@
     - m_ga4_event.sqlx
     - m_ga4_session.sqlx *必要に応じ
 
-### 各セッションの参照元・メディア・キャンペーンなどの取得手順
-1. 各イベントのcollected_traffic_source.manual_source（ない場合はevent_params内のsource）を取得。メディアやキャンペーンなども同様。※collected_traffic_sourceカラムは2023年中頃から追加されたため、それ以前の場合は下記ファイルのコメントアウト箇所を要変更。
-   - 対象クエリ
-    - source.ga4_fixed_events.sqlx
-    - source.ga4_unfixed_events_intraday.sqlx
-    - source.ga4_unfixed_events.sqlx
-2. session_startイベントから上記を取得
-3. 各セッションで上記1が存在する最も古いイベントから取得
-4. session_startイベントに参照元が入っていれば（上記2）それを採用し、入っていない場合はイベント（上記3）から取得
-   - 上記2以降の対象クエリ
-     - staging.ga4_unfixed_events.sqlx
-
 ### Data flow
 ```mermaid
 erDiagram
@@ -64,3 +52,15 @@ erDiagram
     v-staging-s_ga4_session ||..|| t-mart-m_ga4_session : "セッションデータを追加"
     v-staging-s_ga4_event ||..|| t-mart-m_ga4_event : "イベントデータを追加"
  ```
+
+ ### 各セッションの参照元・メディア・キャンペーンなどの取得手順
+1. 各イベントのcollected_traffic_source.manual_source（ない場合はevent_params内のsource）を取得。メディアやキャンペーンなども同様。※collected_traffic_sourceカラムは2023年中頃から追加されたため、それ以前の場合は下記ファイルのコメントアウト箇所を要変更。
+   - 対象クエリ
+    - source.ga4_fixed_events.sqlx
+    - source.ga4_unfixed_events_intraday.sqlx
+    - source.ga4_unfixed_events.sqlx
+2. session_startイベントから上記を取得
+3. 各セッションで上記1が存在する最も古いイベントから取得
+4. session_startイベントに参照元が入っていれば（上記2）それを採用し、入っていない場合はイベント（上記3）から取得
+   - 上記2以降の対象クエリ
+     - staging.ga4_unfixed_events.sqlx
