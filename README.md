@@ -10,7 +10,7 @@
     - c_ga4_fixed_events.sqlx
     - c_ga4_unfixed_events_intraday.sqlx
     - c_ga4_unfixed_events.sqlx
--staging
+- staging
     - s_ga4_event.sqlx
     - s_ga4_events_add_session_item.sqlx
 - mart
