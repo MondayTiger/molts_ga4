@@ -15,4 +15,7 @@ FROM
 WHERE
     debug_mode IS NULL -- デバッグモードを除外
     AND traffic_type IS NULL -- 内部アクセスを除外
-    AND hostname IN ('moltsinc.co.jp') -- 計測対象ドメインを追加
+    AND (
+        hostname IN ('moltsinc.co.jp') -- 計測対象ドメインを追加
+        OR event_name IN ('ホスト名がnullだが必要なevent_name') -- Measurement Protocolなどhostnameがないケースに設定
+    )
