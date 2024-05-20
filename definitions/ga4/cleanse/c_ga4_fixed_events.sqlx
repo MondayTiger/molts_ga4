@@ -131,6 +131,7 @@ SELECT
 
     -- debug_mode
     debug_mode,
+    debug_event,
 
     -- add_column
     true AS is_fixed_data,

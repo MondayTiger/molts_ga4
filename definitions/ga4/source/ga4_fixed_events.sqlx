@@ -147,6 +147,7 @@ SELECT
 
     -- debug_mode
     ${helpers.getEventParam('debug_mode')},
+    ${helpers.getEventParam('debug_event')},
 
     -- event_parameter clarity
     ${helpers.getEventParamAll('claritydimension','string')},

@@ -9,7 +9,7 @@ config {
 
 -- Query blocks
 SELECT
-    *,
+    *
 FROM
     ${ref("s_ga4_events_exclude_internal")}
 
