@@ -116,4 +116,5 @@ FROM
     ${ref("m_ga4_event")}
 WHERE
     page_location LIKE '${constants.CV_PAGE_LOCATION}' -- 'https://moltsinc.co.jp/%thanks%'
-    --AND ${ when(incremental(), `WHERE event_date > (SELECT MAX(event_date) FROM ${self()})`)}
+    -- 初回時は以下をコメントアウト
+     ${ when(incremental(), `AND event_date > (SELECT MAX(event_date) FROM ${self()})`)}
