@@ -7,6 +7,19 @@ config {
     tags: ["daily", "mart", "deletion_query"],
 }
 
-
 -- Query blocks
-DELETE FROM `molts-data-project.df_molts_ga4_mart.m_ga4_event` WHERE is_fixed_data = false
+
+DECLARE table_exists BOOL;
+
+SET table_exists = (
+  SELECT 
+    COUNT(*) > 0 
+  FROM 
+    `molts-data-project.df_molts_ga4_mart.INFORMATION_SCHEMA.TABLES`
+  WHERE 
+    table_name = 'm_ga4_event'
+);
+
+IF table_exists THEN
+  DELETE FROM `molts-data-project.df_molts_ga4_mart.m_ga4_event` WHERE is_fixed_data = false;
+END IF;
