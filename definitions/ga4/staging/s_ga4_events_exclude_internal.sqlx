@@ -14,8 +14,9 @@ FROM
     ${ref("s_ga4_events_union")}
 WHERE
     debug_mode IS NULL -- デバッグモードを除外
+    AND debug_event IS NULL -- デバッグモードを除外
     AND traffic_type IS NULL -- 内部アクセスを除外
     AND (
-        hostname IN ('moltsinc.co.jp') -- 計測対象ドメインを追加
-        OR event_name IN ('ホスト名がnullだが必要なevent_name') -- Measurement Protocolなどhostnameがないケースに設定
+        hostname IN ('${constants.HOSTNAME1}','${constants.HOSTNAME2}') -- 計測対象ドメインを追加 
+        OR event_name IN ('${constants.MP_EVENT1}','${constants.MP_EVENT2}') -- Measurement Protocolなどhostnameがないケースに設定
     )

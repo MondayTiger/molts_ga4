@@ -150,6 +150,7 @@ config {
 
         // debug_mode
         debug_mode: "デバッグモード",
+        debug_event: "デバッグモード",
 
         // add_column
         is_fixed_data: "FIXしたデータか",
@@ -196,42 +197,70 @@ WITH ga AS (
 -- 2023/11/28修正 session_startに値があれば採用、なければ各セッションの最初に存在する参照元などを取得 
 -- session_startの参照元などを取得
 ,session_start AS(
+    SELECT *
+    FROM(
+        SELECT 
+            user_pseudo_id,
+            ga_session_id,
+            ARRAY_AGG(STRUCT(
+                g.event_traffic_source,
+                g.event_traffic_medium,
+                g.event_traffic_campaign,
+                g.event_traffic_content,
+                g.event_traffic_term,
+                g.event_source_platform,
+                g.event_creative_format,
+                g.event_marketing_tactic,
+                g.event_traffic_campaign_id,
+                g.event_traffic_gclid
+            ) ORDER BY event_timestamp ASC LIMIT 1)[OFFSET(0)].*
+        FROM ga g
+        WHERE event_name ="session_start"
+        GROUP BY ALL
+    ) 
+    WHERE event_traffic_source IS NOT NULL AND event_traffic_source NOT IN("(not set)","(direct)")  -- 対象となったsession_startイベントのevent_traffic_sourceがNULLや (not set), (direct)の場合は値を返さない ※(not set)や(direct)はないはずですが念のため
+)
+
+/*
+,session_start AS(
     SELECT 
-        user_pseudo_id
-        ,ga_session_id
+        user_pseudo_id,
+        ga_session_id,
         -- session_acquisition_channel
-        ,g.event_traffic_source
-        ,g.event_traffic_medium
-        ,g.event_traffic_campaign
-        ,g.event_traffic_content
-        ,g.event_traffic_term
-        ,g.event_source_platform
-        ,g.event_creative_format
-        ,g.event_marketing_tactic
-        ,g.event_traffic_campaign_id
-        ,g.event_traffic_gclid
+        g.event_traffic_source,
+        g.event_traffic_medium,
+        g.event_traffic_campaign,
+        g.event_traffic_content,
+        g.event_traffic_term,
+        g.event_source_platform,
+        g.event_creative_format,
+        g.event_marketing_tactic,
+        g.event_traffic_campaign_id,
+        g.event_traffic_gclid
     FROM ga g
     WHERE event_name ="session_start"
     QUALIFY ROW_NUMBER() OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp) = 1 -- 同一セッションIDでsession_startが複数ある場合は最初のイベントを返す
     AND g.event_traffic_source IS NOT NULL AND g.event_traffic_source NOT IN("(not set)","(direct)")  -- 対象となったsession_startイベントのevent_traffic_sourceがNULLや (not set), (direct)の場合は値を返さない ※(not set)や(direct)はないはずですが念のため
 )
+*/
 -- 参照元などが入っているイベントのうち一番古いものを取得
 ,agg_campaign AS(
     SELECT 
-        user_pseudo_id
-        ,ga_session_id
-        -- session_acquisition_channel
-        ,g.event_traffic_source
-        ,g.event_traffic_medium
-        ,g.event_traffic_campaign
-        ,g.event_traffic_content
-        ,g.event_traffic_term
-        ,g.event_source_platform
-        ,g.event_creative_format
-        ,g.event_marketing_tactic
-        ,g.event_traffic_campaign_id
-        ,g.event_traffic_gclid
-    FROM ga g 
+        user_pseudo_id,
+        ga_session_id,
+        ARRAY_AGG(STRUCT(
+            g.event_traffic_source,
+            g.event_traffic_medium,
+            g.event_traffic_campaign,
+            g.event_traffic_content,
+            g.event_traffic_term,
+            g.event_source_platform,
+            g.event_creative_format,
+            g.event_marketing_tactic,
+            g.event_traffic_campaign_id,
+            g.event_traffic_gclid
+        ) ORDER BY event_timestamp ASC LIMIT 1)[OFFSET(0)].*
+    FROM ga g
     WHERE (
         g.event_traffic_source IS NOT NULL AND g.event_traffic_source NOT IN("(not set)","(direct)","(none)") 
     )OR (
@@ -239,23 +268,23 @@ WITH ga AS (
     )OR (
         g.event_traffic_campaign IS NOT NULL AND g.event_traffic_campaign NOT IN("(not set)","(direct)","(none)") 
     )
-    QUALIFY ROW_NUMBER() OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp) = 1
+    GROUP BY ALL
 )
 -- session_startに参照元(event_traffic_source）が入っていればそれを採用。ない場合はイベントから取得。session_traffic_mediumなどでもIF(s.event_traffic_source IS NOT NULLとしているのは、event_traffic_mediumとしてしまうと、sourceはsession_startから取得しmediumはイベントから取得というミスを防ぐため
 ,agg_campaign_first_2 AS(
     SELECT 
-        user_pseudo_id
-        ,ga_session_id
-        ,IF(s.event_traffic_source IS NOT NULL, s.event_traffic_source, a.event_traffic_source) AS session_traffic_source
-        ,IF(s.event_traffic_source IS NOT NULL, s.event_traffic_medium, a.event_traffic_medium) AS session_traffic_medium
-        ,IF(s.event_traffic_source IS NOT NULL, s.event_traffic_campaign, a.event_traffic_campaign) AS session_traffic_campaign
-        ,IF(s.event_traffic_source IS NOT NULL, s.event_traffic_content, a.event_traffic_content) AS session_traffic_content
-        ,IF(s.event_traffic_source IS NOT NULL, s.event_traffic_term, a.event_traffic_term) AS session_traffic_term
-        ,IF(s.event_traffic_source IS NOT NULL, s.event_source_platform, a.event_source_platform) AS session_traffic_platform
-        ,IF(s.event_traffic_source IS NOT NULL, s.event_creative_format, a.event_creative_format) AS session_creative_format
-        ,IF(s.event_traffic_source IS NOT NULL, s.event_marketing_tactic, a.event_marketing_tactic) AS session_marketing_tactic
-        ,IF(s.event_traffic_source IS NOT NULL, s.event_traffic_campaign_id, a.event_traffic_campaign_id) AS session_traffic_campaign_id
-        ,IF(s.event_traffic_source IS NOT NULL, s.event_traffic_gclid, a.event_traffic_gclid) AS session_traffic_gclid
+        user_pseudo_id,
+        ga_session_id,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_source, a.event_traffic_source) AS session_traffic_source,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_medium, a.event_traffic_medium) AS session_traffic_medium,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_campaign, a.event_traffic_campaign) AS session_traffic_campaign,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_content, a.event_traffic_content) AS session_traffic_content,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_term, a.event_traffic_term) AS session_traffic_term,
+        IF(s.event_traffic_source IS NOT NULL, s.event_source_platform, a.event_source_platform) AS session_traffic_platform,
+        IF(s.event_traffic_source IS NOT NULL, s.event_creative_format, a.event_creative_format) AS session_creative_format,
+        IF(s.event_traffic_source IS NOT NULL, s.event_marketing_tactic, a.event_marketing_tactic) AS session_marketing_tactic,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_campaign_id, a.event_traffic_campaign_id) AS session_traffic_campaign_id,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_gclid, a.event_traffic_gclid) AS session_traffic_gclid
     FROM agg_campaign a FULL JOIN session_start s USING(user_pseudo_id, ga_session_id)
 )
 
@@ -453,6 +482,7 @@ agg_campaign_first_2 AS (
 
         -- debug_mode
         g.debug_mode,
+        g.debug_event,
 
         -- add_column
         g.is_fixed_data,
@@ -471,11 +501,9 @@ agg_campaign_first_2 AS (
 
         FROM
             ga AS g
-            LEFT JOIN agg_campaign_first_2 AS a
+           LEFT JOIN agg_campaign_first_2 AS a
 --            LEFT JOIN (SELECT * FROM agg_campaign_first_2 WHERE row_num = 1) AS a
-                ON  g.user_pseudo_id = a.user_pseudo_id
-                AND g.ga_session_id = a.ga_session_id
-        
+                USING (user_pseudo_id, ga_session_id)
 ),
 
 -- セッション時間の処理
@@ -487,8 +515,8 @@ calculate_session_duration AS (
 	    (exit_timestamp - entrance_timestamp) / 1000000 AS session_duration
     FROM
         ga
-    GROUP BY
-        1,2,3
+    GROUP BY ALL
+--        1,2,3 -- ALLに変更
 ),
 
 calculate_engagement_time AS (
@@ -505,11 +533,9 @@ calculate_engagement_time AS (
             engagement_time_msec,
         FROM 
             ga
-        GROUP BY 
-            1,2,3,4
+        GROUP BY ALL 
     )
-    GROUP BY
-        1,2
+    GROUP BY ALL
 ),
 
 -- 直帰の処理
@@ -523,8 +549,7 @@ calculate_sum_pv_sv AS (
         COUNT(CASE WHEN event_name = 'screen_view' THEN event_name END) AS session_total_screen_view
     FROM
         ga
-    GROUP BY
-        1,2
+    GROUP BY ALL
 ),
 
 join_data AS (
@@ -541,15 +566,12 @@ join_data AS (
             ELSE false END AS is_bounce_no_engagement
     FROM
         add_traffic_source as t
-    LEFT JOIN　calculate_session_duration as s
-        ON　t.user_pseudo_id = s.user_pseudo_id
-        AND t.ga_session_id = s.ga_session_id
-    LEFT JOIN　calculate_engagement_time as e
-        ON　t.user_pseudo_id = e.user_pseudo_id
-        AND t.ga_session_id = e.ga_session_id
+    LEFT JOIN calculate_session_duration as s
+        USING (user_pseudo_id, ga_session_id)
+    LEFT JOIN calculate_engagement_time as e
+        USING (user_pseudo_id, ga_session_id)
     LEFT JOIN calculate_sum_pv_sv AS v
-        ON  t.user_pseudo_id = v.user_pseudo_id
-        AND t.ga_session_id = v.ga_session_id
+        USING (user_pseudo_id, ga_session_id)
 )
 
 SELECT
@@ -698,6 +720,7 @@ SELECT
 
     -- debug_mode
     debug_mode,
+    debug_event,
 
     -- add_column
     is_fixed_data,

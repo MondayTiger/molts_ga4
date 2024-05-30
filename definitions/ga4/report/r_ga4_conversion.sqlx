@@ -7,7 +7,7 @@ config {
         partitionBy: "event_date",
         clusterBy: ["user_pseudo_id", "ga_session_id", "event_name"]
     },
-    schema: "df_molts_ga4_mart",
+    schema: "df_molts_ga4_report",
     description: "GA4マートデータ　イベントデータ用",
     // dependencies: ["m_ga4_event_delete_unfixed"],
     tags: ["daily", "report"],
@@ -115,5 +115,6 @@ SELECT
 FROM
     ${ref("m_ga4_event")}
 WHERE
-    page_location LIKE 'https://moltsinc.co.jp/%thanks%'
-    --AND ${ when(incremental(), `WHERE event_date > (SELECT MAX(event_date) FROM ${self()})`)}
+    page_location LIKE '${constants.CV_PAGE_LOCATION}' -- 'https://moltsinc.co.jp/%thanks%'
+    -- 初回時は以下をコメントアウト
+     ${ when(incremental(), `AND event_date > (SELECT MAX(event_date) FROM ${self()})`)}
