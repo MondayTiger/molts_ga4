@@ -5,7 +5,7 @@ URLパラメータ（クエリストリング） の処理用
 // パラメータの値を抽出
 
 const getQueryString = (url, queryString, columnName = false) => {
-  return `CAST(REGEXP_EXTRACT(${url}, r'^.*${queryString}=([^&]*)&\\?.*') AS STRING) AS ${
+  return `SAFE_CAST(REGEXP_EXTRACT(${url}, r'^.*${queryString}=([^&]*)&\\?.*') AS STRING) AS ${
     columnName ? columnName : queryString
   }`;
 };
@@ -125,17 +125,17 @@ const getEventParamNoColumnName = (eventParamName, eventParamType = "string", co
 const getEventParamAll = (eventParamName, eventParamType = "string", columnName = false) => {
   switch (eventParamType) {
     case "string":
-      return `(SELECT COALESCE(value.string_value, CAST(value.int_value AS STRING), CAST(value.double_value AS STRING)) FROM UNNEST(event_params) WHERE key = '${eventParamName}') AS ${
+      return `(SELECT COALESCE(value.string_value, SAFE_CAST(value.int_value AS STRING), SAFE_CAST(value.double_value AS STRING)) FROM UNNEST(event_params) WHERE key = '${eventParamName}') AS ${
         columnName ? columnName : eventParamName
       }`;
       break;
     case "int":
-      return `(SELECT COALESCE(value.int_value, CAST(value.double_value AS INTEGER), CAST(value.string_value AS INTEGER)) FROM UNNEST(event_params) WHERE key = '${eventParamName}') AS ${
+      return `(SELECT COALESCE(value.int_value, SAFE_CAST(value.double_value AS INTEGER), SAFE_CAST(value.string_value AS INTEGER)) FROM UNNEST(event_params) WHERE key = '${eventParamName}') AS ${
         columnName ? columnName : eventParamName
       }`;
       break;
     case "double":
-      return `(SELECT COALESCE(value.double_value, CAST(value.int_value AS FLOAT64), CAST(value.string_value AS FLOAT64)) FROM UNNEST(event_params) WHERE key = '${eventParamName}') AS ${
+      return `(SELECT COALESCE(value.double_value, SAFE_CAST(value.int_value AS FLOAT64), SAFE_CAST(value.string_value AS FLOAT64)) FROM UNNEST(event_params) WHERE key = '${eventParamName}') AS ${
         columnName ? columnName : eventParamName
       }`;
       break;
@@ -199,17 +199,17 @@ const getUserPropertyNoColumnName = (userPropertyName, userPropertyType = "strin
 const getUserPropertyAll = (userPropetyName, userPropertyType = "string", columnName = false) => {
   switch (userPropertyType) {
     case "string":
-      return `(SELECT COALESCE(value.string_value, CAST(value.int_value AS STRING), CAST(value.double_value AS STRING)) FROM UNNEST(user_properties) WHERE key = '${userPropertyName}') AS ${
+      return `(SELECT COALESCE(value.string_value, SAFE_CAST(value.int_value AS STRING), SAFE_CAST(value.double_value AS STRING)) FROM UNNEST(user_properties) WHERE key = '${userPropertyName}') AS ${
         columnName ? columnName : userPropetyName
       }`;
       break;
     case "int":
-      return `(SELECT COALESCE(value.int_value, CAST(value.double_value AS INTEGER), CAST(value.string_value AS INTEGER)) FROM UNNEST(user_properties) WHERE key = '${userPropertyName}') AS ${
+      return `(SELECT COALESCE(value.int_value, SAFE_CAST(value.double_value AS INTEGER), SAFE_CAST(value.string_value AS INTEGER)) FROM UNNEST(user_properties) WHERE key = '${userPropertyName}') AS ${
         columnName ? columnName : userPropetyName
       }`;
       break;
     case "double":
-      return `(SELECT COALESCE(value.double_value, CAST(value.int_value AS FLOAT64), CAST(value.string_value AS FLOAT64)) FROM UNNEST(user_properties) WHERE key = '${userPropertyName}') AS ${
+      return `(SELECT COALESCE(value.double_value, SAFE_CAST(value.int_value AS FLOAT64), SAFE_CAST(value.string_value AS FLOAT64)) FROM UNNEST(user_properties) WHERE key = '${userPropertyName}') AS ${
         columnName ? columnName : userPropetyName
       }`;
       break;
