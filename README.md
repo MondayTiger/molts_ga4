@@ -34,7 +34,8 @@
     - constatns.js : GCPプロジェクト名、対象ホスト名などの定数をまとめたファイル
     - helpers.js : SQLXを簡略化するための関数が入ったファイル 
 
-### Data flow
+
+## Data flow
 ```mermaid
 erDiagram
 		%% GA4のイベントデータからソースデータを構築
@@ -43,17 +44,17 @@ erDiagram
     t-analytics_PROPERTY_ID-events_intraday_yyyymmdd ||--|| source-ga4_unfixed_events_intraday : ""
 
 		%% ソースデータをクレンジング
-    source-ga4_fixed_events ||--|| cleanse-ga4_fixed_events : ""
-    source-ga4_unfixed_events ||--|| cleanse-ga4_unfixed_events : ""
-    source-ga4_unfixed_events_intraday ||--|| cleanse-unfixed_events_intraday : ""
+    source-ga4_fixed_events ||--|| cleanse-c_ga4_fixed_events : ""
+    source-ga4_unfixed_events ||--|| cleanse-c_ga4_unfixed_events : ""
+    source-ga4_unfixed_events_intraday ||--|| cleanse-c_unfixed_events_intraday : ""
 
 		%% クレンジングしたデータを統合&処理が複雑すぎて、後続の処理がBigQuery上で処理できないため、テーブル化
-    cleanse-c_ga4_fixed_events ||--|| staging-s_ga4_events_union : "統合"
-    cleanse-c_ga4_unfixed_events ||--|| staging-s_ga4_events_union : "統合"
-    cleanse-c_unfixed_events_intraday ||--|| staging-s_ga4_events_union : "統合"
+    cleanse-c_ga4_fixed_events ||--|| staging-s_ga4_events_union : "統合＆テーブル化"
+    cleanse-c_ga4_unfixed_events ||--|| staging-s_ga4_events_union : "統合＆テーブル化"
+    cleanse-c_unfixed_events_intraday ||--|| staging-s_ga4_events_union : "統合＆テーブル化"
 
 		%% 内部アクセスを除外
-    staging-s_ga4_events_union_export ||--|| staging-s_ga4_events_exclude_internal : "debug_mode, traffic_type パラメータ, 不要ドメインを除外"
+    staging-s_ga4_events_union ||--|| staging-s_ga4_events_exclude_internal : "debug_mode, traffic_type パラメータ, 不要ドメインを除外"
 
 		%% イベント名を変更・削除・追加する場合の処理
     staging-s_ga4_events_exclude_internal ||--|| staging-s_ga4_events_event_update : "イベント名を変更・削除・追加する場合の処理"
@@ -69,6 +70,7 @@ erDiagram
     staging-s_ga4_session ||..|| mart-m_ga4_session : "セッションデータを追加"
     staging-s_ga4_event ||..|| mart-m_ga4_event : "イベントデータを追加"
  ```
+
 
 # 処理の流れ
 1. GA4からエクスポートされたテーブル（analytics_xxxxxxx.events_YYYYMMDD, analytics_xxxxxxx.events_intraday_YYYYMMDD）内のevent_paramsカラムなどをフラット化
