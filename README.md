@@ -1,21 +1,38 @@
 # GA4->BigQuery export data gereral queries made by Dataform.
 
-### イベントパラメータを追加する場合
-以下のテーブル定義を更新する
-- source
-    - ga4_fixed_events.sqlx
-    - ga4_unfixed_events_intraday.sqlx
-    - ga4_unfixed_events.sqlx    
-- cleanse
-    - c_ga4_fixed_events.sqlx
-    - c_ga4_unfixed_events_intraday.sqlx
-    - c_ga4_unfixed_events.sqlx
-- staging
-    - s_ga4_event.sqlx
-    - s_ga4_events_add_session_item.sqlx
-- mart
-    - m_ga4_event.sqlx
-    - m_ga4_session.sqlx *必要に応じ
+# 各SQLXファイルの説明
+
+| SQLXファイル名 | 対象 |
+| ------------- | ------------- |
+| fixed_events.sqlx | クエリ実行の5～7日前のデータ(テーブル)が対象 |
+| unfixed_events.sqlx | クエリ実行の前日～4日前のデータが対象 |
+| unfixed_events_intraday.sqlx | クエリ実行の当日のデータが対象 |
+
+
+# ディレクトリ構成
+- definitions/ga4/
+    - source
+       - ga4_fixed_events.sqlx
+       - ga4_unfixed_events_intraday.sqlx
+       - ga4_unfixed_events.sqlx    
+    - cleanse
+       - c_ga4_fixed_events.sqlx
+       - c_ga4_unfixed_events_intraday.sqlx
+       - c_ga4_unfixed_events.sqlx
+    - staging
+       - s_ga4_events_exclude_internal.sqlx
+       - s_ga4_events_add_session_item.sqlx
+       - s_ga4_event.sqlx
+       - s_ga4_session.sqlx
+    - mart
+       - m_ga4_event_delete_unfixed.sqlx
+       - m_ga4_event.sqlx
+       - m_ga4_session_delete_unfixed.sqlx
+       - m_ga4_session.sqlx
+
+- includes/
+    - constatns.js : GCPプロジェクト名、対象ホスト名などの定数をまとめたファイル
+    - helpers.js : SQLXを簡略化するための関数が入ったファイル 
 
 ### Data flow
 ```mermaid
