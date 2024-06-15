@@ -100,7 +100,7 @@ erDiagram
      * ページ滞在時間
      * ランディングページを判定するフラグ
      * 直帰、離脱を判定するフラグ
-8. 上記7で作成したイベントデータを gcp-ist-dxp.df_ist_dxp_ga4_mart.m_ga4_event に格納
+8. 上記7で作成したイベントデータを ga4_mart.m_ga4_event に格納
    - definitions/ga4/mart/m_ga4_event_delete_unfixed.sqlx
      直近分のデータを削除
    - definitions/ga4/mart/m_ga4_event.sqlx
