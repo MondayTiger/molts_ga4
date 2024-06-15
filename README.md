@@ -112,8 +112,8 @@ erDiagram
      今回作成した7の結果を追加
 11. コンバージョンデータを gcp-ist-dxp.df_ist_dxp_ga4_report.r_ga4_conversion に格納
    - definitions/ga4/report/r_ga4_conversion.sqlx
-     * 今回はwww.i-studio.co.jp/casestudy/以下のページに到達したイベントを対象
-     * 設定箇所：includes/constants.js内で設定したCV_PAGE_LOCATION = 'https://www.i-studio.co.jp/casestudy/%';
+     * 今回はthanksを含むページに到達したイベントを対象
+     * 設定箇所：includes/constants.js内で設定したCV_PAGE_LOCATION = 'https://https://moltsinc.co.jp/%thanks%';
 
 ## 各セッションの参照元・メディア・キャンペーンなどの取得手順
 1. 各イベントのcollected_traffic_source.manual_source（ない場合はevent_params内のsource）を取得。メディアやキャンペーンなども同様。※collected_traffic_sourceカラムは2023年中頃から追加されたため、それ以前の場合は下記ファイルのコメントアウト箇所を要変更。
