@@ -107,15 +107,15 @@ erDiagram
      今回作成した7の結果を追加
 9. 上記6のデータ（ビュー）からセッション単位のデータを作成
    - definitions/ga4/staging/s_ga4_session.sqlx
-10. 上記9で作成したセッションデータを gcp-ist-dxp.df_ist_dxp_ga4_mart.m_ga4_session に格納
-   - definitions/ga4/mart/m_ga4_session_delete_unfixed.sqlx
-     直近分のデータを削除
-   - definitions/ga4/mart/m_ga4_session.sqlx
-     今回作成した7の結果を追加
-11. コンバージョンデータを gcp-ist-dxp.df_ist_dxp_ga4_report.r_ga4_conversion に格納
-   - definitions/ga4/report/r_ga4_conversion.sqlx
-     * 今回はthanksを含むページに到達したイベントを対象
-     * 設定箇所：includes/constants.js内で設定したCV_PAGE_LOCATION = 'https://https://moltsinc.co.jp/%thanks%';
+10. 上記9で作成したセッションデータを ga4_mart.m_ga4_session に格納
+    - definitions/ga4/mart/m_ga4_session_delete_unfixed.sqlx
+      直近分のデータを削除
+    - definitions/ga4/mart/m_ga4_session.sqlx
+      今回作成した7の結果を追加
+11. コンバージョンデータを ga4_report.r_ga4_conversion に格納
+    - definitions/ga4/report/r_ga4_conversion.sqlx
+      * 今回はthanksを含むページに到達したイベントを対象
+      * 設定箇所：includes/constants.js内で設定したCV_PAGE_LOCATION = 'https://https://moltsinc.co.jp/%thanks%';
 
 ## 各セッションの参照元・メディア・キャンペーンなどの取得手順
 1. 各イベントのcollected_traffic_source.manual_source（ない場合はevent_params内のsource）を取得。メディアやキャンペーンなども同様。※collected_traffic_sourceカラムは2023年中頃から追加されたため、それ以前の場合は下記ファイルのコメントアウト箇所を要変更。
@@ -136,7 +136,7 @@ erDiagram
 2. 集計対象ホスト名: クロスドメイントラッキングなどで複数のホスト名が集計対象となる場合は、HOSTNAME3など追加し、module.exports配列に追加
 3. Measurement Protocolのイベント名 
 4. コンバージョン対象: 現在はCV_PAGE_LOCATIONとしていますが、report/r_ga4_conversion.sqlx含め要変更
-※新たに定数を作成したい場合は、このファイルで作成し、module.exports配列に追加
+5. 新たに定数を作成したい場合は、このファイルで作成し、module.exports配列に追加
 
 ## イベントパラメータを追加した場合
 基本的にはすべてのファイルで修正が必要
