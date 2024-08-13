@@ -1,0 +1,35 @@
+/*
+  参照元情報 session_traffic_source_last_clickを取得
+*/
+config {
+    type: "view",
+    schema: "df_molts_ga4_staging",
+    description: "セッションの参照元。各セッションの最初のイベントのsession_traffic_source_last_click 値を返す",
+    tags: ["daily", "source"]
+}
+
+with events AS(
+    SELECT * EXCEPT(user_id),
+    FIRST_VALUE(user_id IGNORE NULLS)OVER(PARTITION BY event_date, user_pseudo_id, ga_session_id ORDER BY event_timestamp, event_name) AS user_id
+    FROM ${ref("s_ga4_events_event_update")} 
+),sources AS(
+  SELECT 
+  *,
+  FROM(
+    SELECT 
+      event_date,
+      user_pseudo_id,
+      ga_session_id,
+      ARRAY_AGG(STRUCT(
+        user_id,
+        session_traffic_source_last_click,
+        is_fixed_data
+      ) ORDER BY event_timestamp ASC LIMIT 1)[OFFSET(0)].*
+    FROM events
+--    WHERE event_name = 'session_start'
+    GROUP BY ALL
+  )
+)
+SELECT DISTINCT *
+FROM sources
+

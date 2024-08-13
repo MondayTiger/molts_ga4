@@ -11,4 +11,8 @@ const MP_EVENT2 = 'Measurement Protocol用イベント2';
 // report/r_ga4_conversion.sqlx 内のコンバージョンページURL
 const CV_PAGE_LOCATION = 'https://moltsinc.co.jp/%thanks%';
 
-module.exports = {GA4_DATABASE, GA4_DATASET, GA4_TABLE, GA4_INTRADAY_TABLE, HOSTNAME1, HOSTNAME2, MP_EVENT1, MP_EVENT2, CV_PAGE_LOCATION}
+// セッションの参照元のカラムを指定（ session_traffic_source_last_click または collected_traffic_source または session_first_event 。空文字や不適切な文字の場合はcollected_traffic_sourceになる） collected_traffic_sourceはsession_startイベントのcollected_traffic_sourceまたはイベントパラメータを返す。session_first_eventは最初のイベントのcollected_traffic_sourceまたはイベントパラメータを返す。
+const SESSION_SOURCE_TYPE ='session_traffic_source_last_click'; // 
+
+
+module.exports = {GA4_DATABASE, GA4_DATASET, GA4_TABLE, GA4_INTRADAY_TABLE, HOSTNAME1, HOSTNAME2, SESSION_SOURCE_TYPE, MP_EVENT1, MP_EVENT2, CV_PAGE_LOCATION}

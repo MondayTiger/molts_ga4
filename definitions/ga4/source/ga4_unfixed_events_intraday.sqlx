@@ -50,7 +50,28 @@ SELECT
     COALESCE(collected_traffic_source.srsltid, ${helpers.getEventParamNoColumnName('srsltid','string')}) AS event_traffic_gclid, -- Google Merchant Center ID
     COALESCE(collected_traffic_source.dclid, ${helpers.getEventParamNoColumnName('dclid','string')}) AS event_traffic_dclid, -- 拡張アトリビューション
 */
+
+    session_traffic_source_last_click,
+/*
+    session_traffic_source_last_click.manual_campaign.campaign_id AS session_traffic_source_last_click_campaign_id,
+    session_traffic_source_last_click.manual_campaign.campaign_name AS session_traffic_source_last_click_campaign_name,
+    session_traffic_source_last_click.manual_campaign.source AS session_traffic_source_last_click_source,
+    session_traffic_source_last_click.manual_campaign.medium AS session_traffic_source_last_click_medium,
+    session_traffic_source_last_click.manual_campaign.term AS session_traffic_source_last_click_term,
+    session_traffic_source_last_click.manual_campaign.content AS session_traffic_source_last_click_content,
+    session_traffic_source_last_click.manual_campaign.source_platform AS session_traffic_source_last_click_source_platform,
+    session_traffic_source_last_click.manual_campaign.creative_format AS session_traffic_source_last_click_creative_format,
+    session_traffic_source_last_click.manual_campaign.marketing_tactic AS session_traffic_source_last_click_marketing_tactic,
+
+    session_traffic_source_last_click.google_ads_campaign.customer_id AS google_ads_campaign_customer_id,
+    session_traffic_source_last_click.google_ads_campaign.account_name AS google_ads_campaign_account_name,
+    session_traffic_source_last_click.google_ads_campaign.campaign_id AS google_ads_campaign_campaign_id,
+    session_traffic_source_last_click.google_ads_campaign.campaign_name AS google_ads_campaign_campaign_name,
+    session_traffic_source_last_click.google_ads_campaign.ad_group_id AS google_ads_campaign_ad_group_id,
+    session_traffic_source_last_click.google_ads_campaign.ad_group_name AS google_ads_campaign_ad_group_name,
+*/
    -- 2023/12/1 以降のテーブルに関してはここまで
+
 
    -- 2023/11/30 までのテーブルに関してはここから
 /* -- event_acquisition_channel -- 旧パターン
