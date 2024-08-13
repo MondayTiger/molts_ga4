@@ -49,6 +49,27 @@ SELECT
     event_traffic_campaign_id, -- utm_id
     event_traffic_gclid,
 
+    -- session_traffic_source_last_click
+    session_traffic_source_last_click,
+/*
+    session_traffic_source_last_click_campaign_id,
+    session_traffic_source_last_click_campaign_name,
+    session_traffic_source_last_click_source,
+    session_traffic_source_last_click_medium,
+    session_traffic_source_last_click_term,
+    session_traffic_source_last_click_content,
+    session_traffic_source_last_click_source_platform,
+    session_traffic_source_last_click_creative_format,
+    session_traffic_source_last_click_marketing_tactic,
+    
+    -- session_traffic_source_last_click.google_ads_campaign
+    google_ads_campaign_customer_id,
+    google_ads_campaign_account_name,
+    google_ads_campaign_campaign_id,
+    google_ads_campaign_campaign_name,
+    google_ads_campaign_ad_group_id,
+    google_ads_campaign_ad_group_name,
+*/
     -- device
 	device_category,
 	device_mobile_brand_name,

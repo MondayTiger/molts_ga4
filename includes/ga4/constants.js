@@ -11,4 +11,4 @@ const MP_EVENT2 = 'Measurement Protocol用イベント2';
 // report/r_ga4_conversion.sqlx 内のコンバージョンページURL
 const CV_PAGE_LOCATION = 'https://moltsinc.co.jp/%thanks%';
 
-module.exports = {GA4_DATABASE, GA4_DATASET, GA4_TABLE, GA4_INTRADAY_TABLE, HOSTNAME1, HOSTNAME2, MP_EVENT1, MP_EVENT2, CV_PAGE_LOCATION}
+module.exports = {GA4_DATABASE, GA4_DATASET, GA4_TABLE, GA4_INTRADAY_TABLE, HOSTNAME1, HOSTNAME2,  MP_EVENT1, MP_EVENT2, CV_PAGE_LOCATION}
