@@ -1,0 +1,22 @@
+-- Config blocks
+config {
+    type: "operations",
+    schema: "df_molts_ga4_mart",
+    description: "GA4マートデータ イベントテーブルのsession_traffic_source_last_clickを更新。すでにm_ga4_sessionがあり、過去分をUPDATE文で更新する時に使用",
+    tags: ["daily", "mart", "update"],
+}
+
+
+-- Query blocks
+UPDATE 
+  `molts-data-project.df_molts_ga4_mart.m_ga4_event` AS event
+SET 
+  event.session_traffic_source_last_click = traffic_source.session_traffic_source_last_click
+FROM 
+  `molts-data-project.df_molts_ga4_mart.m_ga4_session_traffic_source_last_click` AS traffic_source
+WHERE 
+  event.user_pseudo_id = traffic_source.user_pseudo_id
+  AND event.event_date = traffic_source.event_date
+  AND event.ga_session_id = traffic_source.ga_session_id
+;
+

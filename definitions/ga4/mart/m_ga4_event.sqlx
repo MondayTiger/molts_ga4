@@ -1,6 +1,10 @@
 -- Config blocks
 config {
     //typeは初期構築時は"table"、増分更新時は"incremental"とする。初期構築時は最終行をコメントアウトすること。
+    /* 初期構築時の方法
+        1. typeをtableにする
+        2. 最後のSELECT文のWHERE句をコメントアウトして、全件対象とする
+    */
     type: "incremental",
     bigquery: {
         // パーティションとクラスタリングを設定
@@ -221,6 +225,7 @@ SELECT e.*,
 s.* EXCEPT(event_date, user_pseudo_id, ga_session_id, user_id,is_fixed_data)
 FROM ${ref("s_ga4_event")} e
 LEFT JOIN ${ref("m_ga4_session_traffic_source_last_click")} s USING(event_date, user_pseudo_id, ga_session_id)
+-- 初期時は下記をコメントアウトして全件対象とすること
 ${ when(incremental(), `WHERE event_date > (SELECT MAX(event_date) FROM ${self()})`)}
 
 

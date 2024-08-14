@@ -1,6 +1,10 @@
 -- Config blocks
 config {
-    //typeは初期構築時は"table"、増分更新時は"incremental"とする。初期構築時は最終行をコメントアウトすること。
+    //typeは初期構築時は"table"、増分更新時は"incremental"とする。
+    /* 初期構築時の方法
+        1. typeをtableにする
+        2. 最後のSELECT文を要変更
+    */
     type: "incremental",
     bigquery: {
         // パーティションとクラスタリングを設定
@@ -62,3 +66,9 @@ config {
 -- Query blocks
 SELECT * FROM ${ref("s_ga4_session_traffic_source_last_click")}
  ${ when(incremental(), `WHERE event_date > (SELECT MAX(event_date) FROM ${self()})`)}
+
+-- 初期作業時は上のクエリをコメントアウトしてこちらを実行
+-- SELECT * FROM ${ref("s_ga4_session_traffic_source_last_click_initial")}
+
+
+
