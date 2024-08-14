@@ -27,7 +27,7 @@ SELECT
     platform,
 
     -- user
-    ${helpers.getEventParamAll('user_id','string')},
+    COALESCE(user_id, ${helpers.getUserPropertyNoColumnName('user_id','string')}, ${helpers.getEventParamNoColumnName('user_id','string')}) AS user_id,
     user_pseudo_id,
     user_first_touch_timestamp,
 
