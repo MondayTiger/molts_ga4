@@ -13,7 +13,7 @@ UPDATE
 SET 
   event.session_traffic_source_last_click = traffic_source.session_traffic_source_last_click
 FROM 
-  `molts-data-project.df_molts_ga4_mart.m_ga4_session_traffic_source_last_click` AS traffic_source
+  `${constants.GA4_DATABASE}.${constants.MART}.m_ga4_session_traffic_source_last_click` AS traffic_source
 WHERE 
   event.user_pseudo_id = traffic_source.user_pseudo_id
   AND event.event_date = traffic_source.event_date
