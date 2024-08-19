@@ -60,9 +60,9 @@ config {
         session_traffic_campaign: "集客：セッションのキャンペーン",
         session_traffic_content: "集客：セッションの広告のコンテンツ",
         session_traffic_term: "集客：セッションの検索キーワード",
-        session_traffic_platform: "集客：セッションの参照元プラットフォーム",
-        session_creative_format: "集客：セッションのクリエイティブのタイプ",
-        session_marketing_tactic: "集客：セッションのターゲティング条件",
+        session_traffic_source_platform: "集客：セッションの参照元プラットフォーム",
+        session_traffic_creative_format: "集客：セッションのクリエイティブのタイプ",
+        session_traffic_marketing_tactic: "集客：セッションのターゲティング条件",
         session_traffic_campaign_id: "集客：セッションのキャンペーンID（utm_id）",
         session_traffic_gclid: "集客：セッションのgclid",
 
@@ -280,14 +280,49 @@ WITH ga AS (
         IF(s.event_traffic_source IS NOT NULL, s.event_traffic_campaign, a.event_traffic_campaign) AS session_traffic_campaign,
         IF(s.event_traffic_source IS NOT NULL, s.event_traffic_content, a.event_traffic_content) AS session_traffic_content,
         IF(s.event_traffic_source IS NOT NULL, s.event_traffic_term, a.event_traffic_term) AS session_traffic_term,
-        IF(s.event_traffic_source IS NOT NULL, s.event_source_platform, a.event_source_platform) AS session_traffic_platform,
-        IF(s.event_traffic_source IS NOT NULL, s.event_creative_format, a.event_creative_format) AS session_creative_format,
-        IF(s.event_traffic_source IS NOT NULL, s.event_marketing_tactic, a.event_marketing_tactic) AS session_marketing_tactic,
+        IF(s.event_traffic_source IS NOT NULL, s.event_source_platform, a.event_source_platform) AS session_traffic_source_platform,
+        IF(s.event_traffic_source IS NOT NULL, s.event_creative_format, a.event_creative_format) AS session_traffic_creative_format,
+        IF(s.event_traffic_source IS NOT NULL, s.event_marketing_tactic, a.event_marketing_tactic) AS session_traffic_marketing_tactic,
         IF(s.event_traffic_source IS NOT NULL, s.event_traffic_campaign_id, a.event_traffic_campaign_id) AS session_traffic_campaign_id,
         IF(s.event_traffic_source IS NOT NULL, s.event_traffic_gclid, a.event_traffic_gclid) AS session_traffic_gclid
     FROM agg_campaign a FULL JOIN session_start s USING(user_pseudo_id, ga_session_id)
 )
-
+-- 過去にセッション情報が存在する場合はそれを採用
+, mart_session AS(
+    SELECT 
+        user_pseudo_id,
+        ga_session_id,
+        ARRAY_AGG(STRUCT(
+            session_traffic_source,
+            session_traffic_medium,
+            session_traffic_campaign,
+            session_traffic_content,
+            session_traffic_term,
+            session_traffic_source_platform,
+            session_traffic_creative_format,
+            session_traffic_marketing_tactic,
+            session_traffic_campaign_id,
+            session_traffic_gclid
+        ) ORDER BY event_date, entrance_timestamp,exit_timestamp ASC LIMIT 1)[OFFSET(0)].*
+    FROM `${constants.GA4_DATABASE}.${constants.MART}.m_ga4_session` 
+    WHERE event_date >= DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 10 DAY)
+    GROUP BY ALL
+)
+, agg_campaign_first_3 AS(
+	SELECT a.user_pseudo_id, a.ga_session_id,
+	COALESCE(m.session_traffic_source, a.session_traffic_source) AS session_traffic_source,
+	COALESCE(m.session_traffic_medium, a.session_traffic_medium) AS session_traffic_medium,
+	COALESCE(m.session_traffic_campaign, a.session_traffic_campaign) AS session_traffic_campaign,
+	COALESCE(m.session_traffic_content, a.session_traffic_content) AS session_traffic_content,
+	COALESCE(m.session_traffic_term, a.session_traffic_term) AS session_traffic_term,
+	COALESCE(m.session_traffic_source_platform, a.session_traffic_source_platform) AS session_traffic_source_platform,
+	COALESCE(m.session_traffic_creative_format, a.session_traffic_creative_format) AS session_traffic_creative_format,
+	COALESCE(m.session_traffic_marketing_tactic, a.session_traffic_marketing_tactic) AS session_traffic_marketing_tactic,
+	COALESCE(m.session_traffic_campaign_id, a.session_traffic_campaign_id) AS session_traffic_campaign_id,
+	COALESCE(m.session_traffic_gclid, a.session_traffic_gclid) AS session_traffic_gclid,
+	FROM agg_campaign_first_2 a LEFT JOIN mart_session m 
+    USING(user_pseudo_id, ga_session_id)
+)
 -- 旧パターン ※今後使わない
 /*
 agg_campaign AS (
@@ -474,9 +509,9 @@ agg_campaign_first_2 AS (
         a.session_traffic_campaign,
         a.session_traffic_content,
         a.session_traffic_term,
-        a.session_traffic_platform,
-        a.session_creative_format,
-        a.session_marketing_tactic,
+        a.session_traffic_source_platform,
+        a.session_traffic_creative_format,
+        a.session_traffic_marketing_tactic,
         a.session_traffic_campaign_id,
         a.session_traffic_gclid,
 
@@ -501,7 +536,7 @@ agg_campaign_first_2 AS (
 
         FROM
             ga AS g
-           LEFT JOIN agg_campaign_first_2 AS a
+           LEFT JOIN agg_campaign_first_3 AS a
 --            LEFT JOIN (SELECT * FROM agg_campaign_first_2 WHERE row_num = 1) AS a
                 USING (user_pseudo_id, ga_session_id)
 ),
@@ -630,9 +665,9 @@ SELECT
     IFNULL(session_traffic_campaign,"(direct)") AS session_traffic_campaign,
     session_traffic_content,
     session_traffic_term,
-    session_traffic_platform,
-    session_creative_format,
-    session_marketing_tactic,
+    session_traffic_source_platform,
+    session_traffic_creative_format,
+    session_traffic_marketing_tactic,
     session_traffic_campaign_id,
     session_traffic_gclid,
 

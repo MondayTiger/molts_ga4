@@ -15,7 +15,7 @@ SET table_exists = (
   SELECT 
     COUNT(*) > 0 
   FROM 
-    `molts-data-project.df_molts_ga4_mart.INFORMATION_SCHEMA.TABLES`
+    `${constants.GA4_DATABASE}.${constants.GA4_DATABASE}.df_molts_ga4_mart.INFORMATION_SCHEMA.TABLES`
   WHERE 
     table_name = 'm_ga4_event'
 );
