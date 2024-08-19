@@ -55,9 +55,9 @@ config {
         session_traffic_campaign: "集客：セッションのキャンペーン",
         session_traffic_content: "集客：セッションの広告のコンテンツ",
         session_traffic_term: "集客：セッションの検索キーワード",
-        session_traffic_platform: "集客：セッションの参照元プラットフォーム",
-        session_creative_format: "集客：セッションのクリエイティブのタイプ",
-        session_marketing_tactic: "集客：セッションのターゲティング条件",
+        session_traffic_source_platform: "集客：セッションの参照元プラットフォーム",
+        session_traffic_creative_format: "集客：セッションのクリエイティブのタイプ",
+        session_traffic_marketing_tactic: "集客：セッションのターゲティング条件",
         session_traffic_campaign_id: "集客：セッションのキャンペーンID（utm_id）",
         session_traffic_gclid: "集客：セッションのgclid",
 
