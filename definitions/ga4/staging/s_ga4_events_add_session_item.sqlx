@@ -309,19 +309,24 @@ WITH ga AS (
     GROUP BY ALL
 )
 , agg_campaign_first_3 AS(
-	SELECT a.user_pseudo_id, a.ga_session_id,
-	COALESCE(m.session_traffic_source, a.session_traffic_source) AS session_traffic_source,
-	COALESCE(m.session_traffic_medium, a.session_traffic_medium) AS session_traffic_medium,
-	COALESCE(m.session_traffic_campaign, a.session_traffic_campaign) AS session_traffic_campaign,
-	COALESCE(m.session_traffic_content, a.session_traffic_content) AS session_traffic_content,
-	COALESCE(m.session_traffic_term, a.session_traffic_term) AS session_traffic_term,
-	COALESCE(m.session_traffic_source_platform, a.session_traffic_source_platform) AS session_traffic_source_platform,
-	COALESCE(m.session_traffic_creative_format, a.session_traffic_creative_format) AS session_traffic_creative_format,
-	COALESCE(m.session_traffic_marketing_tactic, a.session_traffic_marketing_tactic) AS session_traffic_marketing_tactic,
-	COALESCE(m.session_traffic_campaign_id, a.session_traffic_campaign_id) AS session_traffic_campaign_id,
-	COALESCE(m.session_traffic_gclid, a.session_traffic_gclid) AS session_traffic_gclid,
-	FROM agg_campaign_first_2 a LEFT JOIN mart_session m 
+    SELECT 
+        user_pseudo_id,
+        ga_session_id,
+        ARRAY_AGG(STRUCT(
+            COALESCE(m.session_traffic_source, a.session_traffic_source) AS session_traffic_source,
+            COALESCE(m.session_traffic_medium, a.session_traffic_medium) AS session_traffic_medium,
+            COALESCE(m.session_traffic_campaign, a.session_traffic_campaign) AS session_traffic_campaign,
+            COALESCE(m.session_traffic_content, a.session_traffic_content) AS session_traffic_content,
+            COALESCE(m.session_traffic_term, a.session_traffic_term) AS session_traffic_term,
+            COALESCE(m.session_traffic_source_platform, a.session_traffic_source_platform) AS session_traffic_source_platform,
+            COALESCE(m.session_traffic_creative_format, a.session_traffic_creative_format) AS session_traffic_creative_format,
+            COALESCE(m.session_traffic_marketing_tactic, a.session_traffic_marketing_tactic) AS session_traffic_marketing_tactic,
+            COALESCE(m.session_traffic_campaign_id, a.session_traffic_campaign_id) AS session_traffic_campaign_id,
+            COALESCE(m.session_traffic_gclid, a.session_traffic_gclid) AS session_traffic_gclid
+        ) LIMIT 1)[OFFSET(0)].*
+    FROM agg_campaign_first_2 a LEFT JOIN mart_session m 
     USING(user_pseudo_id, ga_session_id)
+    GROUP BY ALL
 )
 -- 旧パターン ※今後使わない
 /*
