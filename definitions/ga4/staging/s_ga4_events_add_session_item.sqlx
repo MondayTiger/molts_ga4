@@ -48,9 +48,9 @@ config {
         event_traffic_campaign: "集客：イベントのキャンペーン",
         event_traffic_content: "集客：イベントの広告のコンテンツ",
         event_traffic_term: "集客：イベントの検索キーワード",
-        event_source_platform: "集客：イベントの参照元プラットフォーム",
-        event_creative_format: "集客：イベントのクリエイティブのタイプ",
-        event_marketing_tactic: "集客：イベントのターゲティング条件",
+        event_traffic_source_platform: "集客：イベントの参照元プラットフォーム",
+        event_traffic_creative_format: "集客：イベントのクリエイティブのタイプ",
+        event_traffic_marketing_tactic: "集客：イベントのターゲティング条件",
         event_traffic_campaign_id: "集客：イベントのキャンペーンID（utm_id）",
         event_traffic_gclid: "集客：イベントのgclid",
 
@@ -165,7 +165,13 @@ config {
         // event_parameter core web vitals
         cwv_id: "Core Web VitalsのID",
         cwv_value: "Core Web Vitalsのvalue",
-        cwv_delta: "Core Web Vitalsのdelta"
+        cwv_delta: "Core Web Vitalsのdelta",
+
+        // event order
+        batch_page_id: "イベント送信時間",
+        batch_ordering_id: "バッチ送信順番",
+        batch_event_index:"バッチ内のイベント発生順番"
+
     }
 }
 
@@ -208,9 +214,9 @@ WITH ga AS (
                 g.event_traffic_campaign,
                 g.event_traffic_content,
                 g.event_traffic_term,
-                g.event_source_platform,
-                g.event_creative_format,
-                g.event_marketing_tactic,
+                g.event_traffic_source_platform,
+                g.event_traffic_creative_format,
+                g.event_traffic_marketing_tactic,
                 g.event_traffic_campaign_id,
                 g.event_traffic_gclid
             ) ORDER BY event_timestamp ASC LIMIT 1)[OFFSET(0)].*
@@ -232,9 +238,9 @@ WITH ga AS (
         g.event_traffic_campaign,
         g.event_traffic_content,
         g.event_traffic_term,
-        g.event_source_platform,
-        g.event_creative_format,
-        g.event_marketing_tactic,
+        g.event_traffic_source_platform,
+        g.event_traffic_creative_format,
+        g.event_traffic_marketing_tactic,
         g.event_traffic_campaign_id,
         g.event_traffic_gclid
     FROM ga g
@@ -254,9 +260,9 @@ WITH ga AS (
             g.event_traffic_campaign,
             g.event_traffic_content,
             g.event_traffic_term,
-            g.event_source_platform,
-            g.event_creative_format,
-            g.event_marketing_tactic,
+            g.event_traffic_source_platform,
+            g.event_traffic_creative_format,
+            g.event_traffic_marketing_tactic,
             g.event_traffic_campaign_id,
             g.event_traffic_gclid
         ) ORDER BY event_timestamp ASC LIMIT 1)[OFFSET(0)].*
@@ -280,9 +286,9 @@ WITH ga AS (
         IF(s.event_traffic_source IS NOT NULL, s.event_traffic_campaign, a.event_traffic_campaign) AS session_traffic_campaign,
         IF(s.event_traffic_source IS NOT NULL, s.event_traffic_content, a.event_traffic_content) AS session_traffic_content,
         IF(s.event_traffic_source IS NOT NULL, s.event_traffic_term, a.event_traffic_term) AS session_traffic_term,
-        IF(s.event_traffic_source IS NOT NULL, s.event_source_platform, a.event_source_platform) AS session_traffic_source_platform,
-        IF(s.event_traffic_source IS NOT NULL, s.event_creative_format, a.event_creative_format) AS session_traffic_creative_format,
-        IF(s.event_traffic_source IS NOT NULL, s.event_marketing_tactic, a.event_marketing_tactic) AS session_traffic_marketing_tactic,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_source_platform, a.event_traffic_source_platform) AS session_traffic_source_platform,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_creative_format , a.event_traffic_creative_format ) AS session_traffic_creative_format,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_marketing_tactic, a.event_traffic_marketing_tactic) AS session_traffic_marketing_tactic,
         IF(s.event_traffic_source IS NOT NULL, s.event_traffic_campaign_id, a.event_traffic_campaign_id) AS session_traffic_campaign_id,
         IF(s.event_traffic_source IS NOT NULL, s.event_traffic_gclid, a.event_traffic_gclid) AS session_traffic_gclid
     FROM agg_campaign a FULL JOIN session_start s USING(user_pseudo_id, ga_session_id)
@@ -352,9 +358,9 @@ agg_campaign_first AS (
         g.event_traffic_campaign AS session_traffic_campaign,
         g.event_traffic_content AS session_traffic_content,
         g.event_traffic_term AS session_traffic_term,
-        g.event_source_platform AS session_traffic_platform,
-        g.event_creative_format AS session_creative_format,
-        g.event_marketing_tactic AS session_marketing_tactic,
+        g.event_traffic_source_platform AS session_traffic_platform,
+        g.event_traffic_creative_format  AS session_creative_format,
+        g.event_traffic_marketing_tactic AS session_marketing_tactic,
         g.event_traffic_campaign_id AS session_traffic_campaign_id,
         g.event_traffic_gclid AS session_traffic_gclid,
 
@@ -418,12 +424,12 @@ agg_campaign_first_2 AS (
         g.event_traffic_source,
         g.event_traffic_medium,
         g.event_traffic_campaign,
+        g.event_traffic_campaign_id, -- utm_id
         g.event_traffic_content,
         g.event_traffic_term,
-        g.event_source_platform,
-        g.event_creative_format,
-        g.event_marketing_tactic,
-        g.event_traffic_campaign_id, -- utm_id
+        g.event_traffic_source_platform,
+        g.event_traffic_creative_format ,
+        g.event_traffic_marketing_tactic,
         g.event_traffic_gclid,
 
         -- device
@@ -512,12 +518,12 @@ agg_campaign_first_2 AS (
         a.session_traffic_source,
         a.session_traffic_medium,
         a.session_traffic_campaign,
+        a.session_traffic_campaign_id,
         a.session_traffic_content,
         a.session_traffic_term,
         a.session_traffic_source_platform,
         a.session_traffic_creative_format,
         a.session_traffic_marketing_tactic,
-        a.session_traffic_campaign_id,
         a.session_traffic_gclid,
 
         -- debug_mode
@@ -538,6 +544,11 @@ agg_campaign_first_2 AS (
         g.cwv_id,
         g.cwv_value,
         g.cwv_delta,
+
+        -- batch
+        g.batch_page_id,
+        g.batch_ordering_id,
+        g.batch_event_index
 
         FROM
             ga AS g
@@ -656,24 +667,24 @@ SELECT
     event_traffic_source,
     event_traffic_medium,
     event_traffic_campaign,
+    event_traffic_campaign_id,
     event_traffic_content,
     event_traffic_term,
-    event_source_platform,
-    event_creative_format,
-    event_marketing_tactic,
-    event_traffic_campaign_id,
+    event_traffic_source_platform,
+    event_traffic_creative_format ,
+    event_traffic_marketing_tactic,
     event_traffic_gclid,
 
     -- session_acquisition_channel
     IFNULL(session_traffic_source,"(direct)") AS session_traffic_source,
     IFNULL(session_traffic_medium,"(none)") AS session_traffic_medium,
     IFNULL(session_traffic_campaign,"(direct)") AS session_traffic_campaign,
+    session_traffic_campaign_id,
     session_traffic_content,
     session_traffic_term,
     session_traffic_source_platform,
     session_traffic_creative_format,
     session_traffic_marketing_tactic,
-    session_traffic_campaign_id,
     session_traffic_gclid,
 
     -- device
@@ -777,5 +788,10 @@ SELECT
     cwv_value,
     cwv_delta,
 
+    -- event order
+/*    batch_page_id,
+    batch_ordering_id,
+    batch_event_index
+*/
 FROM
     join_data
