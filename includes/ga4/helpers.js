@@ -11,6 +11,10 @@ const getQueryString = (url, queryString, columnName = false) => {
 };
 
 
+const getQueryStringNoColumnName = (url, queryString) => {
+  return `SAFE_CAST(REGEXP_EXTRACT(${url}, r'^.*${queryString}=([^&]*)&\\?.*') AS STRING)`;
+};
+
 // パラメータを削除
 
 const deleteQueryString = (url, columnName = false) => {
@@ -226,6 +230,7 @@ const getUserPropertyAll = (userPropetyName, userPropertyType = "string", column
 
 module.exports = {
   getQueryString,
+  getQueryStringNoColumnName,
   deleteQueryString,
   setNumber,
   getFirstValue,

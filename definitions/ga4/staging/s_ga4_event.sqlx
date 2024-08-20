@@ -48,9 +48,9 @@ config {
         event_traffic_campaign: "集客：イベントのキャンペーン",
         event_traffic_content: "集客：イベントの広告のコンテンツ",
         event_traffic_term: "集客：イベントの検索キーワード",
-        event_source_platform: "集客：イベントの参照元プラットフォーム",
-        event_creative_format: "集客：イベントのクリエイティブのタイプ",
-        event_marketing_tactic: "集客：イベントのターゲティング条件",
+        event_traffic_source_platform: "集客：イベントの参照元プラットフォーム",
+        event_traffic_creative_format: "集客：イベントのクリエイティブのタイプ",
+        event_traffic_marketing_tactic: "集客：イベントのターゲティング条件",
         event_traffic_campaign_id: "集客：イベントのキャンペーンID（utm_id）",
         event_traffic_gclid: "集客：イベントのgclid",
 
@@ -60,9 +60,9 @@ config {
         session_traffic_campaign: "集客：セッションのキャンペーン",
         session_traffic_content: "集客：セッションの広告のコンテンツ",
         session_traffic_term: "集客：セッションの検索キーワード",
-        session_traffic_platform: "集客：セッションの参照元プラットフォーム",
-        session_creative_format: "集客：セッションのクリエイティブのタイプ",
-        session_marketing_tactic: "集客：セッションのターゲティング条件",
+        session_traffic_source_platform: "集客：セッションの参照元プラットフォーム",
+        session_traffic_creative_format: "集客：セッションのクリエイティブのタイプ",
+        session_traffic_marketing_tactic: "集客：セッションのターゲティング条件",
         session_traffic_campaign_id: "集客：セッションのキャンペーンID（utm_id）",
         session_traffic_gclid: "集客：セッションのgclid",
 
@@ -173,6 +173,7 @@ config {
         cwv_value: "Core Web Vitalsのvalue",
         cwv_delta: "Core Web Vitalsのdelta"
 
+
     }
 }
 
@@ -268,24 +269,24 @@ SELECT
     g.event_traffic_source,
     g.event_traffic_medium,
     g.event_traffic_campaign,
+    g.event_traffic_campaign_id,
     g.event_traffic_content,
     g.event_traffic_term,
-    g.event_source_platform,
-    g.event_creative_format,
-    g.event_marketing_tactic,
-    g.event_traffic_campaign_id,
+    g.event_traffic_source_platform,
+    g.event_traffic_creative_format,
+    g.event_traffic_marketing_tactic,
     g.event_traffic_gclid,
 
     -- session_acquisition_channel
     g.session_traffic_source,
     g.session_traffic_medium,
     g.session_traffic_campaign,
+    g.session_traffic_campaign_id,
     g.session_traffic_content,
     g.session_traffic_term,
-    g.session_traffic_platform,
-    g.session_creative_format,
-    g.session_marketing_tactic,
-    g.session_traffic_campaign_id,
+    g.session_traffic_source_platform,
+    g.session_traffic_creative_format,
+    g.session_traffic_marketing_tactic,
     g.session_traffic_gclid,
 
     -- device

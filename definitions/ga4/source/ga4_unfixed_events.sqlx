@@ -42,15 +42,18 @@ SELECT
     COALESCE(collected_traffic_source.manual_source, ${helpers.getEventParamNoColumnName('source','string')}) AS event_traffic_source,
     COALESCE(collected_traffic_source.manual_medium, ${helpers.getEventParamNoColumnName('medium','string')}) AS event_traffic_medium,
     COALESCE(collected_traffic_source.manual_campaign_name, ${helpers.getEventParamNoColumnName('campaign','string')}) AS event_traffic_campaign,
+    COALESCE(collected_traffic_source.manual_campaign_id, ${helpers.getEventParamNoColumnName('campaign_id','string')}) AS event_traffic_campaign_id,
     COALESCE(collected_traffic_source.manual_content, ${helpers.getEventParamNoColumnName('content','string')}) AS event_traffic_content,
     COALESCE(collected_traffic_source.manual_term, ${helpers.getEventParamNoColumnName('term','string')}) AS event_traffic_term,
-    COALESCE(collected_traffic_source.manual_campaign_id, ${helpers.getEventParamNoColumnName('campaign_id','string')}) AS event_traffic_campaign_id,
+    COALESCE(collected_traffic_source.manual_source_platform, ${helpers.getEventParamNoColumnName('source_platform','string')}) AS event_traffic_source_platform,
+    COALESCE(collected_traffic_source.manual_creative_format, ${helpers.getEventParamNoColumnName('creative_format','string')}) AS event_traffic_creative_format,
+    COALESCE(collected_traffic_source.manual_marketing_tactic, ${helpers.getEventParamNoColumnName('marketing_tactic','string')}) AS event_traffic_marketing_tactic,
     COALESCE(collected_traffic_source.gclid, ${helpers.getEventParamNoColumnName('gclid','string')}) AS event_traffic_gclid,
 /*
     COALESCE(collected_traffic_source.srsltid, ${helpers.getEventParamNoColumnName('srsltid','string')}) AS event_traffic_gclid, -- Google Merchant Center ID
     COALESCE(collected_traffic_source.dclid, ${helpers.getEventParamNoColumnName('dclid','string')}) AS event_traffic_dclid, -- 拡張アトリビューション
 */
-
+    collected_traffic_source,
     session_traffic_source_last_click,
 /*
     session_traffic_source_last_click.manual_campaign.campaign_id AS session_traffic_source_last_click_campaign_id,
@@ -180,6 +183,11 @@ SELECT
     ${helpers.getEventParamAll('cwv_id','string')},
     ${helpers.getEventParamAll('cwv_value','double')},
     ${helpers.getEventParamAll('cwv_delta','double')},
+
+    -- batch
+    COALESCE(batch_page_id, ${helpers.getEventParamNoColumnName('batch_page_id','int')}) AS batch_page_id,
+    COALESCE(batch_ordering_id, ${helpers.getEventParamNoColumnName('batch_ordering_id','int')}) AS batch_ordering_id,
+    COALESCE(batch_event_index, ${helpers.getEventParamNoColumnName('batch_event_index','int')}) AS batch_event_index,
 
     -- event_parameter
     -- ${helpers.getEventParamAll('event_parameter_name','string')},

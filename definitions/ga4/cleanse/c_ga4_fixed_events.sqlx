@@ -41,35 +41,21 @@ SELECT
     event_traffic_source,
     event_traffic_medium,
     event_traffic_campaign,
+    event_traffic_campaign_id, -- utm_id
     event_traffic_content,
     event_traffic_term,
-    ${helpers.getQueryString('page_location','utm_source_platform', 'event_source_platform')}, -- ep化したら修正
-    ${helpers.getQueryString('page_location','utm_source_platform', 'event_creative_format')}, -- ep化したら修正
-    ${helpers.getQueryString('page_location','utm_marketing_tactic', 'event_marketing_tactic')}, -- ep化したら修正
-    event_traffic_campaign_id, -- utm_id
+    COALESCE(event_traffic_source_platform,${helpers.getQueryStringNoColumnName('page_location','utm_source_platform')}) AS event_traffic_source_platform,
+    COALESCE(event_traffic_creative_format,${helpers.getQueryStringNoColumnName('page_location','utm_creative_format')}) AS event_traffic_creative_format,
+    COALESCE(event_traffic_marketing_tactic,${helpers.getQueryStringNoColumnName('page_location','utm_marketing_tactic')}) AS event_traffic_marketing_tactic,
     event_traffic_gclid,
-
-    -- session_traffic_source_last_click
-    session_traffic_source_last_click,
-/*
-    session_traffic_source_last_click_campaign_id,
-    session_traffic_source_last_click_campaign_name,
-    session_traffic_source_last_click_source,
-    session_traffic_source_last_click_medium,
-    session_traffic_source_last_click_term,
-    session_traffic_source_last_click_content,
-    session_traffic_source_last_click_source_platform,
-    session_traffic_source_last_click_creative_format,
-    session_traffic_source_last_click_marketing_tactic,
-    
-    -- session_traffic_source_last_click.google_ads_campaign
-    google_ads_campaign_customer_id,
-    google_ads_campaign_account_name,
-    google_ads_campaign_campaign_id,
-    google_ads_campaign_campaign_name,
-    google_ads_campaign_ad_group_id,
-    google_ads_campaign_ad_group_name,
+/*    ${helpers.getQueryString('page_location','utm_source_platform', 'event_traffic_source_platform')}, -- ep化したら修正
+    ${helpers.getQueryString('page_location','utm_source_platform', 'event_traffic_creative_format')}, -- ep化したら修正
+    ${helpers.getQueryString('page_location','utm_marketing_tactic', 'event_traffic_marketing_tactic')}, -- ep化したら修正
 */
+
+    collected_traffic_source,
+    session_traffic_source_last_click,
+
     -- device
 	device_category,
 	device_mobile_brand_name,
@@ -168,6 +154,11 @@ SELECT
     cwv_id,
     cwv_value,
     cwv_delta,
+
+    -- event order
+    batch_page_id,
+    batch_ordering_id,
+    batch_event_index,
 
 FROM                    
 	${ref("ga4_fixed_events")}
