@@ -35,12 +35,14 @@ config {
         // session
         ga_session_id: "セッションID",
         ga_session_number: "通算セッション数",
+        session_engaged: "エンゲージメントセッション",
         session_duration: "セッション時間（秒）",
         session_total_engagement_time: "セッション合計エンゲージメント時間（秒）",
         session_total_page_view: "セッション合計ページビュー",
         session_total_screen_view: "セッション合計スクリーンビュー",
         is_bounce_no_transition: "直帰_遷移なし",
-        is_bounce_no_engagement: "直帰_エンゲージメントなし",
+        is_bounce_no_engagement: "直帰_エンゲージメントなし（session_engagedベース）",
+        is_bounce_no_engagement_manual : "直帰_エンゲージメントなし（手動）",
 
         // event_acquisition_channel
         event_traffic_source: "集客：イベントの参照元",
@@ -597,7 +599,13 @@ calculate_sum_pv_sv AS (
         ga_session_id,
         --page_viewとscreen_viewのイベントの発生回数を数える
         COUNT(CASE WHEN event_name = 'page_view' THEN event_name END) AS session_total_page_view,
-        COUNT(CASE WHEN event_name = 'screen_view' THEN event_name END) AS session_total_screen_view
+        COUNT(CASE WHEN event_name = 'screen_view' THEN event_name END) AS session_total_screen_view,
+        -- session_engagedベースの直帰判定
+        CASE 
+            WHEN MAX(session_engaged) = '1' THEN FALSE
+            WHEN MAX(session_engaged) = '0' THEN TRUE
+            WHEN MAX(session_engaged) IS NULL THEN TRUE
+        ELSE FALSE END AS is_bounce_no_engagement 
     FROM
         ga
     GROUP BY ALL
@@ -611,10 +619,12 @@ join_data AS (
         v.session_total_page_view,
         v.session_total_screen_view,
         IF(v.session_total_page_view + v.session_total_screen_view <= 1, true, false) AS is_bounce_no_transition, --page_viewとscreen_viewの和が1以下のユーザーを直帰判定（true）とする
+        v.is_bounce_no_engagement,
+        -- 手動による直帰判定
         CASE
             WHEN s.session_duration < 10 THEN true -- エンゲージメント秒数の定義。10秒を変更している場合は 10 を変更する。
             WHEN v.session_total_page_view + v.session_total_screen_view <= 1 THEN true
-            ELSE false END AS is_bounce_no_engagement
+            ELSE false END AS is_bounce_no_engagement_manual 
     FROM
         add_traffic_source as t
     LEFT JOIN calculate_session_duration as s
@@ -662,6 +672,7 @@ SELECT
     session_total_screen_view,
     is_bounce_no_transition,
     is_bounce_no_engagement,
+    is_bounce_no_engagement_manual,
 
     -- event_acquisition_channel
     event_traffic_source,

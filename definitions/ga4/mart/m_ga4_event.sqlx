@@ -51,7 +51,8 @@ config {
         session_total_page_view: "セッション合計ページビュー",
         session_total_screen_view: "セッション合計スクリーンビュー",
         is_bounce_no_transition: "直帰_遷移なし",
-        is_bounce_no_engagement: "直帰_エンゲージメントなし",
+        is_bounce_no_engagement: "直帰_エンゲージメントなし（session_engagedベース）",
+        is_bounce_no_engagement_manual : "直帰_エンゲージメントなし（手動）",
 
         // event_acquisition_channel
         event_traffic_source: "集客：イベントの参照元",
