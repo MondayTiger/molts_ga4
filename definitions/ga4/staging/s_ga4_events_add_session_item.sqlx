@@ -602,8 +602,8 @@ calculate_sum_pv_sv AS (
         COUNT(CASE WHEN event_name = 'screen_view' THEN event_name END) AS session_total_screen_view,
         -- session_engagedベースの直帰判定
         CASE 
-            WHEN MAX(session_engaged) = '1' THEN FALSE
-            WHEN MAX(session_engaged) = '0' THEN TRUE
+            WHEN MAX(session_engaged) = 1 THEN FALSE
+            WHEN MAX(session_engaged) = 0 THEN TRUE
             WHEN MAX(session_engaged) IS NULL THEN TRUE
         ELSE FALSE END AS is_bounce_no_engagement 
     FROM
