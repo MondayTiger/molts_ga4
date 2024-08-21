@@ -405,5 +405,5 @@ FROM
         AND g.event_timestamp <= p2.pv_end_time
         AND g.user_pseudo_id = p2.user_pseudo_id
         AND g.ga_session_id = p2.ga_session_id
-WHERE
-    event_date >= (SELECT MAX(event_date) FROM ga WHERE is_fixed_data = true) -- is_fixed_data のうち古い2日分を削除
+--WHERE event_date >= (SELECT MAX(event_date) FROM ga WHERE is_fixed_data = true) -- is_fixed_data のうち古い2日分を削除
+

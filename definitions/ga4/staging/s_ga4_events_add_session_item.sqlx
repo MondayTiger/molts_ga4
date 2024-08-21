@@ -295,7 +295,8 @@ WITH ga AS (
         IF(s.event_traffic_source IS NOT NULL, s.event_traffic_gclid, a.event_traffic_gclid) AS session_traffic_gclid
     FROM agg_campaign a FULL JOIN session_start s USING(user_pseudo_id, ga_session_id)
 )
--- 過去にセッション情報が存在する場合はそれを採用
+
+-- 過去にセッション情報が存在する場合はそれを採用 ※初期導入時はこのサブクエリはエラーになるため、要修正
 , mart_session AS(
     SELECT 
         user_pseudo_id,
@@ -336,6 +337,28 @@ WITH ga AS (
     USING(user_pseudo_id, ga_session_id)
     GROUP BY ALL
 )
+/*
+--初期導入時※最も古い日だけこれを実行してm_ga4_sessionテーブルを作成し、2日目以降はここはコメントアウト
+, agg_campaign_first_3 AS(
+    SELECT 
+        user_pseudo_id,
+        ga_session_id,
+        ARRAY_AGG(STRUCT(
+            COALESCE(NULL, a.session_traffic_source) AS session_traffic_source,
+            COALESCE(NULL, a.session_traffic_medium) AS session_traffic_medium,
+            COALESCE(NULL, a.session_traffic_campaign) AS session_traffic_campaign,
+            COALESCE(NULL, a.session_traffic_content) AS session_traffic_content,
+            COALESCE(NULL, a.session_traffic_term) AS session_traffic_term,
+            COALESCE(NULL, a.session_traffic_source_platform) AS session_traffic_source_platform,
+            COALESCE(NULL, a.session_traffic_creative_format) AS session_traffic_creative_format,
+            COALESCE(NULL, a.session_traffic_marketing_tactic) AS session_traffic_marketing_tactic,
+            COALESCE(NULL, a.session_traffic_campaign_id) AS session_traffic_campaign_id,
+            COALESCE(NULL, a.session_traffic_gclid) AS session_traffic_gclid
+        ) LIMIT 1)[OFFSET(0)].*
+    FROM agg_campaign_first_2 a 
+    GROUP BY ALL
+)
+*/
 -- 旧パターン ※今後使わない
 /*
 agg_campaign AS (

@@ -171,8 +171,7 @@ WITH ga AS (
 
     FROM
         ${ref("s_ga4_events_add_session_item")}
-    WHERE
-        event_date >= (SELECT MAX(event_date) FROM ${ref("s_ga4_events_exclude_internal")} WHERE is_fixed_data = true) -- is_fixed_data のうち古い2日分を削除
+--    WHERE event_date >= (SELECT MAX(event_date) FROM ${ref("s_ga4_events_exclude_internal")} WHERE is_fixed_data = true) -- is_fixed_data のうち古い2日分を削除
 )
 
 SELECT
