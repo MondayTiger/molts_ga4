@@ -2,6 +2,9 @@
  2023/11/24 コンパイル後のクエリで動作確認済み
  2024/07/31 参照元情報の取得方法を修正。
 */
+/*
+初期実行時（過去分のデータを取り込む時は、最後のWHERE句を変更（デフォルト：7日前～5日前 → 5日前まで）
+*/
 -- Config blocks
 config {
     type: "view",
@@ -39,7 +42,7 @@ SELECT
     -- session
     ${helpers.getEventParamAll('ga_session_id','string')},
     ${helpers.getEventParam('ga_session_number','int')},
-    ${helpers.getEventParam('session_engaged','string')},
+    ${helpers.getEventParamAll('session_engaged','int')},
 
     -- event_acquisition_channel
    -- 2023/12/1 以降のテーブルに関してはここから
@@ -207,4 +210,6 @@ FROM
 	${ref(constants.GA4_TABLE)}
 WHERE
     _table_suffix BETWEEN FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 7 DAY)) AND FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 5 DAY))
-    
+--    _table_suffix <= FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 5 DAY))
+
+

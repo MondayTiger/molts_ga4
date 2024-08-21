@@ -120,7 +120,7 @@ const getEventParamNoColumnName = (eventParamName, eventParamType = "string", co
     default:
       throw "eventType is not valid";
   }
-  return `(SELECT value.${eventParamTypeName} AS ${eventParamName} FROM UNNEST(event_params) WHERE key = '${eventParamName}')`;
+  return `(SELECT value.${eventParamTypeName} FROM UNNEST(event_params) WHERE key = '${eventParamName}')`;
 };
 
 

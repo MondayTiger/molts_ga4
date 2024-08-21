@@ -35,7 +35,7 @@ SELECT
     -- session
     ${helpers.getEventParamAll('ga_session_id','string')},
     ${helpers.getEventParam('ga_session_number','int')},
-    ${helpers.getEventParam('session_engaged','string')},
+    ${helpers.getEventParamAll('session_engaged','int')},
     
     -- event_acquisition_channel
    -- 2023/12/1 以降のテーブルに関してはここから
