@@ -29,6 +29,9 @@
        - m_ga4_event.sqlx
        - m_ga4_session_delete_unfixed.sqlx
        - m_ga4_session.sqlx
+    - report
+       - m_ga4_conversion_delete_unfixed.sqlx
+       - m_ga4_conversion.sqlx
 
 - includes/
     - constatns.js : GCPプロジェクト名、対象ホスト名などの定数をまとめたファイル
@@ -133,10 +136,11 @@ erDiagram
 # 変更が必要な箇所
 ## includes/constants.js内
 1. BigQuery関連
-2. 集計対象ホスト名: クロスドメイントラッキングなどで複数のホスト名が集計対象となる場合は、HOSTNAME3など追加し、module.exports配列に追加
-3. Measurement Protocolのイベント名 
-4. コンバージョン対象: 現在はCV_PAGE_LOCATIONとしていますが、report/r_ga4_conversion.sqlx含め要変更
-5. 新たに定数を作成したい場合は、このファイルで作成し、module.exports配列に追加
+2. データセット: 各テーブルのデータセット名を指定
+3. 集計対象ホスト名: クロスドメイントラッキングなどで複数のホスト名が集計対象となる場合は、HOSTNAME3など追加し、module.exports配列に追加
+4. Measurement Protocolのイベント名 
+5. コンバージョン対象: 現在はCV_PAGE_LOCATIONとしていますが、report/r_ga4_conversion.sqlx含め要変更
+6. 新たに定数を作成したい場合は、このファイルで作成し、module.exports配列に追加
 
 ## イベントパラメータを追加した場合
 基本的にはすべてのファイルで修正が必要
@@ -148,9 +152,18 @@ erDiagram
 3. staging/やmart/内のSQLXファイルも上記と同様
 
 ## 初回実行時の対応
-下記のクエリのWHERE句部分を削除(コメントアウト)
-* definitions/ga4/mart/m_ga4_session.sqlx
-* definitions/ga4/mart/m_ga4_event.sqlx
+1. mart/m_ga4_event.sqlxとmart/m_ga4_session.sqlxのtypeをtableにする
+2. mart/m_ga4_event.sqlxとmart/m_ga4_session.sqlxの最後のSELECT文のWHERE句をコメントアウトして、全件対象とする
+3. source/ga4_fixed_events.sqlxの最後のWHERE句で対象期間を最も古い日1日～今日の5日前に変更
+4. staging/s_ga4_events_add_session_item.sqlx のサブクエリでm_ga4_sessionテーブルを参照しているので、mart_session、agg_campaign_first_3サブクエリをコメントアウトして、その下にあるagg_campaign_first_3を使用
+5. mart/m_ga4_event.sqlxとmart/m_ga4_session.sqlxを実行（依存関係を含めるにチェック）
+7. 1で行ったmart/m_ga4_event.sqlxとmart/m_ga4_session.sqlxのtypeをincrementalにする
+8. 2で行ったmart/m_ga4_event.sqlxとmart/m_ga4_session.sqlxの最後のSELECT文のWHERE句をもとに戻す
+9. 3で行ったsource/ga4_fixed_events.sqlxの最後のWHERE句で対象期間をもとに戻す（7日前～5日前）
+10. 4で行ったstaging/s_ga4_events_add_session_item.sqlx をもとに戻す
+11. 再びmart/m_ga4_event.sqlxとmart/m_ga4_session.sqlxを実行（依存関係を含めるにチェック）
+12. 日別セッション数などを確認
+ 
 
 # その他、設定変更が必要な場合に変更すべきファイル
 1. GA4からエクスポートされたテーブル内のデータを利用したい場合: definitions/ga4/sourceディレクトリ内のSQLXファイル
