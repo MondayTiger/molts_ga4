@@ -2,16 +2,37 @@
 config {
     type: "view",
     schema: "df_molts_ga4_staging",
-    description: "GA4ステージングデータ 不要イベントの追加・リネーム・削除",
+    description: "GA4ステージングデータ 不要イベントの追加・リネーム・削除。イベント順番の追加",
     tags: ["daily", "staging"],
 }
 
 
 -- Query blocks
-SELECT
-    *
-FROM
-    ${ref("s_ga4_events_exclude_internal")}
+with events AS(
+    SELECT
+        * EXCEPT(batch_page_id, batch_ordering_id, batch_event_index),
+        COALESCE(batch_page_id,0) AS batch_page_id,
+        COALESCE(batch_ordering_id,0) AS batch_ordering_id,
+        COALESCE(batch_event_index,0) AS batch_event_index,
+        -- イベント名による順番（表示系や自動的に発生するイベント＞クリックなどユーザーの行動によって発生するイベント）
+        CASE WHEN event_name IN ('session_start') THEN 1
+            WHEN event_name IN ('first_open','first_visit') THEN 2
+            WHEN event_name IN ('page_view','screen_view') THEN 3
+            WHEN event_name LIKE 'log%in%' THEN 4
+            WHEN event_name LIKE 'log%out%' THEN 4
+            WHEN event_name IN ('purcahse','refund') THEN 5
+            WHEN event_name IN ('view_promotion','view_item','view_item_list','view_cart') THEN 6
+            WHEN event_name LIKE 'view_%' THEN 7
+            WHEN event_name IN ('begin_checkout','add_to_cart','remove_from_cart') THEN 8
+            WHEN event_name LIKE "select_%" THEN 9
+            WHEN event_name LIKE "add_%" THEN 10
+            ELSE 1000 END AS event_index
+    FROM
+        ${ref("s_ga4_events_exclude_internal")}
+)
+SELECT * EXCEPT(event_index,batch_page_id,batch_ordering_id,batch_event_index),
+ROW_NUMBER() OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp, batch_page_id,batch_ordering_id,batch_event_index,event_index,event_name,COALESCE(percent_scrolled,0),COALESCE(page_location,'page_location'),COALESCE(link_url,'link_url')) AS event_index
+FROM events
 
 /**** 以下、処理を行う場合のサンプルコード ***
 

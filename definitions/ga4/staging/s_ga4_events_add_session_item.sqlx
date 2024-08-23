@@ -169,10 +169,8 @@ config {
         cwv_value: "Core Web Vitalsのvalue",
         cwv_delta: "Core Web Vitalsのdelta",
 
-        // event order
-        batch_page_id: "イベント送信時間",
-        batch_ordering_id: "バッチ送信順番",
-        batch_event_index:"バッチ内のイベント発生順番"
+        // event index
+        event_index: "イベントの順番"
 
     }
 }
@@ -570,11 +568,12 @@ agg_campaign_first_2 AS (
         g.cwv_value,
         g.cwv_delta,
 
-        -- batch
-        g.batch_page_id,
+        -- event index
+/*        g.batch_page_id,
         g.batch_ordering_id,
         g.batch_event_index
-
+*/
+        g.event_index,
         FROM
             ga AS g
            LEFT JOIN agg_campaign_first_3 AS a
@@ -822,10 +821,12 @@ SELECT
     cwv_value,
     cwv_delta,
 
-    -- event order
+    -- event index
 /*    batch_page_id,
     batch_ordering_id,
     batch_event_index
 */
+    event_index,
+
 FROM
     join_data
