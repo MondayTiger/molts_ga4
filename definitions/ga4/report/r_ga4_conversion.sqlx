@@ -10,6 +10,7 @@ config {
     schema: "df_molts_ga4_report",
     description: "GA4マートデータ　イベントデータ用",
     // dependencies: ["m_ga4_event_delete_unfixed"],
+    dependencies: ["r_ga4_conversion_delete_unfixed"],
     tags: ["daily", "report"],
     columns: {
         // timestamp
@@ -105,6 +106,49 @@ config {
         // event_parameter clarity
         claritydimension: "Microsoft ClarityのURL",
 
+        // event_parameter article
+        estimate_read_time: "推定読了時間",
+        estimate_read_time_percent: "読了割合",
+
+        // event_parameter core web vitals
+        cwv_id: "Core Web VitalsのID",
+        cwv_value: "Core Web Vitalsのvalue",
+        cwv_delta: "Core Web Vitalsのdelta",
+
+        // session_traffic_source_last_clickの参照元
+        session_traffic_source_last_click:{
+            description: "集客：セッションの参照元情報",
+            columns:{
+                manual_campaign: {
+                    description: "Description of the manual_campaign RECORD",
+                    columns: {
+                        manual_campaign: "集客：セッションのキャンペーン",
+                        campaign_id: "集客：セッションのキャンペーンID（utm_id）",
+                        campaign_name: "集客：セッションのキャンペーン",
+                        source: "集客：セッションの参照元",
+                        medium:"集客：セッションのメディア",
+                        term: "集客：セッションの検索キーワード",
+                        content: "集客：セッションの広告のコンテンツ",
+                        source_platform: "集客：セッションの参照元プラットフォーム",
+                        creative_format: "集客：セッションのクリエイティブのタイプ",
+                        marketing_tactic: "集客：セッションのターゲティング条件"
+                    }
+                },
+                google_ads_campaign: {
+                    description: "Google広告関連",
+                    columns: {
+                        customer_id: "Google 広告アカウントに関連付けられた顧客 ID",
+                        account_name: "Google広告のアカウント名",
+                        campaign_id: "Google広告キャンペーンID",
+                        campaign_name: "Google広告キャンペーン名",
+                        ad_group_id: "Google広告キャンペーン内の広告グループのID",
+                        ad_group_name: "Google広告キャンペーン内の広告グループ名"
+                    } 
+                }
+            }
+        },
+        // event index
+        event_index: "イベント順番"
     }
 }
 
@@ -116,5 +160,8 @@ FROM
     ${ref("m_ga4_event")}
 WHERE
     page_location LIKE '${constants.CV_PAGE_LOCATION}' -- 'https://moltsinc.co.jp/%thanks%'
-    -- 初回時は以下をコメントアウト
-     ${ when(incremental(), `AND event_date > (SELECT MAX(event_date) FROM ${self()})`)}
+    -- 初回時は以下をすべてコメントアウト
+    ${ when(incremental(), `AND event_date > (SELECT MAX(event_date) FROM ${self()})`)}
+    AND event_date >= DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 7 DAY)
+
+

@@ -172,8 +172,10 @@ config {
         // event_parameter core web vitals
         cwv_id: "Core Web VitalsのID",
         cwv_value: "Core Web Vitalsのvalue",
-        cwv_delta: "Core Web Vitalsのdelta"
+        cwv_delta: "Core Web Vitalsのdelta",
 
+        // event index
+        event_index: "イベント順番"
 
     }
 }
@@ -395,6 +397,9 @@ SELECT
     g.cwv_id,
     g.cwv_value,
     g.cwv_delta,
+
+    -- event index
+    g.event_index,
 
 FROM
     ga AS g
