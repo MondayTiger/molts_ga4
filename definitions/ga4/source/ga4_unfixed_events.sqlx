@@ -190,6 +190,14 @@ SELECT
     COALESCE(batch_ordering_id, ${helpers.getEventParamNoColumnName('batch_ordering_id','int')}) AS batch_ordering_id,
     COALESCE(batch_event_index, ${helpers.getEventParamNoColumnName('batch_event_index','int')}) AS batch_event_index,
 
+    -- view_promotion, select_promotion    
+    COALESCE(${helpers.getEventParamNoColumnName('promotion_id','string')}, (SELECT items[SAFE_OFFSET(0)].promotion_id)) AS promotion_id,
+    COALESCE(${helpers.getEventParamNoColumnName('promotion_name','string')}, (SELECT items[SAFE_OFFSET(0)].promotion_name)) AS promotion_name,
+    COALESCE(${helpers.getEventParamNoColumnName('creative_slot','string')}, (SELECT items[SAFE_OFFSET(0)].creative_slot)) AS creative_slot,
+    COALESCE(${helpers.getEventParamNoColumnName('creative_name','string')}, (SELECT items[SAFE_OFFSET(0)].creative_name)) AS creative_name,
+    -- purchase
+    ecommerce.transaction_id AS transaction_id,
+
     -- event_parameter
     -- ${helpers.getEventParamAll('event_parameter_name','string')},
     -- ${helpers.getEventParamAll('event_parameter_name','int')},

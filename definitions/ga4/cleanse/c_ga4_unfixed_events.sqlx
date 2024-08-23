@@ -160,6 +160,13 @@ SELECT
     batch_page_id,
     batch_ordering_id,
     batch_event_index,
+    -- promotion
+    promotion_id,
+    promotion_name,
+    creative_slot,
+    creative_name,
+    -- ecommerce
+    transaction_id,
 
 FROM                    
 	${ref("ga4_unfixed_events")}

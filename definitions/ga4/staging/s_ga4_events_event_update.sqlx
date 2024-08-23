@@ -30,8 +30,8 @@ with events AS(
     FROM
         ${ref("s_ga4_events_exclude_internal")}
 )
-SELECT * EXCEPT(event_index,batch_page_id,batch_ordering_id,batch_event_index),
-ROW_NUMBER() OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp, batch_page_id,batch_ordering_id,batch_event_index,event_index,event_name,COALESCE(percent_scrolled,0),COALESCE(page_location,'page_location'),COALESCE(link_url,'link_url')) AS event_index
+SELECT * EXCEPT(event_index,batch_page_id,batch_ordering_id,batch_event_index,promotion_id, promotion_name, creative_name, creative_slot, transaction_id),
+ROW_NUMBER() OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp, batch_page_id,batch_ordering_id,batch_event_index,event_index,event_name,COALESCE(percent_scrolled,0),COALESCE(page_location,'page_location'),COALESCE(link_url,'link_url'),COALESCE(promotion_id,'promotion_id'), COALESCE(promotion_name,'promotion_name'),COALESCE(creative_name,'creative_name'),COALESCE(creative_slot,'creative_slot'),COALESCE(transaction_id,'transaction_id')) AS event_index
 FROM events
 
 /**** 以下、処理を行う場合のサンプルコード ***
