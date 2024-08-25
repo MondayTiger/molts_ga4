@@ -31,7 +31,7 @@ with events AS(
         ${ref("s_ga4_events_exclude_internal")}
 )
 SELECT * EXCEPT(event_index,batch_page_id,batch_ordering_id,batch_event_index),
-ROW_NUMBER() OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp, batch_page_id,batch_ordering_id,batch_event_index,event_index,event_name,unique_key) AS event_index
+SAFE_CAST(CONCAT(event_date,FORMAT('%04d',ROW_NUMBER() OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp, batch_page_id,batch_ordering_id,batch_event_index,event_index,event_name,unique_key))) AS INT64) AS event_index --日をまたいだセッションの場合、 日次でクエリを実行する際に古い日のイベントがクエリの対象から外れてしまい1が複数存在してしまうため、日付を入れて重複を避ける。また桁数を揃えることで文字列のまま判定できるようにする
 FROM events
 
 /**** 以下、処理を行う場合のサンプルコード ***
