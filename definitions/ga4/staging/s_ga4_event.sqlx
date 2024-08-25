@@ -175,6 +175,7 @@ config {
         cwv_delta: "Core Web Vitalsのdelta",
 
         // event index
+        unique_key: "イベントのユニーク化",
         event_index: "イベント順番"
 
     }
@@ -399,6 +400,7 @@ SELECT
     g.cwv_delta,
 
     -- event index
+    g.unique_key,
     g.event_index,
 
 FROM

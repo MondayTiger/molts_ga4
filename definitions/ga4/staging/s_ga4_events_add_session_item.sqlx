@@ -170,6 +170,7 @@ config {
         cwv_delta: "Core Web Vitalsのdelta",
 
         // event index
+        unique_key: "イベントのユニーク化",
         event_index: "イベントの順番"
 
     }
@@ -573,6 +574,7 @@ agg_campaign_first_2 AS (
         g.batch_ordering_id,
         g.batch_event_index
 */
+        g.unique_key,
         g.event_index,
         FROM
             ga AS g
@@ -826,6 +828,7 @@ SELECT
     batch_ordering_id,
     batch_event_index
 */
+    unique_key,
     event_index,
 
 FROM

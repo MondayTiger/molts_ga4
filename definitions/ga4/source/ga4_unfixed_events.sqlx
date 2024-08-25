@@ -8,6 +8,7 @@ config {
 
 
 -- Query blocks
+with ga AS(
 SELECT
 
     -- timestamp
@@ -126,6 +127,8 @@ SELECT
     ${helpers.getEventParamAll('page_title','string')},
     ${helpers.getEventParam('entrances','int')},
     ${helpers.getEventParam('flg_reload')}, -- original
+    ${helpers.getEventParam('screen_class')},
+    ${helpers.getEventParam('firebase_screen_class')},
 
     -- referrer
     ${helpers.getEventParam('page_referrer')},
@@ -190,6 +193,10 @@ SELECT
     COALESCE(batch_ordering_id, ${helpers.getEventParamNoColumnName('batch_ordering_id','int')}) AS batch_ordering_id,
     COALESCE(batch_event_index, ${helpers.getEventParamNoColumnName('batch_event_index','int')}) AS batch_event_index,
 
+    -- common
+    ${helpers.getEventParamAll('value','double')},
+    ${helpers.getEventParamAll('method','string')}, 
+
     -- view_promotion, select_promotion    
     COALESCE(${helpers.getEventParamNoColumnName('promotion_id','string')}, (SELECT items[SAFE_OFFSET(0)].promotion_id)) AS promotion_id,
     COALESCE(${helpers.getEventParamNoColumnName('promotion_name','string')}, (SELECT items[SAFE_OFFSET(0)].promotion_name)) AS promotion_name,
@@ -197,6 +204,9 @@ SELECT
     COALESCE(${helpers.getEventParamNoColumnName('creative_name','string')}, (SELECT items[SAFE_OFFSET(0)].creative_name)) AS creative_name,
     -- purchase
     ecommerce.transaction_id AS transaction_id,
+    COALESCE((SELECT items[SAFE_OFFSET(0)].item_id),'item_id') AS item_id,
+    COALESCE(${helpers.getEventParamNoColumnName('item_list_id','string')},(SELECT items[SAFE_OFFSET(0)].item_list_id),'item_list_id') AS item_list_id,
+    COALESCE(${helpers.getEventParamNoColumnName('item_list_name','string')}, (SELECT items[SAFE_OFFSET(0)].item_list_name),'item_list_name') AS item_list_name,
 
     -- event_parameter
     -- ${helpers.getEventParamAll('event_parameter_name','string')},
@@ -212,3 +222,22 @@ FROM
 	${ref(constants.GA4_TABLE)}
 WHERE
     _table_suffix BETWEEN FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 4 DAY)) AND FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY))
+
+)
+SELECT *,
+   CONCAT(user_pseudo_id, ga_session_id, event_timestamp, COALESCE(batch_page_id,-1),COALESCE(batch_ordering_id,-1),COALESCE(batch_event_index,-1), event_name,COALESCE(engagement_time_msec,0),
+    COALESCE(CASE WHEN event_name IN('page_view','screen_view') THEN COALESCE(page_location,firebase_screen_class,screen_class,'page_location')
+    WHEN event_name LIKE 'log%' THEN method
+    WHEN event_name LIKE 'sign%' THEN method
+    WHEN event_name LIKE '%click%' THEN link_url
+    WHEN event_name LIKE 'scroll%' THEN SAFE_CAST(percent_scrolled AS STRING)
+    WHEN event_name IN ('purcahse','refund') THEN transaction_id
+    WHEN event_name LIKE '%_promotion' THEN CONCAT(promotion_name, promotion_id, creative_slot, creative_name)
+    WHEN event_name LIKE 'view_item' THEN item_id
+    WHEN event_name LIKE 'view_item_list' THEN CONCAT(item_list_id, item_list_name, item_id)
+    WHEN event_name IN ('add_to_cart','remove_from_cart','add_to_wishlist') THEN item_id
+    WHEN event_name IN ('begin_checkout','add_payment_info','add_shipping_info') THEN SAFE_CAST(COALESCE(value,engagement_time_msec,0) AS STRING)
+    ELSE SAFE_CAST(COALESCE(engagement_time_msec,0) AS STRING)
+    END, 'key') 
+  ) AS unique_key
+FROM ga

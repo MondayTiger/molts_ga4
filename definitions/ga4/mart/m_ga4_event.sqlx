@@ -240,6 +240,7 @@ config {
             }
         },
         // event index
+        unique_key: "イベントのユニーク化",
         event_index: "イベント順番"
     }
 }
