@@ -238,7 +238,7 @@ SELECT *,
    CONCAT(user_pseudo_id, ga_session_id, event_timestamp, COALESCE(batch_page_id,-1),COALESCE(batch_ordering_id,-1),COALESCE(batch_event_index,-1), event_name,
     CONCAT(COALESCE(page_location,firebase_screen_class,screen_class,'page_location'),COALESCE(page_title,screen_name,'page_titile')), COALESCE(engagement_time_msec,0),
     COALESCE(
-        CASE WHEN event_name IN('page_view','screen_view') THEN CONCAT(COALESCE(page_location,firebase_screen_class,screen_class,'page_location'),COALESCE(page_title,screen_name,'page_titile')),
+        CASE WHEN event_name IN('page_view','screen_view') THEN CONCAT(COALESCE(page_location,firebase_screen_class,screen_class,'page_location'),COALESCE(page_title,screen_name,'page_title'))
         WHEN event_name LIKE 'log%' THEN method -- login, logoutなど
         WHEN event_name LIKE 'sign%' THEN method -- signin, sign_in など
         WHEN event_name LIKE '%click%' THEN COALESCE(link_url,link_classes) -- click, link_clickなど

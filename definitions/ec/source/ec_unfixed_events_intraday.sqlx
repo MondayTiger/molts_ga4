@@ -7,7 +7,7 @@ config {
 }
 
 
--- Query blocks
+-- Query blockswith ga AS(
 SELECT
 
     -- timestamp
@@ -36,8 +36,8 @@ SELECT
     ${helpers.getEventParamAll('ga_session_id','string')},
     ${helpers.getEventParam('ga_session_number','int')},
     ${helpers.getEventParamAll('session_engaged','int')},
-    
-    -- event_acquisition_channel    -- event_acquisition_channel
+
+    -- event_acquisition_channel
    -- 2023/12/1 以降のテーブルに関してはここから
    -- collected_traffic_sourceから参照元などを取得。ない場合はイベントパラメータから取得 
     COALESCE(collected_traffic_source.manual_source, ${helpers.getEventParamNoColumnName('source','string')}) AS event_traffic_source,
@@ -50,11 +50,11 @@ SELECT
     COALESCE(collected_traffic_source.manual_creative_format, ${helpers.getEventParamNoColumnName('creative_format','string')}) AS event_traffic_creative_format,
     COALESCE(collected_traffic_source.manual_marketing_tactic, ${helpers.getEventParamNoColumnName('marketing_tactic','string')}) AS event_traffic_marketing_tactic,
     COALESCE(collected_traffic_source.gclid, ${helpers.getEventParamNoColumnName('gclid','string')}) AS event_traffic_gclid,
- /*
+    
+/*
     COALESCE(collected_traffic_source.srsltid, ${helpers.getEventParamNoColumnName('srsltid','string')}) AS event_traffic_gclid, -- Google Merchant Center ID
     COALESCE(collected_traffic_source.dclid, ${helpers.getEventParamNoColumnName('dclid','string')}) AS event_traffic_dclid, -- 拡張アトリビューション
 */
-
     collected_traffic_source,
     session_traffic_source_last_click,
 /*
@@ -77,7 +77,6 @@ SELECT
 */
    -- 2023/12/1 以降のテーブルに関してはここまで
 
-
    -- 2023/11/30 までのテーブルに関してはここから
 /* -- event_acquisition_channel -- 旧パターン
     ${helpers.getEventParamAll('source','string','event_traffic_source')},
@@ -89,7 +88,7 @@ SELECT
     ${helpers.getEventParamAll('gclid','string','event_traffic_gclid')},
 */
    -- 2023/11/30 までのテーブルに関してはここまで
-   
+ 
     -- device
     device.category AS device_category,
     device.mobile_brand_name AS device_mobile_brand_name,
@@ -126,6 +125,10 @@ SELECT
     ${helpers.getEventParamAll('page_title','string')},
     ${helpers.getEventParam('entrances','int')},
     ${helpers.getEventParam('flg_reload')}, -- original
+    ${helpers.getEventParam('screen_class')},
+    ${helpers.getEventParam('firebase_screen_class')},
+    ${helpers.getEventParam('screen_name')},
+    
 
     -- referrer
     ${helpers.getEventParam('page_referrer')},
@@ -189,6 +192,10 @@ SELECT
     COALESCE(batch_ordering_id, ${helpers.getEventParamNoColumnName('batch_ordering_id','int')}) AS batch_ordering_id,
     COALESCE(batch_event_index, ${helpers.getEventParamNoColumnName('batch_event_index','int')}) AS batch_event_index,
 
+    -- common
+    ${helpers.getEventParamAll('value','double')},
+    ${helpers.getEventParamAll('method','string')}, 
+
     -- view_promotion, select_promotion    
     COALESCE(${helpers.getEventParamNoColumnName('promotion_id','string')}, (SELECT items[SAFE_OFFSET(0)].promotion_id)) AS promotion_id,
     COALESCE(${helpers.getEventParamNoColumnName('promotion_name','string')}, (SELECT items[SAFE_OFFSET(0)].promotion_name)) AS promotion_name,
@@ -196,10 +203,14 @@ SELECT
     COALESCE(${helpers.getEventParamNoColumnName('creative_name','string')}, (SELECT items[SAFE_OFFSET(0)].creative_name)) AS creative_name,
     -- purchase
     ecommerce.transaction_id AS transaction_id,
+    COALESCE((SELECT items[SAFE_OFFSET(0)].item_id),'item_id') AS item_id,
+    COALESCE(${helpers.getEventParamNoColumnName('item_list_id','string')},(SELECT items[SAFE_OFFSET(0)].item_list_id),'item_list_id') AS item_list_id,
+    COALESCE(${helpers.getEventParamNoColumnName('item_list_name','string')}, (SELECT items[SAFE_OFFSET(0)].item_list_name),'item_list_name') AS item_list_name,
+
     -- ecommerce
     ecommerce,
     items,
-    
+
     -- event_parameter
     -- ${helpers.getEventParamAll('event_parameter_name','string')},
     -- ${helpers.getEventParamAll('event_parameter_name','int')},
