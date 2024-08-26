@@ -200,21 +200,21 @@ const getUserPropertyNoColumnName = (userPropertyName, userPropertyType = "strin
 
 // user_property を抽出（型がどれで入っているか不明な場合）
 
-const getUserPropertyAll = (userPropetyName, userPropertyType = "string", columnName = false) => {
+const getUserPropertyAll = (userPropertyName , userPropertyType = "string", columnName = false) => {
   switch (userPropertyType) {
     case "string":
       return `(SELECT COALESCE(value.string_value, SAFE_CAST(value.int_value AS STRING), SAFE_CAST(value.double_value AS STRING)) FROM UNNEST(user_properties) WHERE key = '${userPropertyName}') AS ${
-        columnName ? columnName : userPropetyName
+        columnName ? columnName : userPropertyName 
       }`;
       break;
     case "int":
       return `(SELECT COALESCE(value.int_value, SAFE_CAST(value.double_value AS INTEGER), SAFE_CAST(value.string_value AS INTEGER)) FROM UNNEST(user_properties) WHERE key = '${userPropertyName}') AS ${
-        columnName ? columnName : userPropetyName
+        columnName ? columnName : userPropertyName 
       }`;
       break;
     case "double":
       return `(SELECT COALESCE(value.double_value, SAFE_CAST(value.int_value AS FLOAT64), SAFE_CAST(value.string_value AS FLOAT64)) FROM UNNEST(user_properties) WHERE key = '${userPropertyName}') AS ${
-        columnName ? columnName : userPropetyName
+        columnName ? columnName : userPropertyName 
       }`;
       break;
     default:
