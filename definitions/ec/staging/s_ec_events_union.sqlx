@@ -1,0 +1,9 @@
+-- Config blocks
+config {
+    type: "table",
+    schema: "df_molts_ga4_staging",
+    description: "GA4ステージングデータ クレンジングしたデータを統合 EC用",
+    tags: ["daily", "staging","ec"]
+}
+-- Query blocks
+SELECT * FROM ${ref("c_ec_events")}

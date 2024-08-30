@@ -2,7 +2,7 @@
 config {
     type: "view",
     schema: "df_molts_ga4_staging",
-    description: "TEST GA4ステージングデータ セッションデータを追加",
+    description: "GA4ステージングデータ セッションデータを追加",
     tags: ["daily", "staging"],
     columns: {
         // timestamp

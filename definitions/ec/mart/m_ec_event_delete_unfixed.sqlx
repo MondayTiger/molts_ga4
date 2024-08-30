@@ -1,0 +1,25 @@
+-- Config blocks
+config {
+    //typeは初期構築時はtable、増分更新時は"incremental"とする。増分更新時は最終行のコメントアウトも外すこと。
+    type: "operations",
+    schema: "df_molts_ga4_mart",
+    description: "GA4マートデータ ECイベント用 ",
+    tags: ["daily", "mart","ec","deletion_query"],
+}
+
+-- Query blocks
+
+DECLARE table_exists BOOL;
+
+SET table_exists = (
+  SELECT 
+    COUNT(*) > 0 
+  FROM 
+    `${constants.GA4_DATABASE}.${constants.MART}.INFORMATION_SCHEMA.TABLES`
+  WHERE 
+    table_name = 'm_ec_event'
+);
+
+IF table_exists THEN
+  DELETE FROM `${constants.GA4_DATABASE}.${constants.MART}.m_ec_event` WHERE is_fixed_data = false;
+END IF;

@@ -1,0 +1,70 @@
+-- Config blocks
+config {
+    //typeは初期構築時は"table"、増分更新時は"incremental"とする。初期構築時は最終行をコメントアウトすること。
+    /* 初期構築時の方法
+        1. m_ga4_event.sqlxとm_ga4_session.sqlxのtypeをtableにする
+        2. m_ga4_event.sqlxとm_ga4_session.sqlxの最後のSELECT文のWHERE句をコメントアウトして、全件対象とする
+        3. source/ga4_fixed_events.sqlxの最後のWHERE句で対象期間を最も古い日1日～今日の5日前に変更
+        4. staging/s_ga4_events_add_session_item.sqlx のサブクエリでm_ga4_sessionテーブルを参照しているので、mart_session、agg_campaign_first_3サブクエリをコメントアウトして、その下にあるagg_campaign_first_3を使用
+        5. m_ga4_event.sqlxとm_ga4_session.sqlxを実行（依存関係を含めるにチェック）
+        7. 1で行ったm_ga4_event.sqlxとm_ga4_session.sqlxのtypeをincrementalにする
+        8. 2で行ったm_ga4_event.sqlxとm_ga4_session.sqlxの最後のSELECT文のWHERE句をもとに戻す
+        9. 3で行ったsource/ga4_fixed_events.sqlxの最後のWHERE句で対象期間をもとに戻す（7日前～5日前）
+        10. 4で行ったstaging/s_ga4_events_add_session_item.sqlx をもとに戻す
+        11. 再びm_ga4_event.sqlxとm_ga4_session.sqlxを実行（依存関係を含めるにチェック）
+        12. 日別セッション数などを確認
+    */
+    type: "incremental",
+    bigquery: {
+        // パーティションとクラスタリングを設定
+        partitionBy: "event_date",
+        clusterBy: ["user_pseudo_id", "ga_session_id", "event_name"]
+    },
+    schema: "df_molts_ga4_mart",
+    description: "GA4マートデータ ECイベントデータ用",
+    dependencies: ["m_ec_event_delete_unfixed"],
+    tags: ["daily", "mart","ec"],
+    columns: {
+        // timestamp
+        event_date: "日付",
+        event_timestamp: "タイムスタンプ（マイクロ秒）",
+        event_timestamp_jst: "タイムスタンプ_日本時間",
+
+        // event
+        event_name: "イベント名",
+        event_bundle_sequence_id: "これらのイベントをまとめたアップロード用バンドルのシーケンシャル ID",
+
+        // ecommerce
+        ecommerce: "ECデータ",
+        items: "商品",       
+
+        // user
+        user_id: "ユーザーID",
+        user_pseudo_id: "ユニークユーザ識別用ID",
+
+        // session
+        ga_session_id: "セッションID",
+        ga_session_number: "通算セッション数",
+
+        // page
+        hostname: "ホスト名",
+        page_location: "URL",
+        page_location_canonicalize: "正規化URL",
+        page_title: "ページタイトル",
+        screen_class: "スクリーンクラス（アプリ）",
+        screen_name: "スクリーン名（アプリ）",
+
+        // event index
+        unique_key: "イベントのユニーク化"
+    }
+}
+
+
+-- Query blocks
+SELECT e.*,
+FROM ${ref("s_ec_event")} e
+-- 初期時は下記をコメントアウトして全件対象とすること
+${ when(incremental(), `WHERE event_date > (SELECT MAX(event_date) FROM ${self()})`)}
+
+
+
