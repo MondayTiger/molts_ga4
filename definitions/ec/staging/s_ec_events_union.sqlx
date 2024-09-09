@@ -6,4 +6,4 @@ config {
     tags: ["daily", "staging","ec"]
 }
 -- Query blocks
-SELECT * FROM ${ref("c_ec_events")}
+SELECT * FROM ${ref("c_ec_events_union")}

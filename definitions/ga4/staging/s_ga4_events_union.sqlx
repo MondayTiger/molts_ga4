@@ -8,12 +8,10 @@ config {
 
 
 -- Query blocks
-SELECT * FROM ${ref("c_ga4_fixed_events")}
+-- SELECT * FROM ${ref("c_ga4_fixed_events")}
+-- UNION ALL
+-- SELECT * FROM ${ref("c_ga4_unfixed_events")}
+-- UNION ALL
+-- SELECT * FROM ${ref("c_ga4_unfixed_events_intraday")}
 
-UNION ALL
-
-SELECT * FROM ${ref("c_ga4_unfixed_events")}
-
-UNION ALL
-
-SELECT * FROM ${ref("c_ga4_unfixed_events_intraday")}
+SELECT * FROM ${ref("c_ga4_events_union")}
