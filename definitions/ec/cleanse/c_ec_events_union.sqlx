@@ -8,13 +8,6 @@ config {
 
 
 -- Query blocks
-with sources AS(
-    SELECT *
-    FROM ${ref("ec_events")}
-    UNION ALL 
-    SELECT *
-    FROM ${ref("ec_events_intraday")}
-)
 SELECT
 
     -- timestamp
@@ -63,4 +56,4 @@ SELECT
     unique_key,
 
 FROM 
-    sources
+    ${ref("ec_events_union")}

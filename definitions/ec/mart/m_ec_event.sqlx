@@ -55,6 +55,9 @@ config {
         screen_name: "スクリーン名（アプリ）",
 
         // event index
+        batch_page_id: "バッチの発生ページ順",
+        batch_ordering_id: "バッチの発生順番",
+        batch_event_index: "イベントの順番",
         unique_key: "イベントのユニーク化"
     }
 }

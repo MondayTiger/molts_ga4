@@ -1,0 +1,799 @@
+-- Config blocks
+config {
+    type: "view",
+    schema: "df_molts_ga4_staging",
+    description: "GA4ステージングデータ セッションデータを追加",
+    tags: ["daily", "staging"],
+    columns: {
+        // timestamp
+        event_date: "日付",
+        event_timestamp: "タイムスタンプ（マイクロ秒）",
+        event_timestamp_jst: "タイムスタンプ_日本時間",
+        entrance_timestamp: "タイムスタンプ（セッション開始）（マイクロ秒）",
+        entrance_timestamp_jst: "タイムスタンプ（セッション開始）_日本時間",
+        exit_timestamp: "タイムスタンプ（離脱）（マイクロ秒）",
+        exit_timestamp_jst: "タイムスタンプ（離脱）_日本時間",
+
+        // event
+        event_name: "イベント名",
+        event_bundle_sequence_id: "これらのイベントをまとめたアップロード用バンドルのシーケンシャル ID",
+
+        // stream / platform
+        stream_id: "ストリームID",
+        platform: "プラットフォーム",
+
+        // user
+        user_id: "ユーザーID",
+        user_pseudo_id: "ユニークユーザ識別用ID",
+        user_first_touch_timestamp: "ユーザーが初めてアプリを起動したか、サイトに訪れた時刻（マイクロ秒単位）",
+
+        // user_acquistion_channel
+        user_traffic_source: "集客：ユーザー獲得参照元",
+        user_traffic_medium: "集客：ユーザー獲得メディア",
+        user_traffic_campaign: "集客：ユーザー獲得キャンペーン",
+
+        // session
+        ga_session_id: "セッションID",
+        ga_session_number: "通算セッション数",
+        session_engaged: "エンゲージメントセッション",
+        session_duration: "セッション時間（秒）",
+        session_total_engagement_time: "セッション合計エンゲージメント時間（秒）",
+        session_total_page_view: "セッション合計ページビュー",
+        session_total_screen_view: "セッション合計スクリーンビュー",
+        is_bounce_no_transition: "直帰_遷移なし",
+        is_bounce_no_engagement: "直帰_エンゲージメントなし（session_engagedベース）",
+        is_bounce_no_engagement_manual : "直帰_エンゲージメントなし（手動）",
+
+        // event_acquisition_channel
+        event_traffic_source: "集客：イベントの参照元",
+        event_traffic_medium: "集客：イベントのメディア",
+        event_traffic_campaign: "集客：イベントのキャンペーン",
+        event_traffic_content: "集客：イベントの広告のコンテンツ",
+        event_traffic_term: "集客：イベントの検索キーワード",
+        event_traffic_source_platform: "集客：イベントの参照元プラットフォーム",
+        event_traffic_creative_format: "集客：イベントのクリエイティブのタイプ",
+        event_traffic_marketing_tactic: "集客：イベントのターゲティング条件",
+        event_traffic_campaign_id: "集客：イベントのキャンペーンID（utm_id）",
+        event_traffic_gclid: "集客：イベントのgclid",
+
+        // session_acquisition_channel
+        session_traffic_source: "集客：セッションの参照元",
+        session_traffic_medium: "集客：セッションのメディア",
+        session_traffic_campaign: "集客：セッションのキャンペーン",
+        session_traffic_content: "集客：セッションの広告のコンテンツ",
+        session_traffic_term: "集客：セッションの検索キーワード",
+        session_traffic_source_platform: "集客：セッションの参照元プラットフォーム",
+        session_traffic_creative_format: "集客：セッションのクリエイティブのタイプ",
+        session_traffic_marketing_tactic: "集客：セッションのターゲティング条件",
+        session_traffic_campaign_id: "集客：セッションのキャンペーンID（utm_id）",
+        session_traffic_gclid: "集客：セッションのgclid",
+
+        // device
+        device_category: "デバイス カテゴリ",
+        device_mobile_brand_name: "デバイスのブランド名",
+        device_mobile_model_name: "デバイスのモデル名",
+        device_mobile_marketing_name: "デバイスのマーケティング名",
+        device_mobile_os_hardware_model: "オペレーティング システムから直接取得したデバイスのモデル情報",
+        operating_system: "OS",
+        operating_system_version: "OSのバージョン",
+        device_vendor_id: "IDFV（IDFA を収集していない場合にのみ使用）",
+        device_advertising_id: "広告 ID または IDFA",
+        language: "言語",
+        is_limited_ad_tracking: "デバイスの広告トラッキング制限の設定 iOS14 以降では、IDFA がゼロ以外の場合、false が返される",
+        time_zone_offset_seconds: "GMT との時差（秒単位）",
+        browser: "ブラウザ",
+        browser_version: "ブラウザのバージョン",
+
+        // geo
+        geo_continent: "大陸",
+        geo_sub_continent: "亜大陸",
+        geo_country: "国",
+        geo_region: "地域",
+        geo_metro: "大都市圏",
+        geo_city: "市区町村",
+
+        // privacy_info
+        privacy_info_analytics_storage: "ユーザーに対してアナリティクスのデータ保存が有効になっているかどうか",
+        privacy_info_ads_storage: "ユーザーに対して広告ターゲティングが有効になっているかどうか",
+        privacy_info_uses_transient_token: "ウェブユーザーがアナリティクスでのデータ保存を拒否し、デベロッパーがサーバーデータの一時的なトークンに基づいて Cookie を使用しない測定を有効にしているかどうか",
+
+        // page
+        hostname: "ホスト名",
+        page_location: "URL",
+        page_location_canonicalize: "正規化URL",
+        content_group: "コンテンツグループ",
+        page_title: "ページタイトル",
+        entrances: "閲覧開始フラグ(GA4の entrances イベントパラメータ)",
+        entrance_page: "セッション内の閲覧開始ページ",
+        exit_page: "セッション内の離脱ページ",
+        flg_reload: "リロードフラグ",
+
+        // referrer
+        page_referrer: "リファラー",
+
+        // scroll
+        percent_scrolled: "スクロールの割合",
+
+        // event_tracking (Click Tracking)
+        event_category: "イベント カテゴリ",
+        event_action: "イベント アクション",
+        event_label: "イベント ラベル",
+        link_id: "要素ID",
+        link_classes: "要素クラス",
+        link_domain: "リンク先ドメイン",
+        link_url: "リンク先URL",
+        link_url_canonicalize: "正規化リンク先URL",
+        link_text: "リンクテキスト",
+        outbound: "アウトバウンド",
+        file_extension: "ファイルの拡張子",
+        file_name: "ファイル名",
+
+        // video
+        video_title: "動画タイトル",
+        video_provider: "動画プロバイダー",
+        video_url: "動画URL",
+        visible: "動画ビジブル",
+        video_current_time: "動画の現在の時間",
+        video_duration: "動画の長さ",
+        video_percent: "動画再生率",
+
+        // search_results
+        search_term: "サイト内検索キーワード",
+
+        // experiment (a/b testing)
+        experiment_id: "A/BテストのテストID",
+        variant_id: "A/BテストのバリエーションID",
+
+        // engagement_time
+        engagement_time_msec: "エンゲージメント時間（ミリ秒）",
+
+        // traffic_type (excluding IP address)
+        traffic_type: "トラフィックタイプ（関係者アクセス）",
+
+        // debug_mode
+        debug_mode: "デバッグモード",
+        debug_event: "デバッグモード",
+
+        // add_column
+        is_fixed_data: "FIXしたデータか",
+
+        // event_parameter clarity
+        claritydimension: "Microsoft ClarityのURL",
+
+        // event_parameter article
+        estimate_read_time: "推定読了時間",
+        estimate_read_time_percent: "読了割合",
+
+        // event_parameter core web vitals
+        cwv_id: "Core Web VitalsのID",
+        cwv_value: "Core Web Vitalsのvalue",
+        cwv_delta: "Core Web Vitalsのdelta",
+
+        // event index
+        batch_page_id: "バッチの発生ページ順",
+        batch_ordering_id: "バッチの発生順番",
+        batch_event_index: "イベントの順番",
+
+        unique_key: "イベントのユニーク化",
+        event_index: "イベント順番（日付＋4桁の番号）※直近の日付で日をまたいだセッションのイベントについては番号が前日から連番になるので、日付+0001で始まらない場合がある"
+
+    }
+}
+
+
+-- Query blocks
+-- s_ga4_events_exclude_internal.sqlx
+-- 対象外のイベントを除外
+WITH exclude_internal AS(
+    SELECT
+        *
+    FROM
+        ${ref("s_ga4_events_union")}
+    WHERE
+        debug_mode IS NULL -- デバッグモードを除外
+        AND debug_event IS NULL -- デバッグモードを除外
+        AND traffic_type IS NULL -- 内部アクセスを除外
+        AND (
+            hostname IN ('${constants.HOSTNAME1}','${constants.HOSTNAME2}') -- 計測対象ドメインを追加 
+            OR event_name IN ('${constants.MP_EVENT1}','${constants.MP_EVENT2}') -- Measurement Protocolなどhostnameがないケースに設定
+        )
+),
+-- s_ga4_events_update.sqlx
+-- イベントの順番付け
+event_update AS(
+    SELECT
+        * EXCEPT(batch_page_id, batch_ordering_id, batch_event_index),
+        COALESCE(batch_page_id,0) AS batch_page_id,
+        COALESCE(batch_ordering_id,0) AS batch_ordering_id,
+        COALESCE(batch_event_index,0) AS batch_event_index,
+        -- イベント名による順番（表示系や自動的に発生するイベント＞クリックなどユーザーの行動によって発生するイベント）
+        CASE WHEN event_name IN ('session_start') THEN 1
+            WHEN event_name IN ('first_open','first_visit') THEN 2
+            WHEN event_name IN ('page_view','screen_view') THEN 3
+            WHEN event_name LIKE 'log%in%' THEN 4
+            WHEN event_name LIKE 'log%out%' THEN 4
+            WHEN event_name IN ('purcahse','refund') THEN 5
+            WHEN event_name IN ('view_promotion','view_item','view_item_list','view_cart') THEN 6
+            WHEN event_name LIKE 'view_%' THEN 7
+            WHEN event_name IN ('begin_checkout','add_to_cart','remove_from_cart') THEN 8
+            WHEN event_name LIKE "select_%" THEN 9
+            WHEN event_name LIKE "add_%" THEN 10
+            ELSE 1000 END AS event_index
+    FROM
+        exclude_internal
+)
+, event_update2 AS(
+    SELECT * EXCEPT(event_index),
+    SAFE_CAST(CONCAT(FORMAT_DATE("%Y%m%d",event_date),FORMAT('%04d',ROW_NUMBER() OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp, batch_page_id,batch_ordering_id,batch_event_index,event_index,event_name,unique_key))) AS INT64) AS event_index --日をまたいだセッションの場合、 日次でクエリを実行する際に古い日のイベントがクエリの対象から外れてしまい1が複数存在してしまうため、日付を入れて重複を避ける。また桁数を揃えることで文字列のまま判定できるようにする
+    FROM event_update
+),
+-- 以下 s_ga4_events_add_session_item.sqlx
+-- 各セッションの訪問日時、離脱日時、最初と最後のページ
+ga AS (
+    SELECT
+        *,
+        -- Entrance/Exit Timestamp
+        ${helpers.getFirstValue('event_timestamp','entrance_timestamp')},
+        ${helpers.getLastValue('event_timestamp','exit_timestamp')},
+        ${helpers.getFirstValue('event_timestamp_jst','entrance_timestamp_jst')},
+        ${helpers.getLastValue('event_timestamp_jst','exit_timestamp_jst')},
+
+        -- Landing/Exit Page
+        ${helpers.getFirstValue('page_location','entrance_page')},
+        ${helpers.getLastValue('page_location','exit_page')},
+
+        -- traffic_source
+        ${helpers.getFirstValue('event_traffic_campaign','session_traffic_campaign')},
+
+    FROM
+	    event_update2
+),
+-- 参照元の追加処理。session_startの参照元などを取得
+session_start AS(
+    SELECT *
+    FROM(
+        SELECT 
+            user_pseudo_id,
+            ga_session_id,
+            ARRAY_AGG(STRUCT(
+                g.event_traffic_source,
+                g.event_traffic_medium,
+                g.event_traffic_campaign,
+                g.event_traffic_content,
+                g.event_traffic_term,
+                g.event_traffic_source_platform,
+                g.event_traffic_creative_format,
+                g.event_traffic_marketing_tactic,
+                g.event_traffic_campaign_id,
+                g.event_traffic_gclid
+            ) ORDER BY event_timestamp ASC LIMIT 1)[OFFSET(0)].*
+        FROM ga g
+        WHERE event_name ="session_start"
+        GROUP BY ALL
+    ) 
+    WHERE event_traffic_source IS NOT NULL AND event_traffic_source NOT IN("(not set)","(direct)")  -- 対象となったsession_startイベントのevent_traffic_sourceがNULLや (not set), (direct)の場合は値を返さない ※(not set)や(direct)はないはずですが念のため
+),
+-- 参照元などが入っているイベントのうち一番古いものを取得
+agg_campaign AS(
+    SELECT 
+        user_pseudo_id,
+        ga_session_id,
+        ARRAY_AGG(STRUCT(
+            g.event_traffic_source,
+            g.event_traffic_medium,
+            g.event_traffic_campaign,
+            g.event_traffic_content,
+            g.event_traffic_term,
+            g.event_traffic_source_platform,
+            g.event_traffic_creative_format,
+            g.event_traffic_marketing_tactic,
+            g.event_traffic_campaign_id,
+            g.event_traffic_gclid
+        ) ORDER BY event_timestamp ASC LIMIT 1)[OFFSET(0)].*
+    FROM ga g
+    WHERE (
+        g.event_traffic_source IS NOT NULL AND g.event_traffic_source NOT IN("(not set)","(direct)","(none)") 
+    )OR (
+        g.event_traffic_medium IS NOT NULL AND g.event_traffic_medium NOT IN("(not set)","(direct)","(none)") 
+    )OR (
+        g.event_traffic_campaign IS NOT NULL AND g.event_traffic_campaign NOT IN("(not set)","(direct)","(none)") 
+    )
+    GROUP BY ALL
+),
+-- session_startに参照元(event_traffic_source）が入っていればそれを採用。ない場合はイベントから取得。session_traffic_mediumなどでもIF(s.event_traffic_source IS NOT NULLとしているのは、event_traffic_mediumとしてしまうと、sourceはsession_startから取得しmediumはイベントから取得というミスを防ぐため
+agg_campaign_first_2 AS(
+    SELECT 
+        user_pseudo_id,
+        ga_session_id,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_source, a.event_traffic_source) AS session_traffic_source,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_medium, a.event_traffic_medium) AS session_traffic_medium,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_campaign, a.event_traffic_campaign) AS session_traffic_campaign,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_content, a.event_traffic_content) AS session_traffic_content,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_term, a.event_traffic_term) AS session_traffic_term,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_source_platform, a.event_traffic_source_platform) AS session_traffic_source_platform,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_creative_format , a.event_traffic_creative_format ) AS session_traffic_creative_format,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_marketing_tactic, a.event_traffic_marketing_tactic) AS session_traffic_marketing_tactic,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_campaign_id, a.event_traffic_campaign_id) AS session_traffic_campaign_id,
+        IF(s.event_traffic_source IS NOT NULL, s.event_traffic_gclid, a.event_traffic_gclid) AS session_traffic_gclid
+    FROM agg_campaign a FULL JOIN session_start s USING(user_pseudo_id, ga_session_id)
+),
+-- 過去にセッション情報が存在する場合はそれを採用 ※初期導入時はこのサブクエリはエラーになるため、要修正
+mart_session AS(
+    SELECT 
+        user_pseudo_id,
+        ga_session_id,
+        ARRAY_AGG(STRUCT(
+            session_traffic_source,
+            session_traffic_medium,
+            session_traffic_campaign,
+            session_traffic_content,
+            session_traffic_term,
+            session_traffic_source_platform,
+            session_traffic_creative_format,
+            session_traffic_marketing_tactic,
+            session_traffic_campaign_id,
+            session_traffic_gclid
+        ) ORDER BY event_date, entrance_timestamp,exit_timestamp ASC LIMIT 1)[OFFSET(0)].*
+    FROM `${constants.GA4_DATABASE}.${constants.MART}.m_ga4_session` 
+    WHERE event_date >= DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 10 DAY)
+    GROUP BY ALL
+),
+agg_campaign_first_3 AS(
+    SELECT 
+        user_pseudo_id,
+        ga_session_id,
+        ARRAY_AGG(STRUCT(
+            COALESCE(m.session_traffic_source, a.session_traffic_source) AS session_traffic_source,
+            COALESCE(m.session_traffic_medium, a.session_traffic_medium) AS session_traffic_medium,
+            COALESCE(m.session_traffic_campaign, a.session_traffic_campaign) AS session_traffic_campaign,
+            COALESCE(m.session_traffic_content, a.session_traffic_content) AS session_traffic_content,
+            COALESCE(m.session_traffic_term, a.session_traffic_term) AS session_traffic_term,
+            COALESCE(m.session_traffic_source_platform, a.session_traffic_source_platform) AS session_traffic_source_platform,
+            COALESCE(m.session_traffic_creative_format, a.session_traffic_creative_format) AS session_traffic_creative_format,
+            COALESCE(m.session_traffic_marketing_tactic, a.session_traffic_marketing_tactic) AS session_traffic_marketing_tactic,
+            COALESCE(m.session_traffic_campaign_id, a.session_traffic_campaign_id) AS session_traffic_campaign_id,
+            COALESCE(m.session_traffic_gclid, a.session_traffic_gclid) AS session_traffic_gclid
+        ) LIMIT 1)[OFFSET(0)].*
+    FROM agg_campaign_first_2 a LEFT JOIN mart_session m 
+    USING(user_pseudo_id, ga_session_id)
+    GROUP BY ALL
+),
+/*
+--初期導入時はm_ga4_sessionテーブルがないのでmart_session、agg_campaign_first_3サブクエリをコメントアウトしてこちらを採用
+agg_campaign_first_3 AS(
+    SELECT 
+        user_pseudo_id,
+        ga_session_id,
+        ARRAY_AGG(STRUCT(
+            COALESCE(NULL, a.session_traffic_source) AS session_traffic_source,
+            COALESCE(NULL, a.session_traffic_medium) AS session_traffic_medium,
+            COALESCE(NULL, a.session_traffic_campaign) AS session_traffic_campaign,
+            COALESCE(NULL, a.session_traffic_content) AS session_traffic_content,
+            COALESCE(NULL, a.session_traffic_term) AS session_traffic_term,
+            COALESCE(NULL, a.session_traffic_source_platform) AS session_traffic_source_platform,
+            COALESCE(NULL, a.session_traffic_creative_format) AS session_traffic_creative_format,
+            COALESCE(NULL, a.session_traffic_marketing_tactic) AS session_traffic_marketing_tactic,
+            COALESCE(NULL, a.session_traffic_campaign_id) AS session_traffic_campaign_id,
+            COALESCE(NULL, a.session_traffic_gclid) AS session_traffic_gclid
+        ) LIMIT 1)[OFFSET(0)].*
+    FROM agg_campaign_first_2 a 
+    GROUP BY ALL
+)
+*/
+add_traffic_source AS (
+    SELECT
+
+        -- timestamp
+        g.event_date,
+        g.event_timestamp,
+        g.event_timestamp_jst,
+        g.entrance_timestamp,
+        g.exit_timestamp,
+        g.entrance_timestamp_jst,
+        g.exit_timestamp_jst,
+
+        -- event
+        g.event_name,
+        g.event_bundle_sequence_id,
+
+        -- stream / platform
+        g.stream_id,
+        g.platform,
+
+        -- user
+        g.user_id,
+        g.user_pseudo_id,
+        g.user_first_touch_timestamp,
+
+        -- user_acquistion_channel
+        g.user_traffic_source,
+        g.user_traffic_medium,
+        g.user_traffic_campaign,
+
+        -- session
+        g.ga_session_id,
+        g.ga_session_number,
+
+        -- event_acquisition_channel
+        g.event_traffic_source,
+        g.event_traffic_medium,
+        g.event_traffic_campaign,
+        g.event_traffic_campaign_id, -- utm_id
+        g.event_traffic_content,
+        g.event_traffic_term,
+        g.event_traffic_source_platform,
+        g.event_traffic_creative_format ,
+        g.event_traffic_marketing_tactic,
+        g.event_traffic_gclid,
+
+        -- device
+        g.device_category,
+        g.device_mobile_brand_name,
+        g.device_mobile_model_name,
+        g.device_mobile_marketing_name,
+        g.device_mobile_os_hardware_model,
+        g.operating_system,
+        g.operating_system_version,
+        g.device_vendor_id,
+        g.device_advertising_id,
+        g.language,
+        g.is_limited_ad_tracking,
+        g.time_zone_offset_seconds,
+        g.browser,
+        g.browser_version,
+
+        -- geo
+        geo_continent,
+        geo_sub_continent,
+        geo_country,
+        geo_region,
+        geo_metro,
+        geo_city,
+
+        -- privacy_info
+        g.privacy_info_analytics_storage,
+        g.privacy_info_ads_storage,
+        g.privacy_info_uses_transient_token,
+
+        -- page
+        g.hostname,
+        g.page_location,
+        g.page_location_canonicalize,
+        g.content_group,
+        g.page_title,
+        g.entrances,
+        g.entrance_page,
+        g.exit_page,
+        g.flg_reload, -- original
+
+        -- referrer
+        g.page_referrer,
+
+        -- scroll
+        g.percent_scrolled,
+
+        -- event_tracking (Click Tracking)
+        g.event_category,
+        g.event_action,
+        g.event_label,
+        g.link_id,
+        g.link_classes,
+        g.link_domain,
+        g.link_url,
+        g.link_url_canonicalize,
+        g.link_text,
+        g.outbound,
+        g.file_extension,
+        g.file_name,
+
+        -- video
+        g.video_title,
+        g.video_provider,
+        g.video_url,
+        g.visible,
+        g.video_current_time,
+        g.video_duration,
+        g.video_percent,
+
+        -- view_search_results
+        g.search_term,
+
+        -- experiment (a/b testing)
+        experiment_id,
+        variant_id,
+
+        -- engagement_time_msec
+        g.engagement_time_msec,
+
+        -- traffic_type (excluding IP address)
+        g.traffic_type,
+
+        -- session_acquisition_channel
+        a.session_traffic_source,
+        a.session_traffic_medium,
+        a.session_traffic_campaign,
+        a.session_traffic_campaign_id,
+        a.session_traffic_content,
+        a.session_traffic_term,
+        a.session_traffic_source_platform,
+        a.session_traffic_creative_format,
+        a.session_traffic_marketing_tactic,
+        a.session_traffic_gclid,
+
+        -- debug_mode
+        g.debug_mode,
+        g.debug_event,
+
+        -- add_column
+        g.is_fixed_data,
+
+        -- event_parameter clarity
+        g.claritydimension,
+
+        -- event_parameter article
+        g.estimate_read_time,
+        g.estimate_read_time_percent,
+
+        -- event_parameter core web vitals
+        g.cwv_id,
+        g.cwv_value,
+        g.cwv_delta,
+
+        -- event index
+        g.batch_page_id,
+        g.batch_ordering_id,
+        g.batch_event_index,
+
+        g.unique_key,
+        g.event_index,
+        FROM
+            ga AS g
+           LEFT JOIN agg_campaign_first_3 AS a
+--            LEFT JOIN (SELECT * FROM agg_campaign_first_2 WHERE row_num = 1) AS a
+                USING (user_pseudo_id, ga_session_id)
+),
+
+-- セッション時間の処理
+calculate_session_duration AS (
+    SELECT
+	    user_pseudo_id,
+	    ga_session_id,
+	    (exit_timestamp - entrance_timestamp) / 1000000 AS session_duration
+    FROM
+        ga
+    GROUP BY ALL
+--        1,2,3 -- ALLに変更
+),
+calculate_engagement_time AS (
+    SELECT 
+	    user_pseudo_id,
+	    ga_session_id,
+	    SUM(engagement_time_msec) / 1000 AS session_total_engagement_time
+    FROM (
+        -- engagementが生じていた時間のデータを抽出する
+        SELECT 
+            user_pseudo_id,
+            ga_session_id,
+            event_bundle_sequence_id, -- 一度に発生したイベントを1つにまとめるためのID
+            engagement_time_msec,
+        FROM 
+            ga
+        GROUP BY ALL 
+    )
+    GROUP BY ALL
+),
+-- 直帰の処理
+calculate_sum_pv_sv AS (
+    SELECT
+        user_pseudo_id,
+        ga_session_id,
+        --page_viewとscreen_viewのイベントの発生回数を数える
+        COUNT(CASE WHEN event_name = 'page_view' THEN event_name END) AS session_total_page_view,
+        COUNT(CASE WHEN event_name = 'screen_view' THEN event_name END) AS session_total_screen_view,
+        -- session_engagedベースの直帰判定
+        CASE 
+            WHEN MAX(session_engaged) = 1 THEN FALSE
+            WHEN MAX(session_engaged) = 0 THEN TRUE
+            WHEN MAX(session_engaged) IS NULL THEN TRUE
+        ELSE FALSE END AS is_bounce_no_engagement 
+    FROM
+        ga
+    GROUP BY ALL
+),
+join_data AS (
+    SELECT
+        t.*,
+        s.session_duration,
+        e.session_total_engagement_time,
+        v.session_total_page_view,
+        v.session_total_screen_view,
+        IF(v.session_total_page_view + v.session_total_screen_view <= 1, true, false) AS is_bounce_no_transition, --page_viewとscreen_viewの和が1以下のユーザーを直帰判定（true）とする
+        v.is_bounce_no_engagement,
+        -- 手動による直帰判定
+        CASE
+            WHEN s.session_duration < 10 THEN true -- エンゲージメント秒数の定義。10秒を変更している場合は 10 を変更する。
+            WHEN v.session_total_page_view + v.session_total_screen_view <= 1 THEN true
+            ELSE false END AS is_bounce_no_engagement_manual 
+    FROM
+        add_traffic_source as t
+    LEFT JOIN calculate_session_duration as s
+        USING (user_pseudo_id, ga_session_id)
+    LEFT JOIN calculate_engagement_time as e
+        USING (user_pseudo_id, ga_session_id)
+    LEFT JOIN calculate_sum_pv_sv AS v
+        USING (user_pseudo_id, ga_session_id)
+)
+SELECT
+    -- timestamp
+    event_date,
+    event_timestamp,
+    event_timestamp_jst,
+    entrance_timestamp,
+    entrance_timestamp_jst,
+    exit_timestamp,
+    exit_timestamp_jst,
+
+    -- event
+    event_name,
+    event_bundle_sequence_id,
+
+    -- stream / platform
+    stream_id,
+    platform,
+
+    -- user
+    user_id,
+    user_pseudo_id,
+    ${helpers.getFirstValue('user_first_touch_timestamp','user_first_touch_timestamp')},
+
+    -- user_acquistion_channel
+    IFNULL(${helpers.getFirstValueNoColumnName('user_traffic_source')},"(direct)") AS user_traffic_source,
+    IFNULL(${helpers.getFirstValueNoColumnName('user_traffic_medium')},"(none)") AS user_traffic_medium,
+    IFNULL(${helpers.getFirstValueNoColumnName('user_traffic_campaign')},"(direct)") AS user_traffic_campaign,
+
+    -- session
+    ga_session_id,
+    ga_session_number,
+    session_duration,
+    session_total_engagement_time,
+    session_total_page_view,
+    session_total_screen_view,
+    is_bounce_no_transition,
+    is_bounce_no_engagement,
+    is_bounce_no_engagement_manual,
+
+    -- event_acquisition_channel
+    event_traffic_source,
+    event_traffic_medium,
+    event_traffic_campaign,
+    event_traffic_campaign_id,
+    event_traffic_content,
+    event_traffic_term,
+    event_traffic_source_platform,
+    event_traffic_creative_format ,
+    event_traffic_marketing_tactic,
+    event_traffic_gclid,
+
+    -- session_acquisition_channel
+    IFNULL(session_traffic_source,"(direct)") AS session_traffic_source,
+    IFNULL(session_traffic_medium,"(none)") AS session_traffic_medium,
+    IFNULL(session_traffic_campaign,"(direct)") AS session_traffic_campaign,
+    session_traffic_campaign_id,
+    session_traffic_content,
+    session_traffic_term,
+    session_traffic_source_platform,
+    session_traffic_creative_format,
+    session_traffic_marketing_tactic,
+    session_traffic_gclid,
+
+    -- device
+    device_category,
+    device_mobile_brand_name,
+    device_mobile_model_name,
+    device_mobile_marketing_name,
+    device_mobile_os_hardware_model,
+    operating_system,
+    operating_system_version,
+    device_vendor_id,
+    device_advertising_id,
+    language,
+    is_limited_ad_tracking,
+    time_zone_offset_seconds,
+    browser,
+    browser_version,
+
+    -- geo
+    geo_continent,
+    geo_country,
+    geo_region,
+    geo_city,
+    geo_sub_continent,
+    geo_metro,
+
+    -- privacy_info
+    privacy_info_analytics_storage,
+    privacy_info_ads_storage,
+    privacy_info_uses_transient_token,
+
+    -- page
+    hostname,
+    page_location,
+    page_location_canonicalize,
+    content_group,
+    page_title,
+    entrances,
+    entrance_page,
+    exit_page,
+    flg_reload, -- original
+
+    -- referrer
+    page_referrer,
+
+    -- scroll
+    percent_scrolled,
+
+    -- event_tracking (Click Tracking)
+    event_category,
+    event_action,
+    event_label,
+    link_id,
+    link_classes,
+    link_domain,
+    link_url,
+    link_url_canonicalize,
+    link_text,
+    outbound,
+    file_extension,
+    file_name,
+
+    -- video
+    video_title,
+    video_provider,
+    video_url,
+    visible,
+    video_current_time,
+    video_duration,
+    video_percent,
+
+    -- search_results
+    search_term,
+
+    -- experiment (a/b testing)
+    experiment_id,
+    variant_id,
+
+    -- engagement_time
+    engagement_time_msec,
+
+    -- traffic_type (excluding IP address)
+    traffic_type,
+
+    -- debug_mode
+    debug_mode,
+    debug_event,
+
+    -- add_column
+    is_fixed_data,
+
+    -- event_parameter clarity
+    claritydimension,
+
+    -- event_parameter article
+    estimate_read_time,
+    estimate_read_time_percent,
+
+    -- event_parameter core web vitals
+    cwv_id,
+    cwv_value,
+    cwv_delta,
+
+    -- event index
+    batch_page_id,
+    batch_ordering_id,
+    batch_event_index,
+
+    unique_key,
+    event_index,
+
+FROM
+    join_data

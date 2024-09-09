@@ -175,6 +175,9 @@ config {
         cwv_delta: "Core Web Vitalsのdelta",
 
         // event index
+        batch_page_id: "バッチの発生ページ順",
+        batch_ordering_id: "バッチの発生順番",
+        batch_event_index: "イベントの順番",
         unique_key: "イベントのユニーク化",
         event_index: "イベント順番（日付＋4桁の番号）※直近の日付で日をまたいだセッションのイベントについては番号が前日から連番になるので、日付+0001で始まらない場合がある"
 
@@ -187,7 +190,7 @@ WITH ga AS (
     SELECT
         *
     FROM
-        ${ref("s_ga4_events_add_session_item")}
+        ${ref("s_ga4_events_add_session_item2")}
 ),
 
 pv_data_1 AS (
@@ -400,6 +403,10 @@ SELECT
     g.cwv_delta,
 
     -- event index
+    g.batch_page_id,
+    g.batch_ordering_id,
+    g.batch_event_index,
+
     g.unique_key,
     g.event_index,
 
@@ -412,5 +419,4 @@ FROM
         AND g.event_timestamp <= p2.pv_end_time
         AND g.user_pseudo_id = p2.user_pseudo_id
         AND g.ga_session_id = p2.ga_session_id
---WHERE event_date >= (SELECT MAX(event_date) FROM ga WHERE is_fixed_data = true) -- is_fixed_data のうち古い2日分を削除
 

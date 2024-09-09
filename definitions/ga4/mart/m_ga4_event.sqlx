@@ -194,6 +194,13 @@ config {
         cwv_value: "Core Web Vitalsのvalue",
         cwv_delta: "Core Web Vitalsのdelta",
 
+        // event index
+        batch_page_id: "バッチの発生ページ順",
+        batch_ordering_id: "バッチの発生順番",
+        batch_event_index: "イベントの順番",        
+        unique_key: "イベントのユニーク化",
+        event_index: "イベント順番（日付＋4桁の番号）※直近の日付で日をまたいだセッションのイベントについては番号が前日から連番になるので、日付+0001で始まらない場合がある",
+
         // session_traffic_source_last_clickの参照元
         session_traffic_source_last_click:{
             description: "集客：セッションの参照元情報",
@@ -225,10 +232,7 @@ config {
                     } 
                 }
             }
-        },
-        // event index
-        unique_key: "イベントのユニーク化",
-        event_index: "イベント順番（日付＋4桁の番号）※直近の日付で日をまたいだセッションのイベントについては番号が前日から連番になるので、日付+0001で始まらない場合がある"
+        }
     }
 }
 
