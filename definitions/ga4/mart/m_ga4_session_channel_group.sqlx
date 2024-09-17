@@ -1,0 +1,134 @@
+-- Config blocks
+config {
+    type: "view",
+    schema: "df_molts_ga4_mart",
+    description: "GA4マート チャネルグループ",
+    tags: ["daily", "mart"],
+
+    columns: {
+        user_pseudo_id: "ユニークユーザ識別用ID",
+        ga_session_id: "セッションID",
+        entrance_timestamp: "タイムスタンプ（セッション開始）（マイクロ秒）",
+        session_traffic_source: "集客：セッションの参照元",
+        session_traffic_medium: "集客：セッションのメディア",
+        session_traffic_campaign:"集客：セッションのキャンペーン",
+        entrance_page: "セッション内の閲覧開始ページ",
+        entrance_host: "セッション内の閲覧開始ホスト名",
+        entrance_path: "セッション内の閲覧開始ページパス",
+        channel_group:"デフォルトチャネルグループ",
+        custom_channel_group:"カスタムチャネルグループ",
+        lp_group:"LPグループ",
+        domain:"ドメイングループ"
+    }
+}
+
+-- Query blocks
+WITH channel_group_table AS (
+  SELECT
+    user_pseudo_id,
+    ga_session_id,
+    entrance_timestamp,
+    session_traffic_source,
+    session_traffic_medium,
+    session_traffic_campaign,
+    g.entrance_page,
+    NET.HOST(g.entrance_page) AS entrance_host,
+    REGEXP_EXTRACT(g.entrance_page, r'^https?://[^/]+(/.*)$') AS entrance_path,
+    CASE
+      -- 独自チャネル（最優先）を以下に記載
+      -- Google ヘルプに即した分類条件 https://support.google.com/analytics/answer/9756891?hl=ja
+      --　Channels for Merchant Center traffic
+      WHEN g.session_traffic_source = '(direct)' AND g.session_traffic_medium IN ('(none)','(not set)') THEN 'Direct'
+      WHEN g.session_traffic_campaign LIKE '%cross-network%' THEN 'Cross-network'
+      WHEN REGEXP_CONTAINS(g.session_traffic_campaign, r'.*(shop|shopping).*$') AND REGEXP_CONTAINS(g.session_traffic_medium, r'^(.*cp.*|ppc|retargeting|paid.*)$') THEN 'Paid Shopping'
+      WHEN g.session_traffic_medium IN ('display', 'banner', 'expandable', 'interstitial', 'cpm') THEN 'Display'
+      WHEN g.session_traffic_medium IN ('social', 'social-network', 'social-media', 'sm', 'social network', 'social media') THEN 'Organic Social'
+      WHEN REGEXP_CONTAINS(g.session_traffic_medium, r'^(.*video.*)$') THEN 'Organic Video'
+      WHEN g.session_traffic_medium = 'organic' AND c.category = 'SOURCE_CATEGORY_SEARCH' THEN 'Organic Search'
+      WHEN REGEXP_CONTAINS(g.session_traffic_campaign, r'.^(.*(([^a-df-z]|^)shop|shopping).*)$') THEN 'Organic Shopping' 
+      WHEN g.session_traffic_medium IN ('app') THEN 'App'
+      WHEN g.session_traffic_medium IN ('referral','link') THEN 'Referral'
+      WHEN g.session_traffic_source IN('email','e-mail','e_mail','e mail') THEN 'Email'
+      WHEN g.session_traffic_medium IN('email','e-mail','e_mail','e mail')  THEN 'Email'
+      WHEN g.session_traffic_medium = 'affiliate' THEN 'Affiliates'
+      WHEN g.session_traffic_medium = 'audio' THEN 'Audio'
+      WHEN g.session_traffic_source = 'sms' THEN 'SMS'
+      WHEN g.session_traffic_medium = 'sms' THEN 'SMS'
+      WHEN g.session_traffic_medium LIKE '%push' THEN 'Mobile Push Notifications'
+      WHEN g.session_traffic_medium LIKE '%mobile%' THEN 'Mobile Push Notifications'
+      WHEN g.session_traffic_medium LIKE '%notification%' THEN 'Mobile Push Notifications'
+      WHEN g.session_traffic_source = 'firebase' THEN 'Mobile Push Notifications'
+      -- Google ヘルプ内の参照元変換表リストに即した分類条件 https://support.google.com/analytics/answer/9756891?hl=ja > アナリティクスの参照元とカテゴリのリスト
+      WHEN c.category = 'SOURCE_CATEGORY_SHOPPING' AND REGEXP_CONTAINS(g.session_traffic_medium, r'^(.*cp.*|ppc|retargeting|paid.*)$') THEN 'Paid Shopping'
+      WHEN c.category = 'SOURCE_CATEGORY_SEARCH' AND REGEXP_CONTAINS(g.session_traffic_medium, r'^(.*cp.*|ppc|retargeting|paid.*)$') THEN 'Paid Search'
+      WHEN c.category = 'SOURCE_CATEGORY_SOCIAL' AND REGEXP_CONTAINS(g.session_traffic_medium, r'^(.*cp.*|ppc|retargeting|paid.*)$') THEN 'Paid Social'
+      WHEN c.category = 'SOURCE_CATEGORY_VIDEO' AND REGEXP_CONTAINS(g.session_traffic_medium, r'^(.*cp.*|ppc|retargeting|paid.*)$') THEN 'Paid Video'
+      WHEN c.category = 'SOURCE_CATEGORY_SHOPPING' THEN 'Organic Shopping'
+      WHEN c.category = 'SOURCE_CATEGORY_SOCIAL' THEN 'Organic Social'
+      WHEN c.category = 'SOURCE_CATEGORY_VIDEO' THEN 'Organic Video'
+      WHEN REGEXP_CONTAINS(g.session_traffic_medium, r'^(.*cp.*|ppc|retargeting|paid.*)$') THEN 'Paid Other'
+      -- 独自チャネル（その他条件）を以下に記載
+      ELSE 'Unassigned' END AS channel_group
+  FROM
+    ${ref("m_ga4_session")} AS g
+    LEFT JOIN  `${constants.CHANNEL_GROUP_TABLE}` AS c
+      ON g.session_traffic_source = c.category
+)
+
+SELECT
+  * EXCEPT(entrance_timestamp),
+  CASE
+    WHEN channel_group = 'Cross-network' THEN 'Cross-network'
+    WHEN channel_group = 'Paid Shopping' THEN 'Paid Shopping'
+    WHEN channel_group = 'Paid Search' OR session_traffic_medium IN ('cpc', 'lis') THEN 'Paid Search'
+    WHEN channel_group = 'Paid Social' THEN 'Paid Social'
+    WHEN channel_group = 'Paid Video' THEN 'Paid Video'
+    WHEN channel_group = 'Paid Other' OR session_traffic_medium = 'other_ad' THEN 'Paid Other'
+    WHEN channel_group = 'Display' OR session_traffic_medium IN ('display', 'banner', 'dis') THEN 'Display'
+    WHEN channel_group = 'Organic Shopping' THEN 'Organic Shopping'
+    WHEN channel_group = 'Organic Social' THEN 'Organic Social'
+    WHEN channel_group = 'Organic Video' OR session_traffic_medium = 'youtube' THEN 'Organic Video'
+    WHEN channel_group = 'Organic Search' THEN 'Organic Search'
+    WHEN session_traffic_medium IN ('stepmail', 'stpmail') THEN 'ステップメール'
+    WHEN channel_group = 'Email' OR session_traffic_medium = 'shotmail' THEN '単発メール'
+    WHEN channel_group = 'Affiliates' OR session_traffic_medium IN ('ad_aff', 'seo_aff')
+      OR session_traffic_medium LIKE '%aff%'
+      OR session_traffic_source LIKE '%A.I.%'
+      OR session_traffic_source LIKE '%A8%'
+      OR session_traffic_source LIKE '%B...%'
+      OR session_traffic_source LIKE '%valuecommerce.com%'
+      OR session_traffic_source LIKE '%crocoworld.jp%' THEN 'Affiliates'
+    WHEN channel_group = 'App' THEN 'App'
+    WHEN channel_group = 'Referral' THEN 'Referral'
+    WHEN channel_group = 'Audio' THEN 'Audio'
+    WHEN channel_group = 'SMS' OR session_traffic_medium = 'shotsms' THEN 'SMS'
+    WHEN channel_group = 'Mobile Push Notifications' THEN 'Mobile Push Notifications'
+    WHEN session_traffic_source = '(direct)' OR REGEXP_CONTAINS(session_traffic_medium, '(not set|none)') THEN 'ノーリファラー'
+    WHEN session_traffic_source = 'cagt-line' THEN 'SNS'
+    WHEN session_traffic_medium IN ('book', 'leaflet', 'leaflet_a') THEN '同梱物'
+    WHEN session_traffic_medium IN ('info_md', 'rev_md', 'movie_md') THEN '外部メディア'
+    WHEN session_traffic_medium = 'point' THEN 'ポイントサイト'
+    ELSE 'その他'
+  END AS custom_channel_group,
+  -- 各サイトのLPにあわせて要修正
+  CASE
+    WHEN REGEXP_CONTAINS(entrance_path, r'^/sale.*') THEN 'sale'
+    WHEN REGEXP_CONTAINS(entrance_host, r'^www\.abc\.jp.*') THEN '公式'
+    WHEN REGEXP_CONTAINS(entrance_host, r'^www\.abc\.com.*') THEN 'その他公式'
+    ELSE 'その他' END AS lp_group,
+  CASE
+  -- 各サイトごとにあわせて要修正
+  WHEN REGEXP_CONTAINS(entrance_host, r'lp\.abc\.com') THEN '新規LP'
+  WHEN REGEXP_CONTAINS(entrance_host, r'www\.abc\.com|www\.abc\.jp|abc\.jp') THEN '公式'
+  WHEN REGEXP_CONTAINS(entrance_host, r'www\.abc\.co\.jp') THEN 'その他'
+  ELSE '定義外'
+END AS domain
+FROM
+  channel_group_table
+  QUALIFY ROW_NUMBER()OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY entrance_timestamp) =1 
+--  QUALIFY ROW_NUMBER()OVER(PARTITION BY session_traffic_source, session_traffic_medium, session_traffic_campaign, entrance_host, entrance_path ORDER BY entrance_timestamp) =1 
+
+
+
+
+
