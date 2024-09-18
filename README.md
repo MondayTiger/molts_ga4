@@ -4,27 +4,31 @@
 
 | SQLXファイル名 | 対象 |
 | ------------- | ------------- |
-| fixed_events.sqlx | クエリ実行の5～7日前のデータ(テーブル)が対象 |
-| unfixed_events.sqlx | クエリ実行の前日～4日前のデータが対象 |
+| fixed_events.sqlx | クエリ実行の7日前～前日のデータ(テーブル)が対象 |
 | unfixed_events_intraday.sqlx | クエリ実行の当日のデータが対象 |
-
+| events_union.sqlx | 上記の両データが対象 |
 
 # ディレクトリ構成
 - definitions/ga4/
     - source
        - ga4_fixed_events.sqlx
        - ga4_unfixed_events_intraday.sqlx
-       - ga4_unfixed_events.sqlx    
+       - ga4_events_union.sqlx    
     - cleanse
-       - c_ga4_fixed_events.sqlx
-       - c_ga4_unfixed_events_intraday.sqlx
-       - c_ga4_unfixed_events.sqlx
+       - c_ga4_events_union.sqlx
     - staging
-       - s_ga4_events_exclude_internal.sqlx
+       - s_ga4_events_union.sqlx
+       - s_ga4_events_event_update.sqlx
        - s_ga4_events_add_session_item.sqlx
+       - s_ga4_session_traffic_source_last_click_initial.slqx
+       - s_ga4_session_traffic_source_last_click.slqx
        - s_ga4_event.sqlx
        - s_ga4_session.sqlx
     - mart
+       - m_ga4_session_channel_group.sqlx
+       - m_ga4_session_traffic_source_last_click_delete_unfixed.sqlx
+       - m_ga4_session_traffic_source_last_click.slqx
+       - m_ga4_events_event_update.sqlx
        - m_ga4_event_delete_unfixed.sqlx
        - m_ga4_event.sqlx
        - m_ga4_session_delete_unfixed.sqlx
@@ -39,6 +43,43 @@
 
 
 ## Data flow
+```mermaid
+erDiagram
+		%% GA4のイベントデータからソースデータを構築
+    t-analytics_PROPERTY_ID-events_yyyymmdd ||--|| source-ga4_fixed_events : "統合"
+    t-analytics_PROPERTY_ID-events_intraday_yyyymmdd ||--|| source-ga4_unfixed_events_intraday : "統合"
+    source-ga4_fixed_events ||--|| source-ga4_events_union
+    source-ga4_unfixed_events_intraday ||--|| source-ga4_events_union
+
+		%% ソースデータをクレンジング
+    source-ga4_events_union ||--|| cleanse-c_ga4_events_union : ""
+
+		%% クレンジングしたデータ量が多すぎるのと、後続の処理が複雑でBigQuery上で処理できないため、テーブル化
+    cleanse-c_ga4_events_union ||--|| staging-s_ga4_events_union : "テーブル化"
+
+		%% 内部アクセスを除外、イベント名を変更・削除・追加する場合の処理
+    staging-s_ga4_events_union ||--|| staging-s_ga4_events_event_update : "debug_mode, traffic_type パラメータ, 不要ドメインを除外。イベント名を変更・削除・追加する場合の処理"
+
+		%% 参照元やエンゲージメントなどセッションデータを構築
+    staging-s_ga4_events_event_update ||--|| staging-s_ga4_events_add_session_item : "セッションデータを構築"
+
+		%% 各データマートに追加する差分データを構築
+    staging-s_ga4_events_add_session_item ||--|| staging-s_ga4_session : "セッションデータの差分データを作成"
+    staging-s_ga4_events_add_session_item ||--|| staging-s_ga4_event : "イベントデータの差分データを作成"
+
+        %% session_traffic_source_last_clickカラムから参照元データを別途作成
+     staging-s_ga4_events_add_session_item ||--|| staging-s_ga4_session_traffic_source_last_click : "参照元データを構築。既存の参照元データと選択可能"
+
+		%% 蓄積済みの各データマートにデータを投入
+    staging-s_ga4_session ||..|| mart-m_ga4_session : "セッションデータを追加"
+    staging-s_ga4_event ||..|| mart-m_ga4_event : "イベントデータを追加"
+    s_ga4_session_traffic_source_last_click ||--|| mart-m_ga4_session_traffic_source_last_click : "参照元データの差分データを作成"
+
+    %% コンバージョン用データマートにデータを投入
+    mart-m_ga4_event||..|| report-m_ga4_conversion : "コンバージョンデータを作成＆追加"
+```
+
+
 ```mermaid
 erDiagram
 		%% GA4のイベントデータからソースデータを構築

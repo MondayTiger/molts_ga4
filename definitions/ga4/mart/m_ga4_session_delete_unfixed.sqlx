@@ -1,9 +1,8 @@
 -- Config blocks
 config {
-    //typeは初期構築時はtable、増分更新時は"incremental"とする。増分更新時は最終行のコメントアウトも外すこと。
     type: "operations",
     schema: "df_molts_ga4_mart",
-    description: "GA4マートデータ　イベント用",
+    description: "GA4マートデータ unfixedセッションデータを削除",
     tags: ["daily", "mart", "deletion_query"],
 }
 
@@ -16,13 +15,13 @@ SET table_exists = (
   SELECT 
     COUNT(*) > 0 
   FROM 
-    `${constants.GA4_DATABASE}.${constants.MART}.INFORMATION_SCHEMA.TABLES`
+    `${constants.PROJECT}.${constants.MART}.INFORMATION_SCHEMA.TABLES`
   WHERE 
     table_name = 'm_ga4_session'
 );
 
 IF table_exists THEN
-  DELETE FROM `${constants.GA4_DATABASE}.${constants.MART}.m_ga4_session` WHERE is_fixed_data = false;
+  DELETE FROM `${constants.PROJECT}.${constants.MART}.m_ga4_session` WHERE is_fixed_data = false;
 END IF;
 
 

@@ -2,7 +2,9 @@ const GA4_DATABASE = 'molts-data-project';
 const GA4_DATASET = 'analytics_218861058';
 const GA4_TABLE = 'events_*';
 const GA4_INTRADAY_TABLE = 'events_intraday_*';
+
 // データセット
+const PROJECT = 'molts-data-project';
 const CLEANSE = 'df_molts_ga4_cleanse';
 const MART = 'df_molts_ga4_mart';
 const REPORT = 'df_molts_ga4_report';
@@ -19,4 +21,4 @@ const CV_PAGE_LOCATION = 'https://moltsinc.co.jp/%thanks%';
 // デフォルトチャネルグループのテーブル名（共通）　https://docs.google.com/spreadsheets/d/1gu6JfV0PD9QgfzPZT5EUCCvh1YHtENvpCENogSrxtd4/edit?gid=0#gid=0
 const CHANNEL_GROUP_TABLE = 'molts-data-project.general_master_us.ga4_channel_grouping_base'
 
-module.exports = {GA4_DATABASE, GA4_DATASET, GA4_TABLE, GA4_INTRADAY_TABLE, CLEANSE, MART, REPORT ,SOURCE, STAGING, HOSTNAME1, HOSTNAME2,  MP_EVENT1, MP_EVENT2, CV_PAGE_LOCATION, CHANNEL_GROUP_TABLE}
+module.exports = {GA4_DATABASE, GA4_DATASET, GA4_TABLE, GA4_INTRADAY_TABLE,PROJECT, CLEANSE, MART, REPORT ,SOURCE, STAGING, HOSTNAME1, HOSTNAME2,  MP_EVENT1, MP_EVENT2, CV_PAGE_LOCATION, CHANNEL_GROUP_TABLE}

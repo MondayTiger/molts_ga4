@@ -190,7 +190,7 @@ WITH ga AS (
     SELECT
         *
     FROM
-        ${ref("s_ga4_events_add_session_item2")}
+        ${ref("s_ga4_events_add_session_item")}
 ),
 
 pv_data_1 AS (

@@ -170,7 +170,7 @@ WITH ga AS (
         is_fixed_data,
 
     FROM
-        ${ref("s_ga4_events_add_session_item2")}
+        ${ref("s_ga4_events_add_session_item")}
 )
 
 SELECT

@@ -170,6 +170,10 @@ config {
         cwv_delta: "Core Web Vitalsのdelta",
 
         // event index
+        batch_page_id: "バッチの発生ページ順",
+        batch_ordering_id: "バッチの発生順番",
+        batch_event_index: "イベントの順番",
+
         unique_key: "イベントのユニーク化",
         event_index: "イベント順番（日付＋4桁の番号）※直近の日付で日をまたいだセッションのイベントについては番号が前日から連番になるので、日付+0001で始まらない場合がある"
 
@@ -178,11 +182,16 @@ config {
 
 
 -- Query blocks
--- 共通処理
-WITH ga AS (
+WITH  event_update2 AS(
+    SELECT * EXCEPT(event_index),
+    SAFE_CAST(CONCAT(FORMAT_DATE("%Y%m%d",event_date),FORMAT('%04d',ROW_NUMBER() OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp, batch_page_id,batch_ordering_id,batch_event_index,event_index,event_name,unique_key))) AS INT64) AS event_index --日をまたいだセッションの場合、 日次でクエリを実行する際に古い日のイベントがクエリの対象から外れてしまい1が複数存在してしまうため、日付を入れて重複を避ける。また桁数を揃えることで文字列のまま判定できるようにする
+    FROM ${ref("s_ga4_events_event_update")}
+),
+-- 以下 s_ga4_events_add_session_item.sqlx
+-- 各セッションの訪問日時、離脱日時、最初と最後のページ
+ga AS (
     SELECT
         *,
-
         -- Entrance/Exit Timestamp
         ${helpers.getFirstValue('event_timestamp','entrance_timestamp')},
         ${helpers.getLastValue('event_timestamp','exit_timestamp')},
@@ -197,13 +206,10 @@ WITH ga AS (
         ${helpers.getFirstValue('event_traffic_campaign','session_traffic_campaign')},
 
     FROM
-	    ${ref("s_ga4_events_event_update")}
-)
-
--- 参照元の追加処理
--- 2023/11/28修正 session_startに値があれば採用、なければ各セッションの最初に存在する参照元などを取得 
--- session_startの参照元などを取得
-,session_start AS(
+	    event_update2
+),
+-- 参照元の追加処理。session_startの参照元などを取得
+session_start AS(
     SELECT *
     FROM(
         SELECT 
@@ -226,32 +232,9 @@ WITH ga AS (
         GROUP BY ALL
     ) 
     WHERE event_traffic_source IS NOT NULL AND event_traffic_source NOT IN("(not set)","(direct)")  -- 対象となったsession_startイベントのevent_traffic_sourceがNULLや (not set), (direct)の場合は値を返さない ※(not set)や(direct)はないはずですが念のため
-)
-
-/*
-,session_start AS(
-    SELECT 
-        user_pseudo_id,
-        ga_session_id,
-        -- session_acquisition_channel
-        g.event_traffic_source,
-        g.event_traffic_medium,
-        g.event_traffic_campaign,
-        g.event_traffic_content,
-        g.event_traffic_term,
-        g.event_traffic_source_platform,
-        g.event_traffic_creative_format,
-        g.event_traffic_marketing_tactic,
-        g.event_traffic_campaign_id,
-        g.event_traffic_gclid
-    FROM ga g
-    WHERE event_name ="session_start"
-    QUALIFY ROW_NUMBER() OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp) = 1 -- 同一セッションIDでsession_startが複数ある場合は最初のイベントを返す
-    AND g.event_traffic_source IS NOT NULL AND g.event_traffic_source NOT IN("(not set)","(direct)")  -- 対象となったsession_startイベントのevent_traffic_sourceがNULLや (not set), (direct)の場合は値を返さない ※(not set)や(direct)はないはずですが念のため
-)
-*/
+),
 -- 参照元などが入っているイベントのうち一番古いものを取得
-,agg_campaign AS(
+agg_campaign AS(
     SELECT 
         user_pseudo_id,
         ga_session_id,
@@ -276,9 +259,9 @@ WITH ga AS (
         g.event_traffic_campaign IS NOT NULL AND g.event_traffic_campaign NOT IN("(not set)","(direct)","(none)") 
     )
     GROUP BY ALL
-)
+),
 -- session_startに参照元(event_traffic_source）が入っていればそれを採用。ない場合はイベントから取得。session_traffic_mediumなどでもIF(s.event_traffic_source IS NOT NULLとしているのは、event_traffic_mediumとしてしまうと、sourceはsession_startから取得しmediumはイベントから取得というミスを防ぐため
-,agg_campaign_first_2 AS(
+agg_campaign_first_2 AS(
     SELECT 
         user_pseudo_id,
         ga_session_id,
@@ -293,10 +276,9 @@ WITH ga AS (
         IF(s.event_traffic_source IS NOT NULL, s.event_traffic_campaign_id, a.event_traffic_campaign_id) AS session_traffic_campaign_id,
         IF(s.event_traffic_source IS NOT NULL, s.event_traffic_gclid, a.event_traffic_gclid) AS session_traffic_gclid
     FROM agg_campaign a FULL JOIN session_start s USING(user_pseudo_id, ga_session_id)
-)
-
+),
 -- 過去にセッション情報が存在する場合はそれを採用 ※初期導入時はこのサブクエリはエラーになるため、要修正
-, mart_session AS(
+mart_session AS(
     SELECT 
         user_pseudo_id,
         ga_session_id,
@@ -315,8 +297,8 @@ WITH ga AS (
     FROM `${constants.GA4_DATABASE}.${constants.MART}.m_ga4_session` 
     WHERE event_date >= DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 10 DAY)
     GROUP BY ALL
-)
-, agg_campaign_first_3 AS(
+),
+agg_campaign_first_3 AS(
     SELECT 
         user_pseudo_id,
         ga_session_id,
@@ -335,10 +317,10 @@ WITH ga AS (
     FROM agg_campaign_first_2 a LEFT JOIN mart_session m 
     USING(user_pseudo_id, ga_session_id)
     GROUP BY ALL
-)
+),
 /*
---初期導入時※最も古い日だけこれを実行してm_ga4_sessionテーブルを作成し、2日目以降はここはコメントアウト
-, agg_campaign_first_3 AS(
+--初期導入時はm_ga4_sessionテーブルがないのでmart_session、agg_campaign_first_3サブクエリをコメントアウトしてこちらを採用
+agg_campaign_first_3 AS(
     SELECT 
         user_pseudo_id,
         ga_session_id,
@@ -358,59 +340,7 @@ WITH ga AS (
     GROUP BY ALL
 )
 */
--- 旧パターン ※今後使わない
-/*
-agg_campaign AS (
-    SELECT DISTINCT
-        user_pseudo_id,
-        ga_session_id,
-        session_traffic_campaign,
-    FROM
-        ga
-    WHERE
-        event_traffic_campaign IS NOT NULL
-),
-
-agg_campaign_first AS (
-    SELECT
-        g.user_pseudo_id,
-        g.ga_session_id,
-
-        -- session_acquisition_channel
-        g.event_traffic_source AS session_traffic_source,
-        g.event_traffic_medium AS session_traffic_medium,
-        g.event_traffic_campaign AS session_traffic_campaign,
-        g.event_traffic_content AS session_traffic_content,
-        g.event_traffic_term AS session_traffic_term,
-        g.event_traffic_source_platform AS session_traffic_platform,
-        g.event_traffic_creative_format  AS session_creative_format,
-        g.event_traffic_marketing_tactic AS session_marketing_tactic,
-        g.event_traffic_campaign_id AS session_traffic_campaign_id,
-        g.event_traffic_gclid AS session_traffic_gclid,
-
-        MIN(event_timestamp) -- 一番早いイベントに突合し、utm_campaignがかぶった場合にも正しい参照元に紐づける
-
-    FROM
-        ga AS g
-        INNER JOIN agg_campaign AS a
-            ON  g.user_pseudo_id = a.user_pseudo_id
-            AND g.ga_session_id = a.ga_session_id
-            AND g.event_traffic_campaign = a.session_traffic_campaign
-    GROUP BY
-        1,2,3,4,5,6,7,8,9,10,11,12
-),
-
-agg_campaign_first_2 AS (
-    SELECT
-        *,
-        ROW_NUMBER() OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY ga_session_id) AS row_num
-    FROM
-        agg_campaign_first
-),
-*/
-
-
-,add_traffic_source AS (
+add_traffic_source AS (
     SELECT
 
         -- timestamp
@@ -570,10 +500,10 @@ agg_campaign_first_2 AS (
         g.cwv_delta,
 
         -- event index
-/*        g.batch_page_id,
+        g.batch_page_id,
         g.batch_ordering_id,
-        g.batch_event_index
-*/
+        g.batch_event_index,
+
         g.unique_key,
         g.event_index,
         FROM
@@ -584,7 +514,6 @@ agg_campaign_first_2 AS (
 ),
 
 -- セッション時間の処理
-
 calculate_session_duration AS (
     SELECT
 	    user_pseudo_id,
@@ -595,7 +524,6 @@ calculate_session_duration AS (
     GROUP BY ALL
 --        1,2,3 -- ALLに変更
 ),
-
 calculate_engagement_time AS (
     SELECT 
 	    user_pseudo_id,
@@ -614,9 +542,7 @@ calculate_engagement_time AS (
     )
     GROUP BY ALL
 ),
-
 -- 直帰の処理
-
 calculate_sum_pv_sv AS (
     SELECT
         user_pseudo_id,
@@ -634,7 +560,6 @@ calculate_sum_pv_sv AS (
         ga
     GROUP BY ALL
 ),
-
 join_data AS (
     SELECT
         t.*,
@@ -658,7 +583,6 @@ join_data AS (
     LEFT JOIN calculate_sum_pv_sv AS v
         USING (user_pseudo_id, ga_session_id)
 )
-
 SELECT
     -- timestamp
     event_date,
@@ -824,10 +748,10 @@ SELECT
     cwv_delta,
 
     -- event index
-/*    batch_page_id,
+    batch_page_id,
     batch_ordering_id,
-    batch_event_index
-*/
+    batch_event_index,
+
     unique_key,
     event_index,
 

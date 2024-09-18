@@ -23,7 +23,7 @@ config {
         clusterBy: ["user_pseudo_id", "ga_session_id", "event_name"]
     },
     schema: "df_molts_ga4_mart",
-    description: "GA4マートデータ　イベントデータ用",
+    description: "GA4マートデータ イベントデータ用",
     dependencies: ["m_ga4_event_delete_unfixed"],
     tags: ["daily", "mart"],
     columns: {
