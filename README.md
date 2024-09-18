@@ -49,7 +49,7 @@ erDiagram
     t-analytics_PROPERTY_ID-events_yyyymmdd ||--|| source-ga4_fixed_events : "フラット化"
     t-analytics_PROPERTY_ID-events_intraday_yyyymmdd ||--|| source-ga4_unfixed_events_intraday : "フラット化"
     source-ga4_fixed_events ||--|| source-ga4_events_union : "統合"
-    source-ga4_unfixed_events_intraday ||--|| source-ga4_events_union : 統合""
+    source-ga4_unfixed_events_intraday ||--|| source-ga4_events_union : "統合"
 
 		%% ソースデータをクレンジング
     source-ga4_events_union ||--|| cleanse-c_ga4_events_union : ""
