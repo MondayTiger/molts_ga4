@@ -37,7 +37,7 @@ session_traffic_source_last_click追加作業手順
 */
 config {
     type: "view",
-    schema: "df_molts_ga4_staging",
+    schema: constants.STAGING,
     description: "GA4マートデータ　セッションデータのtraffic_source_last_clickテーブルの新規作成",
     tags: ["daily", "staging","initial"],
 }

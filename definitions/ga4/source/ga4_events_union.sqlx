@@ -7,7 +7,8 @@
 -- Config blocks
 config {
     type: "view",
-    schema: "df_molts_ga4_source",
+    schema: constants.SOURCE,
+//    schema: "df_molts_ga4_source",
     description: "GA4データソース 統合",
     tags: ["daily", "source"]
 }

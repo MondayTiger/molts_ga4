@@ -3,7 +3,7 @@
 */
 config {
     type: "view",
-    schema: "df_molts_ga4_staging",
+    schema: constants.STAGING,
     description: "セッションの参照元。各セッションの最初のイベントのsession_traffic_source_last_click 値を返す",
     tags: ["daily", "source"]
 }

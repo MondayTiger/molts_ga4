@@ -1,16 +1,18 @@
+// GA4テーブルがあるプロジェクト
 const GA4_DATABASE = 'molts-data-project';
 const GA4_DATASET = 'analytics_218861058';
-const GA4_TABLE = 'events_*';
-const GA4_INTRADAY_TABLE = 'events_intraday_*';
+const GA4_TABLE = 'events_*';   // 固定
+const GA4_INTRADAY_TABLE = 'events_intraday_*';   // 固定
 
-// データセット
+// データセット（要変更）
 const PROJECT = 'molts-data-project';
 const CLEANSE = 'df_molts_ga4_cleanse';
 const MART = 'df_molts_ga4_mart';
 const REPORT = 'df_molts_ga4_report';
 const SOURCE = 'df_molts_ga4_source';
 const STAGING = 'df_molts_ga4_staging';
-// 集計対象ホスト名 definitions/ga4/staging/s_ga4_events_exclude_internal.sqlxでホスト名の指定を行うが、ホスト名が複数必要な場合はここに追加し、s_ga4_events_exclude_internalにも追加すること
+
+// 集計対象ホスト名 definitions/ga4/staging/s_ga4_events_event_update.sqlxでホスト名の指定を行うが、ホスト名が複数必要な場合はここに追加し、s_ga4_events_event_update.sqlxにも追加すること
 const HOSTNAME1 = 'moltsinc.co.jp';
 const HOSTNAME2 = 'moltsinc.co.jp';  
 // Measurement Protocolで使うイベント名 s_ga4_events_exclude_internal.sqlxでMeasurement Protocolで取得するイベント名の指定を行うが、ここにイベント名を記述。複数ある場合はここに追加し、s_ga4_events_exclude_internalにも追加すること

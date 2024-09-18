@@ -4,12 +4,12 @@
  2024/08/26 unique_key（イベントを一意に定める）を追加
 */
 /*
-初期実行時（過去分のデータを取り込む時は、最後のWHERE句を変更（デフォルト：7日前～5日前 → 5日前まで）
+初期実行時（過去分のデータを取り込む時）は、最後のWHERE句を前日までに変更
 */
 -- Config blocks
 config {
     type: "view",
-    schema: "df_molts_ga4_source",
+    schema: constants.SOURCE,
     description: "GA4データソース",
     tags: ["daily", "source"]
 }
@@ -22,7 +22,7 @@ FROM
 	${ref(constants.GA4_TABLE)}
 WHERE
     _table_suffix BETWEEN FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 7 DAY)) AND FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY))
---    _table_suffix BETWEEN '20201104' AND FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 5 DAY))  -- 初回実行時に実施
+--    _table_suffix >= FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY))  -- 初回実行時はこちらを採用して実行
 )
 SELECT *
 FROM ga

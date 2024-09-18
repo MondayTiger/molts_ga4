@@ -1,7 +1,7 @@
 -- Config blocks
 config {
     type: "operations",
-    schema: "df_molts_ga4_mart",
+    schema: constants.MART,
     description: "GA4マートデータ セッションテーブルのsession_traffic_source_last_clickを更新。すでにm_ga4_sessionがあり、過去分をUPDATE文で更新する時に使用",
     tags: ["daily", "mart", "update"],
 }
