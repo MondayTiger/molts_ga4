@@ -192,13 +192,17 @@ erDiagram
     5. mart/m_ga4_session_traffic_source_last_click.sqlx
       1. 最初にあるtypeをincrementalからtableに変更
       2. 16行目あたりのdependencies: ["m_ga4_session_traffic_source_last_click_delete_unfixed"]をコメントアウト（//を先頭に入れる）
+      3. 67行目からのSELECT文をコメントアウトして、71行目のSELECT文（SELECT * FROM s_ga4_session_traffic_source_last_click_initial）を実行させる 
     5. mart/m_ga4_event.sqlx、mart/m_ga4_session.sqlx
       1. 最初にあるtypeをincrementalからtableに変更
       2. 12行目あたりのdependencies: ["m_ga4_xxxxx_delete_unfixed"]をコメントアウト（//を先頭に入れる）
-    6. m_ga4_event.sqlxとm_ga4_session.sqlx、m_ga4_session_traffic_source_last_click.sqlxを選択して実行
+    6. report/r_ga4_conversion.sqlx
+      1. 最初にあるtypeをincrementalからtableに変更
+      2. 12行目あたりのdependencies: ["r_ga4_conversion_delete_unfixed"]をコメントアウト（//を先頭に入れる）
+    7. m_ga4_event.sqlxとm_ga4_session.sqlx、m_ga4_session_traffic_source_last_click.sqlx、report/r_ga4_conversion.sqlxを選択して実行
       1. いずれか1つのファイルを開き、上部の「実行を開始」ボタンをクリックし、「操作」＞ファイル名（例:m_ga4_event）または「複数のアクション」を選択
       2. 「SELECTION OF ACTIONS」を選択
-      3. 「実行するアクションを選択」から上記3つのファイルにチェックを入れる
+      3. 「実行するアクションを選択」から上記4つのファイルにチェックを入れる
       4. 「 依存関係を含める」にチェック
       5. 下の「実行を開始」ボタンをクリックして実行開始
       6. 「ワークフロー実行を作成しました   詳細」というダイアログが下部に表示されるので、「詳細」をクリック
@@ -206,8 +210,9 @@ erDiagram
     7. 実行完了後、設定を元に戻す
       1. 3のsource/ga4_fixed_events.sqlxの期間
       2. 4のstaging/s_ga4_events_add_session_item.sqlxのサブクエリ
-      3. 5のmart/m_ga4_session_traffic_source_last_click.sqlxのtype 
-      4. 6のmart/m_ga4_event.sqlx、mart/m_ga4_session.sqlxのconfig（type、denpendencies） 
+      3. 5のmart/m_ga4_session_traffic_source_last_click.sqlxのtype、SELECT文 
+      4. 5のmart/m_ga4_event.sqlx、mart/m_ga4_session.sqlxのconfig（type、denpendencies） 
+      5. 6のreport/r_ga4_conversion.sqlxのconfig（type、denpendencies） 
     8. 再びm_ga4_event.sqlxとm_ga4_session.sqlx、m_ga4_session_traffic_source_last_click.sqlxを選択して実行
       1. 実行前にm_ga4_eventテーブルとm_ga4_sessionテーブルをコピーしておく（バックアップを取っておく）
       2. 6と同じやり方でOK

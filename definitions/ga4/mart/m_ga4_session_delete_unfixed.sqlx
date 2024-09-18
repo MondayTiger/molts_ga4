@@ -23,7 +23,3 @@ SET table_exists = (
 IF table_exists THEN
   DELETE FROM `${constants.PROJECT}.${constants.MART}.m_ga4_session` WHERE is_fixed_data = false;
 END IF;
-
-
--- DELETE FROM `molts-data-project.df_molts_ga4_mart.m_ga4_session` WHERE is_fixed_data = false
-
