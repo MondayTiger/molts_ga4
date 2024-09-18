@@ -77,7 +77,7 @@ erDiagram
 
     %% セッションデータからチャネルグループを各セッションごとに作成
     mart-m_ga4_session ||..|| mart-m_ga4_session_channel_group : "セッションデータを追加"
-    Googleシート ||..|| molts-data-project.general_master_us.ga4_channel_grouping_base : "チャネルグループの基本データをテーブル化"
+    Google Sheet ||..|| molts-data-project.general_master_us.ga4_channel_grouping_base : "チャネルグループの基本データをテーブル化"
     molts-data-project.general_master_us.ga4_channel_grouping_base ||..|| mart-m_ga4_session_channel_group : "各セッションのチャネルグループを作成"
 
     %% コンバージョン用データマートにデータを投入
