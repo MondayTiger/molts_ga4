@@ -5,13 +5,13 @@ config {
         1. typeをtableにする
         2. 最後のSELECT文を要変更
     */
-    type: "incremental",
+    type: "table",
     bigquery: {
         // パーティションとクラスタリングを設定
         partitionBy: "event_date",
         clusterBy: ["user_pseudo_id", "ga_session_id"]
     },
-    schema: "df_molts_ga4_mart",
+    schema: constants.MART,
     description: "GA4マートデータ　セッションデータのtraffic_source_last_click",
     dependencies: ["m_ga4_session_traffic_source_last_click_delete_unfixed"],
     tags: ["daily", "mart"],

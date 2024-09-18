@@ -2,7 +2,7 @@
 config {
     //typeは初期構築時はtable、増分更新時は"incremental"とする。増分更新時は最終行のコメントアウトも外すこと。
     type: "operations",
-    schema: "df_molts_ga4_report",
+    schema: constants.REPORT,
     description: "GA4レポートデータ　コンバージョン用",
     tags: ["daily", "mart", "deletion_query"],
 }
@@ -15,11 +15,11 @@ SET table_exists = (
   SELECT 
     COUNT(*) > 0 
   FROM 
-    `${constants.GA4_DATABASE}.${constants.REPORT}.INFORMATION_SCHEMA.TABLES`
+    `${constants.PROJECT}.${constants.REPORT}.INFORMATION_SCHEMA.TABLES`
   WHERE 
     table_name = 'r_ga4_conversion'
 );
 
 IF table_exists THEN
-  DELETE FROM `${constants.GA4_DATABASE}.${constants.REPORT}.r_ga4_conversion` WHERE is_fixed_data = false;
+  DELETE FROM `${constants.PROJECT}.${constants.REPORT}.r_ga4_conversion` WHERE is_fixed_data = false;
 END IF;

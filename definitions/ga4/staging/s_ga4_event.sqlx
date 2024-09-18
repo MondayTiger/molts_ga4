@@ -1,7 +1,7 @@
 -- Config blocks
 config {
     type: "view",
-    schema: "df_molts_ga4_staging",
+    schema: constants.STAGING,
     description: "GA4ステージングデータ 全イベント更新差分データ",
     tags: ["daily", "staging"],
     columns: {
@@ -190,7 +190,7 @@ WITH ga AS (
     SELECT
         *
     FROM
-        ${ref("s_ga4_events_add_session_item2")}
+        ${ref("s_ga4_events_add_session_item")}
 ),
 
 pv_data_1 AS (

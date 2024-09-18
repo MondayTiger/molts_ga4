@@ -1,7 +1,7 @@
 -- Config blocks
 config {
     type: "view",
-    schema: "df_molts_ga4_staging",
+    schema: constants.STAGING,
     description: "GA4ステージングデータ 不要イベントの追加・リネーム・削除。イベント順番の追加",
     tags: ["daily", "staging"],
 }

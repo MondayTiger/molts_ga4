@@ -4,123 +4,145 @@
 
 | SQLXファイル名 | 対象 |
 | ------------- | ------------- |
-| fixed_events.sqlx | クエリ実行の5～7日前のデータ(テーブル)が対象 |
-| unfixed_events.sqlx | クエリ実行の前日～4日前のデータが対象 |
+| fixed_events.sqlx | クエリ実行の7日前～前日のデータ(テーブル)が対象 |
 | unfixed_events_intraday.sqlx | クエリ実行の当日のデータが対象 |
-
+| events_union.sqlx | 上記の両データが対象 |
 
 # ディレクトリ構成
 - definitions/ga4/
     - source
        - ga4_fixed_events.sqlx
        - ga4_unfixed_events_intraday.sqlx
-       - ga4_unfixed_events.sqlx    
+       - ga4_events_union.sqlx    
     - cleanse
-       - c_ga4_fixed_events.sqlx
-       - c_ga4_unfixed_events_intraday.sqlx
-       - c_ga4_unfixed_events.sqlx
+       - c_ga4_events_union.sqlx
     - staging
-       - s_ga4_events_exclude_internal.sqlx
+       - s_ga4_events_union.sqlx
+       - s_ga4_events_event_update.sqlx
        - s_ga4_events_add_session_item.sqlx
+       - s_ga4_session_traffic_source_last_click_initial.slqx
+       - s_ga4_session_traffic_source_last_click.slqx
        - s_ga4_event.sqlx
        - s_ga4_session.sqlx
     - mart
+       - m_ga4_session_channel_group.sqlx
+       - m_ga4_session_traffic_source_last_click_delete_unfixed.sqlx
+       - m_ga4_session_traffic_source_last_click.slqx
+       - m_ga4_events_event_update.sqlx
        - m_ga4_event_delete_unfixed.sqlx
        - m_ga4_event.sqlx
        - m_ga4_session_delete_unfixed.sqlx
        - m_ga4_session.sqlx
     - report
-       - m_ga4_conversion_delete_unfixed.sqlx
-       - m_ga4_conversion.sqlx
+       - r_ga4_conversion_delete_unfixed.sqlx
+       - r_ga4_conversion.sqlx
 
 - includes/
     - constatns.js : GCPプロジェクト名、対象ホスト名などの定数をまとめたファイル
     - helpers.js : SQLXを簡略化するための関数が入ったファイル 
 
 
-## Data flow
+# Data Flow
 ```mermaid
 erDiagram
 		%% GA4のイベントデータからソースデータを構築
-    t-analytics_PROPERTY_ID-events_yyyymmdd ||--|| source-ga4_fixed_events : ""
-    t-analytics_PROPERTY_ID-events_yyyymmdd ||--|| source-ga4_unfixed_events : ""
-    t-analytics_PROPERTY_ID-events_intraday_yyyymmdd ||--|| source-ga4_unfixed_events_intraday : ""
+    t-analytics_PROPERTY_ID-events_yyyymmdd ||--|| source-ga4_fixed_events : "フラット化"
+    t-analytics_PROPERTY_ID-events_intraday_yyyymmdd ||--|| source-ga4_unfixed_events_intraday : "フラット化"
+    source-ga4_fixed_events ||--|| source-ga4_events_union : "統合"
+    source-ga4_unfixed_events_intraday ||--|| source-ga4_events_union : "統合"
 
 		%% ソースデータをクレンジング
-    source-ga4_fixed_events ||--|| cleanse-c_ga4_fixed_events : ""
-    source-ga4_unfixed_events ||--|| cleanse-c_ga4_unfixed_events : ""
-    source-ga4_unfixed_events_intraday ||--|| cleanse-c_unfixed_events_intraday : ""
+    source-ga4_events_union ||--|| cleanse-c_ga4_events_union : ""
 
-		%% クレンジングしたデータを統合&処理が複雑すぎて、後続の処理がBigQuery上で処理できないため、テーブル化
-    cleanse-c_ga4_fixed_events ||--|| staging-s_ga4_events_union : "統合＆テーブル化"
-    cleanse-c_ga4_unfixed_events ||--|| staging-s_ga4_events_union : "統合＆テーブル化"
-    cleanse-c_unfixed_events_intraday ||--|| staging-s_ga4_events_union : "統合＆テーブル化"
+		%% クレンジングしたデータ量が多すぎるのと、後続の処理が複雑でBigQuery上で処理できないため、テーブル化
+    cleanse-c_ga4_events_union ||--|| staging-s_ga4_events_union : "テーブル化"
 
-		%% 内部アクセスを除外
-    staging-s_ga4_events_union ||--|| staging-s_ga4_events_exclude_internal : "debug_mode, traffic_type パラメータ, 不要ドメインを除外"
+		%% 内部アクセスを除外、イベント名を変更・削除・追加する場合の処理
+    staging-s_ga4_events_union ||--|| staging-s_ga4_events_event_update : "debug_mode, traffic_type パラメータ, 不要ドメインを除外。イベント名を変更・削除・追加する場合の処理"
 
-		%% イベント名を変更・削除・追加する場合の処理
-    staging-s_ga4_events_exclude_internal ||--|| staging-s_ga4_events_event_update : "イベント名を変更・削除・追加する場合の処理"
-
-		%% 統合データをもとにセッションデータを構築
-    staging-s_ga4_events_event_update ||--|| staging-s_ga4_events_add_session_item : "統合データをもとにセッションデータを構築"
+		%% 参照元やエンゲージメントなどセッションデータを構築
+    staging-s_ga4_events_event_update ||--|| staging-s_ga4_events_add_session_item : "セッションデータを構築"
 
 		%% 各データマートに追加する差分データを構築
     staging-s_ga4_events_add_session_item ||--|| staging-s_ga4_session : "セッションデータの差分データを作成"
     staging-s_ga4_events_add_session_item ||--|| staging-s_ga4_event : "イベントデータの差分データを作成"
 
-		%% 蓄積済みの各データマートにデータを投入
-    staging-s_ga4_session ||..|| mart-m_ga4_session : "セッションデータを追加"
-    staging-s_ga4_event ||..|| mart-m_ga4_event : "イベントデータを追加"
- ```
+    %% session_traffic_source_last_clickカラムから参照元データを別途作成
+    staging-s_ga4_events_add_session_item ||--|| staging-s_ga4_session_traffic_source_last_click : "参照元データを構築。既存の参照元データと選択可能"
 
+		%% 蓄積済みの各データマートにデータを投入
+    staging-s_ga4_event ||..|| mart-m_ga4_event : "イベントデータを追加"
+    staging-s_ga4_session ||..|| mart-m_ga4_session : "セッションデータを追加"
+    mart-m_ga4_session_traffic_source_last_click ||--|| mart-m_ga4_session : "参照元データを追加" 
+    staging-s_ga4_session_traffic_source_last_click ||--|| mart-m_ga4_session_traffic_source_last_click : "参照元データを追加"
+
+    %% セッションデータからチャネルグループを各セッションごとに作成
+    mart-m_ga4_session ||..|| mart-m_ga4_session_channel_group : "セッションデータを追加"
+    GoogleSheet ||..|| ga4_channel_grouping_base : "チャネルグループの基本データをテーブル化"
+    ga4_channel_grouping_base ||..|| mart-m_ga4_session_channel_group : "各セッションのチャネルグループを作成"
+
+    %% コンバージョン用データマートにデータを投入
+    mart-m_ga4_event||..|| report-r_ga4_conversion : "コンバージョンデータを作成＆追加"
+```
 
 # 処理の流れ
-1. GA4からエクスポートされたテーブル（analytics_xxxxxxx.events_YYYYMMDD, analytics_xxxxxxx.events_intraday_YYYYMMDD）内のevent_paramsカラムなどをフラット化
-   - definitions/ga4/sourceディレクトリ内のSQLXファイル
+1. GA4からエクスポートされたテーブル（analytics_xxxxxxx.events_YYYYMMDD, analytics_xxxxxxx.events_intraday_YYYYMMDD）内のevent_paramsカラムなどをフラット化し、1つのビューにまとめる
+    - definitions/ga4/sourceディレクトリ内のSQLXファイル
+      * 直近4日間のデータについては、is_fixed_dataカラムをfalseとする（9以降で使用）
 2. 上記で生成されたデータ（ビューの結果）に対して、下記を実施
-   - definitions/ga4/cleanseディレクトリ内のSQLXファイル
-     * イベントの発生時刻を日本時間に変更
-     * URLからパラメータを除去したカラムを追加
-     * link URLからパラメータを除去したカラムを追加
-3. 上記で生成されたデータ（ビューの結果）を1つのテーブル（xxx_ga4_staging.s_ga4_events_union）にまとめる
-   - definitions/ga4/staging/s_ga4_events_union.sqlx
-4. イベントを除外
-   - definitions/ga4/staging/s_ga4_events_exclude_internal.sqlx
-     * デバッグモードや内部アクセスのイベントを除外
-     * 計測対象のホスト名を指定（指定していないホスト名は除外される）
-     * Measurement Protocol用のイベントがある場合は含める
-5. イベントデータを加工する必要がればここで実施（今回は何もしていません）
-   - definitions/ga4/staging/s_ga4_events_event_update.sqlx
-6. セッション情報を追加
-   - definitions/ga4/staging/s_ga4_events_add_session_item.sqlx
-     * セッションの参照元情報
-     * セッション時間
-     * セッションごとのページビュー（スクリーンビュー）数
+    - definitions/ga4/cleanseディレクトリ内のSQLXファイル
+      * イベントの発生時刻を日本時間に変更
+      * URLからパラメータを除去したカラムを追加
+      * link URLからパラメータを除去したカラムを追加
+3. 上記で生成されたデータ（ビューの結果）をテーブル化（テーブル名：xxx_ga4_staging.s_ga4_events_union）
+    - definitions/ga4/staging/s_ga4_events_union.sqlx
+4. イベントを除外、イベントデータをカスタマイズする場合は実施（デフォルトでは何もしない）
+    - definitions/ga4/staging/s_ga4_events_event_update.sqlx
+      * デバッグモードや内部アクセスのイベントを除外
+      * 計測対象のホスト名を指定（指定していないホスト名は除外される）
+      * Measurement Protocol用のイベントがある場合は含める
+5. セッション情報を追加
+    - definitions/ga4/staging/s_ga4_events_add_session_item.sqlx
+      * セッションの参照元情報
+      * セッション時間
+      * セッションごとのページビュー（スクリーンビュー）数
+6. session_traffic_source_last_clickカラムから参照元データを別途作成
+    - definitions/ga4/staging/s_ga4_session_traffic_source_last_click.sqlx
 7. 各page_view/screen_viewイベントに関する下記のデータを追加
-   - definitions/ga4/staging/s_ga4_event.sqlx
-     * 前後3ページ（スクリーン）のパス
-     * ページ滞在時間
-     * ランディングページを判定するフラグ
-     * 直帰、離脱を判定するフラグ
-8. 上記7で作成したイベントデータを ga4_mart.m_ga4_event に格納
-   - definitions/ga4/mart/m_ga4_event_delete_unfixed.sqlx
-     直近分のデータを削除
-   - definitions/ga4/mart/m_ga4_event.sqlx
-     今回作成した7の結果を追加
-9. 上記6のデータ（ビュー）からセッション単位のデータを作成
-   - definitions/ga4/staging/s_ga4_session.sqlx
-10. 上記9で作成したセッションデータを ga4_mart.m_ga4_session に格納
+    - definitions/ga4/staging/s_ga4_event.sqlx
+      * 前後3ページ（スクリーン）のパス
+      * ページ滞在時間
+      * ランディングページを判定するフラグ
+      * 直帰、離脱を判定するフラグ
+8. 上記で作成したsession_traffic_source_last_clickカラムをmartデータセット内のテーブルに格納
+    - definitions/ga4/mart/m_ga4_session_traffic_source_last_click_delete_unfixed.sqlx
+      * 直近分のデータを（is_fixed_dataカラムがfalse）削除
+    - definitions/ga4/mart/m_ga4_session_traffic_source_last_click.sqlx
+      * s_ga4_session_traffic_source_last_click.sqlxの結果を追加
+9. 上記7で作成したイベントデータを ga4_mart.m_ga4_event に格納
+    - definitions/ga4/mart/m_ga4_event_delete_unfixed.sqlx
+      * 直近分のデータを（is_fixed_dataカラムがfalse）削除
+    - definitions/ga4/mart/m_ga4_event.sqlx
+      * 今回作成した7の結果を追加
+10. 上記5のデータ（ビュー）からセッション単位のデータを作成
+    - definitions/ga4/staging/s_ga4_session.sqlx
+11. 上記で作成したセッションデータを ga4_mart.m_ga4_session に格納
     - definitions/ga4/mart/m_ga4_session_delete_unfixed.sqlx
-      直近分のデータを削除
+      * 直近分のデータを（is_fixed_dataカラムがfalse）削除
     - definitions/ga4/mart/m_ga4_session.sqlx
-      今回作成した7の結果を追加
-11. コンバージョンデータを ga4_report.r_ga4_conversion に格納
+      * 上記の結果とm_ga4_session_traffic_source_last_clickを追加
+12. セッションデータからチャネルグループを各セッションごとに作成
+    - definitions/ga4/mart/m_ga4_session_channel_group.sqlx
+      * 必要に応じて中身を要変更
+      * もととなるテーブル（molts-data-project.general_master_us.ga4_channel_grouping_base）をGoogleシートから作成する必要あり
+13. コンバージョンデータを ga4_report.r_ga4_conversion に格納
+    - definitions/ga4/mart/r_ga4_conversion_delete_unfixed.sqlx
+      * 直近分のデータを（is_fixed_dataカラムがfalse）削除
     - definitions/ga4/report/r_ga4_conversion.sqlx
       * 今回はthanksを含むページに到達したイベントを対象
       * 設定箇所：includes/constants.js内で設定したCV_PAGE_LOCATION = 'https://https://moltsinc.co.jp/%thanks%';
 
-## 各セッションの参照元・メディア・キャンペーンなどの取得手順
+# 各セッションの参照元・メディア・キャンペーンなどの取得手順
 1. 各イベントのcollected_traffic_source.manual_source（ない場合はevent_params内のsource）を取得。メディアやキャンペーンなども同様。※collected_traffic_sourceカラムは2023年中頃から追加されたため、それ以前の場合は下記ファイルのコメントアウト箇所を要変更。
    - 対象クエリ
     - source.ga4_fixed_events.sqlx
@@ -131,42 +153,68 @@ erDiagram
 4. session_startイベントに参照元が入っていれば（上記2）それを採用し、入っていない場合はイベント（上記3）から取得
    - 上記2以降の対象クエリ
      - staging.ga4_unfixed_events.sqlx
+** session_traffic_source_last_clickカラムを使用したい場合は、xxx_ga4_mart.m_ga4_session_traffic_source_last_clickテーブルに格納されているので、m_ga4_eventテーブル、m_ga4_sessionテーブルとはuser_pseudo_id, ga_session_idでJOINすることで抽出可能 **
 
+# チャネルグループの作成
+1. Googleシートを作成（例：https://docs.google.com/spreadsheets/d/16iDnq9G07HcQ5O09W5OTEPIaq5lbafS8Qw9JGk0179U/edit?gid=0#gid=0 ）参考：https://support.google.com/analytics/answer/9756891?hl=ja
+2. 上記のGoogleシートを参照するテーブルを作成
+3. includes/ga4/constants.js内の`CHANNEL_GROUP_TABLE`変数の値を上記で作成したテーブルに変更
+4. definitions/ga4/mart/m_ga4_session_channel_group.sqlx 内で独自ルールを入れるなど要カスタマイズ
 
-# 変更が必要な箇所
-## includes/constants.js内
-1. BigQuery関連
-2. データセット: 各テーブルのデータセット名を指定
-3. 集計対象ホスト名: クロスドメイントラッキングなどで複数のホスト名が集計対象となる場合は、HOSTNAME3など追加し、module.exports配列に追加
-4. Measurement Protocolのイベント名 
-5. コンバージョン対象: 現在はCV_PAGE_LOCATIONとしていますが、report/r_ga4_conversion.sqlx含め要変更
-6. 新たに定数を作成したい場合は、このファイルで作成し、module.exports配列に追加
+# 導入時に変更が必要な箇所
+## includes/constants.js内すべて
+    1. GA4テーブルがあるプロジェクト
+    2. データセット: 各テーブルのデータセット名とプロジェクト名を指定
+    3. 集計対象ホスト名: クロスドメイントラッキングなどで複数のホスト名が集計対象となる場合は、HOSTNAME3など追加し、module.exports配列に追加
+    4. Measurement Protocolのイベント名 
+    5. コンバージョン対象: 現在はCV_PAGE_LOCATIONとしていますが、report/r_ga4_conversion.sqlx含め要変更
+    6. 新たに定数を作成したい場合は、このファイルで作成し、module.exports配列に追加
 
 ## イベントパラメータを追加した場合
-基本的にはすべてのファイルで修正が必要
-1. source/s_ga4_fixed_events.sqlx など
-    event_paramsカラムから対象のパラメータを抽出
-    例 114行目: ${helpers.getEventParamAll('event_category','string')}
-2. cleanse/c_ga4_fixed_events.sqlx など
-    上記で抽出したカラムを追加
-3. staging/やmart/内のSQLXファイルも上記と同様
+** 基本的にはすべてのファイルで修正が必要 **
+  1. source/s_ga4_fixed_events.sqlx など
+      event_paramsカラムから対象のパラメータを抽出
+      例 114行目: ${helpers.getEventParamAll('event_category','string')}
+  2. cleanse/c_ga4_fixed_events.sqlx など
+      上記で抽出したカラムを追加
+  3. staging/やmart/内のSQLXファイルも上記と同様
 
-## 初回実行時の対応
-1. mart/m_ga4_event.sqlxとmart/m_ga4_session.sqlxのtypeをtableにする
-2. mart/m_ga4_event.sqlxとmart/m_ga4_session.sqlxの最後のSELECT文のWHERE句をコメントアウトして、全件対象とする
-3. source/ga4_fixed_events.sqlxの最後のWHERE句で対象期間を最も古い日1日～今日の5日前に変更
-4. staging/s_ga4_events_add_session_item.sqlx のサブクエリでm_ga4_sessionテーブルを参照しているので、mart_session、agg_campaign_first_3サブクエリをコメントアウトして、その下にあるagg_campaign_first_3を使用
-5. mart/m_ga4_event.sqlxとmart/m_ga4_session.sqlxを実行（依存関係を含めるにチェック）
-7. 1で行ったmart/m_ga4_event.sqlxとmart/m_ga4_session.sqlxのtypeをincrementalにする
-8. 2で行ったmart/m_ga4_event.sqlxとmart/m_ga4_session.sqlxの最後のSELECT文のWHERE句をもとに戻す
-9. 3で行ったsource/ga4_fixed_events.sqlxの最後のWHERE句で対象期間をもとに戻す（7日前～5日前）
-10. 4で行ったstaging/s_ga4_events_add_session_item.sqlx をもとに戻す
-11. 再びmart/m_ga4_event.sqlxとmart/m_ga4_session.sqlxを実行（依存関係を含めるにチェック）
-12. 日別セッション数などを確認
- 
 
-# その他、設定変更が必要な場合に変更すべきファイル
-1. GA4からエクスポートされたテーブル内のデータを利用したい場合: definitions/ga4/sourceディレクトリ内のSQLXファイル
-2. すでに作成されたカラムを加工したい場合、staging/s_ga4_events_event_update.sqlx
-3. 参照元情報などセッションスコープのデータを加工したい場合、staging/s_ga4_session.sqlx
+# 初回実行時（過去データのインポート、m_ga4_event、m_ga4_sessionテーブルの新規作成等）の対応
+    1. includes/constants.jsの更新（前述）
+    2. チャネルグループ用のテーブルの作成（前述）
+    3. source/ga4_fixed_events.sqlx
+      1. 最後のWHERE句で対象期間を最も古い日～前日に変更（デフォルトは7日前～前日）
+      * 例： _table_suffix >= FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY))
+    4.staging/s_ga4_events_add_session_item.sqlx 
+      1. サブクエリでm_ga4_sessionテーブルを参照している場合、mart_session、agg_campaign_first_3サブクエリをコメントアウトして、その下にあるagg_campaign_first_3を使用（※これが見つからない場合はここは省略可）
+        * 詳細はs_ga4_events_add_session_item.sqlxに記載
+    5. mart/m_ga4_session_traffic_source_last_click.sqlx
+      1. 最初にあるtypeをincrementalからtableに変更
+      2. 16行目あたりのdependencies: ["m_ga4_session_traffic_source_last_click_delete_unfixed"]をコメントアウト（//を先頭に入れる）
+      3. 67行目からのSELECT文をコメントアウトして、71行目のSELECT文（SELECT * FROM s_ga4_session_traffic_source_last_click_initial）を実行させる 
+    5. mart/m_ga4_event.sqlx、mart/m_ga4_session.sqlx
+      1. 最初にあるtypeをincrementalからtableに変更
+      2. 12行目あたりのdependencies: ["m_ga4_xxxxx_delete_unfixed"]をコメントアウト（//を先頭に入れる）
+    6. report/r_ga4_conversion.sqlx
+      1. 最初にあるtypeをincrementalからtableに変更
+      2. 12行目あたりのdependencies: ["r_ga4_conversion_delete_unfixed"]をコメントアウト（//を先頭に入れる）
+    7. m_ga4_event.sqlxとm_ga4_session.sqlx、m_ga4_session_traffic_source_last_click.sqlx、report/r_ga4_conversion.sqlxを選択して実行
+      1. いずれか1つのファイルを開き、上部の「実行を開始」ボタンをクリックし、「操作」＞ファイル名（例:m_ga4_event）または「複数のアクション」を選択
+      2. 「SELECTION OF ACTIONS」を選択
+      3. 「実行するアクションを選択」から上記4つのファイルにチェックを入れる
+      4. 「 依存関係を含める」にチェック
+      5. 下の「実行を開始」ボタンをクリックして実行開始
+      6. 「ワークフロー実行を作成しました   詳細」というダイアログが下部に表示されるので、「詳細」をクリック
+      7. ステータスが表示されるので、「更新」ボタンを押して、ステータスが「成功」になればOK。失敗した場合は、エラーマークが付いているクエリの右側の「詳細」をクリックし、エラー箇所を確認。該当箇所のSQLXファイルを要修正。修正後再び6-1から再実施
+    7. 実行完了後、設定を元に戻す
+      1. 3のsource/ga4_fixed_events.sqlxの期間
+      2. 4のstaging/s_ga4_events_add_session_item.sqlxのサブクエリ
+      3. 5のmart/m_ga4_session_traffic_source_last_click.sqlxのtype、SELECT文 
+      4. 5のmart/m_ga4_event.sqlx、mart/m_ga4_session.sqlxのconfig（type、denpendencies） 
+      5. 6のreport/r_ga4_conversion.sqlxのconfig（type、denpendencies） 
+    8. 再びm_ga4_event.sqlxとm_ga4_session.sqlx、m_ga4_session_traffic_source_last_click.sqlxを選択して実行
+      1. 実行前にm_ga4_eventテーブルとm_ga4_sessionテーブルをコピーしておく（バックアップを取っておく）
+      2. 6と同じやり方でOK
+      3. 実行完了後、m_ga4_eventテーブルとm_ga4_sessionテーブルをevent_date別で件数を調べ、コピーしたテーブルと比較。5日前～前日のデータ件数がコピーしたテーブルよりも大きい場合は7のどこかで作業が漏れている（xxxx_delete_unfixed.sqlxが実行されていない可能性が高い）
 

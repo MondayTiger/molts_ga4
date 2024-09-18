@@ -1,5 +1,5 @@
 /*
- GA4
+ GA4の元データを統合
 */
 /*
 初期実行時（過去分のデータを取り込む時は、最後のWHERE句を変更（デフォルト：7日前～5日前 → 5日前まで）
@@ -7,7 +7,8 @@
 -- Config blocks
 config {
     type: "view",
-    schema: "df_molts_ga4_source",
+    schema: constants.SOURCE,
+//    schema: "df_molts_ga4_source",
     description: "GA4データソース 統合",
     tags: ["daily", "source"]
 }
