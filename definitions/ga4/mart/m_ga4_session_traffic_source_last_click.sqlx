@@ -1,10 +1,6 @@
 -- Config blocks
 config {
-    //typeは初期構築時は"table"、増分更新時は"incremental"とする。
-    /* 初期構築時の方法
-        1. typeをtableにする
-        2. 最後のSELECT文を要変更
-    */
+    //typeは初期構築時は"table"、増分更新時は"incremental"とする。初期構築時の作業手順はREADME.mdを要参照
     type: "table",
     bigquery: {
         // パーティションとクラスタリングを設定

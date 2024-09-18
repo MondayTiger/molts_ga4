@@ -1,6 +1,5 @@
 -- Config blocks
 config {
-    //typeは初期構築時はtable、増分更新時は"incremental"とする。増分更新時は最終行のコメントアウトも外すこと。
     type: "operations",
     schema: constants.REPORT,
     description: "GA4レポートデータ　コンバージョン用",

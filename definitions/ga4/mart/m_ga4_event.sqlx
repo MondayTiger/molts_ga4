@@ -1,21 +1,6 @@
 -- Config blocks
 config {
-    //typeは初期構築時は"table"、増分更新時は"incremental"とする。初期構築時は最終行をコメントアウトすること。
-    /* 初期構築時の方法
-    1.m_ga4_event.sqlxとm_ga4_session.sqlxのtypeをtableにして、12行目あたりのdependencies: ["m_ga4_xxxxx_delete_unfixed"]をコメントアウト（//を先頭に入れる）
-    2.m_ga4_event.sqlxとm_ga4_session.sqlxの最後のSELECT文のWHERE句をコメントアウトして、全件対象とする
-    3.source/ga4_fixed_events.sqlxの最後のWHERE句で対象期間を最も古い日～今日の5日前に変更（デフォルトは7日前～5日前）
-    4.staging/s_ga4_events_add_session_item.sqlx のサブクエリでm_ga4_sessionテーブルを参照している場合、mart_session、agg_campaign_first_3サブクエリをコメントアウトして、その下にあるagg_campaign_first_3を使用（※これが見つからない場合はここは省略してOKです）
-    5.staging/s_ga4_event.sqlxの最後のWHERE句を削除
-    6.staging/s_ga4_session.sqlxの172行目、173行目あたりのWHERE句も削除
-    7.m_ga4_event.sqlxとm_ga4_session.sqlxを実行（依存関係を含めるにチェック）
-    8.1で行ったm_ga4_event.sqlxとm_ga4_session.sqlxのtypeをincrementalにする
-    9.2で行ったm_ga4_event.sqlxとm_ga4_session.sqlxの最後のSELECT文のWHERE句をもとに戻す
-    10.3で行ったsource/ga4_fixed_events.sqlxの最後のWHERE句で対象期間をもとに戻す（7日前～5日前）
-    11.4で行ったstaging/s_ga4_events_add_session_item.sqlx をもとに戻す ※5、6で行ったWHERE句の削除はもとに戻さなくてOKです。
-    12.再びm_ga4_event.sqlxとm_ga4_session.sqlxを実行（依存関係を含めるにチェック）
-    13.日別セッション数などを確認
-    */
+    //typeは初期構築時は"table"、増分更新時は"incremental"とする。初期構築時の作業手順はREADME.mdを要参照
     type: "incremental",
     bigquery: {
         // パーティションとクラスタリングを設定

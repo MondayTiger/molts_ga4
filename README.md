@@ -46,10 +46,10 @@
 ```mermaid
 erDiagram
 		%% GA4のイベントデータからソースデータを構築
-    t-analytics_PROPERTY_ID-events_yyyymmdd ||--|| source-ga4_fixed_events : "フラット化"
-    t-analytics_PROPERTY_ID-events_intraday_yyyymmdd ||--|| source-ga4_unfixed_events_intraday : "フラット化"
-    source-ga4_fixed_events ||--|| source-ga4_events_union : "統合"
-    source-ga4_unfixed_events_intraday ||--|| source-ga4_events_union : "統合"
+    t-analytics_PROPERTY_ID-events_yyyymmdd ||--|| source-ga4_fixed_events : "GA4データの読み込み"
+    t-analytics_PROPERTY_ID-events_intraday_yyyymmdd ||--|| source-ga4_unfixed_events_intraday : "GA4データの読み込み"
+    source-ga4_fixed_events ||--|| source-ga4_events_union : "統合＆フラット化"
+    source-ga4_unfixed_events_intraday ||--|| source-ga4_events_union : "統合＆フラット化"
 
 		%% ソースデータをクレンジング
     source-ga4_events_union ||--|| cleanse-c_ga4_events_union : ""
