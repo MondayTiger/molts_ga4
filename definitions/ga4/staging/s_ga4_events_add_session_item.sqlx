@@ -294,7 +294,7 @@ mart_session AS(
             session_traffic_campaign_id,
             session_traffic_gclid
         ) ORDER BY event_date, entrance_timestamp,exit_timestamp ASC LIMIT 1)[OFFSET(0)].*
-    FROM `${constants.GA4_DATABASE}.${constants.MART}.m_ga4_session` 
+    FROM `${constants.PROJECT}.${constants.MART}.m_ga4_session` 
     WHERE event_date >= DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 10 DAY)
     GROUP BY ALL
 ),
