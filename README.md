@@ -42,7 +42,7 @@
     - helpers.js : SQLXを簡略化するための関数が入ったファイル 
 
 
-# Data flow
+# Data Flow
 ```mermaid
 erDiagram
 		%% GA4のイベントデータからソースデータを構築
