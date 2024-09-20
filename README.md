@@ -213,11 +213,16 @@ erDiagram
     6. report/r_ga4_conversion.sqlx
       1. 最初にあるtypeをincrementalからtableに変更
       2. 12行目あたりのdependencies: ["r_ga4_conversion_delete_unfixed"]をコメントアウト（//を先頭に入れる）
-    7. m_ga4_event.sqlxとm_ga4_session.sqlx、m_ga4_session_traffic_source_last_click.sqlx、report/r_ga4_conversion.sqlxを選択して実行
-      1. いずれか1つのファイルを開き、上部の「実行を開始」ボタンをクリックし、「操作」＞ファイル名（例:m_ga4_event）または「複数のアクション」を選択
+    7. 実行
+      1. 下記のいずれか1つのファイルを開き、上部の「実行を開始」ボタンをクリックし、「操作」＞ファイル名（例:m_ga4_event）または「複数のアクション」を選択
+        - mart/m_ga4_event.sqlx
+        - mart/m_ga4_session.sqlx
+        - mart/m_ga4_session_traffic_source_last_click.sqlx
+        - mart/mart-m_ga4_session_channel_group.sqlx
+        - report/r_ga4_conversion.sqlx 
       2. 「SELECTION OF ACTIONS」を選択
-      3. 「実行するアクションを選択」から上記4つのファイルにチェックを入れる
-      4. 「 依存関係を含める」にチェック
+      3. 「実行するアクションを選択」から上記5つのファイルにチェックを入れる
+      4. 「依存関係を含める」にチェック
       5. 下の「実行を開始」ボタンをクリックして実行開始
       6. 「ワークフロー実行を作成しました   詳細」というダイアログが下部に表示されるので、「詳細」をクリック
       7. ステータスが表示されるので、「更新」ボタンを押して、ステータスが「成功」になればOK。失敗した場合は、エラーマークが付いているクエリの右側の「詳細」をクリックし、エラー箇所を確認。該当箇所のSQLXファイルを要修正。修正後再び6-1から再実施
