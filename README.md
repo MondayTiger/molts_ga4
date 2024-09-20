@@ -193,7 +193,6 @@ erDiagram
       上記で抽出したカラムを追加
   3. staging/やmart/内のSQLXファイルも上記と同様
 
-
 # 初回実行時（過去データのインポート、m_ga4_event、m_ga4_sessionテーブルの新規作成等）の対応
     1. includes/constants.jsの更新（前述）
     2. チャネルグループ用のテーブルの作成（前述）
@@ -206,7 +205,6 @@ erDiagram
     5. mart/m_ga4_session_traffic_source_last_click.sqlx
       1. 最初にあるtypeをincrementalからtableに変更
       2. 16行目あたりのdependencies: ["m_ga4_session_traffic_source_last_click_delete_unfixed"]をコメントアウト（//を先頭に入れる）
-      3. 67行目からのSELECT文をコメントアウトして、71行目のSELECT文（SELECT * FROM s_ga4_session_traffic_source_last_click_initial）を実行させる 
     5. mart/m_ga4_event.sqlx、mart/m_ga4_session.sqlx
       1. 最初にあるtypeをincrementalからtableに変更
       2. 12行目あたりのdependencies: ["m_ga4_xxxxx_delete_unfixed"]をコメントアウト（//を先頭に入れる）
@@ -236,4 +234,25 @@ erDiagram
       1. 実行前にm_ga4_eventテーブルとm_ga4_sessionテーブルをコピーしておく（バックアップを取っておく）
       2. 6と同じやり方でOK
       3. 実行完了後、m_ga4_eventテーブルとm_ga4_sessionテーブルをevent_date別で件数を調べ、コピーしたテーブルと比較。5日前～前日のデータ件数がコピーしたテーブルよりも大きい場合は7のどこかで作業が漏れている（xxxx_delete_unfixed.sqlxが実行されていない可能性が高い）
+
+# 日次更新（ワークフロー）の設定
+  1. Dataformのメインページ（https://console.cloud.google.com/bigquery/dataform?authuser=0&project=molts-data-project ）からリポジトリを選択
+  2. 「リリースとスケジュール」タブをクリック
+  3. 「リリース構成」の横にある「作成」をクリックし、下記を入力した後、「保存」ボタンを押す
+    - リリースID：任意
+    - 頻度：毎日
+    - タイムゾーン：任意（日本）
+    - Google Cloud プロジェクト リリースID：空欄
+    - スキーマの接尾辞：空欄
+    - テーブルの接頭辞：空欄
+  4. 「ワークフロー構成」の横にある「作成」をクリックし、
+    - リリース構成： 上記で作成したリリースを選択
+    - サービスアカウント：デフォルトのサービスアカウント（Googleシートで作成したテーブルへ参照できない場合は、参照可能かつDataformを実行できるアカウントに要変更）
+    - 頻度：任意（例：毎朝8時の場合 0 8 * * *）
+    - タイムゾーン：日本 
+    - 「SELECTION OF ACTIONS」を選択
+      - 「すべて選択」にチェックを入れる
+      - 「依存関係を含める」にチェック
+      - 下の「保存」ボタンをクリック
+
 
