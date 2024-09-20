@@ -158,6 +158,20 @@ erDiagram
 # チャネルグループの作成
 1. Googleシートを作成（例：https://docs.google.com/spreadsheets/d/16iDnq9G07HcQ5O09W5OTEPIaq5lbafS8Qw9JGk0179U/edit?gid=0#gid=0 ）参考：https://support.google.com/analytics/answer/9756891?hl=ja
 2. 上記のGoogleシートを参照するテーブルを作成
+  1. BigQuery Studioにて該当のプロジェクトを開く
+  2. データセットを作成（名前は任意：例 general_master）
+    - リージョンは他のデータセットと同じにする（例 東京：asia-northeast1）
+  3. テーブルを作成
+    - ソース
+      - テーブルの作成元：ドライブ
+      - ドライブのURI：GoogleシートのURL
+      - ファイル形式：Googleスプレッドシート
+      - シート範囲：空欄でOK
+    - 送信先
+      - プロジェクト：デフォルトのまま
+      - データセット：デフォルトのまま
+      - テーブル名：任意
+      - 
 3. includes/ga4/constants.js内の`CHANNEL_GROUP_TABLE`変数の値を上記で作成したテーブルに変更
 4. definitions/ga4/mart/m_ga4_session_channel_group.sqlx 内で独自ルールを入れるなど要カスタマイズ
 
