@@ -209,7 +209,7 @@ erDiagram
 3. source/ga4_fixed_events.sqlx
 	1. 最後のWHERE句で対象期間を最も古い日～前日に変更（デフォルトは7日前～前日）
     例： _table_suffix >= FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY))
-4. staging/s_ga4_events_add_session_item.sqlx 
+4. staging/s_ga4_events_add_session_item.sqlx
   1. サブクエリでm_ga4_sessionテーブルを参照している場合、mart_session、agg_campaign_first_3サブクエリをコメントアウトして、その下にあるagg_campaign_first_3を使用（※これが見つからない場合はここは省略可）
     詳細はs_ga4_events_add_session_item.sqlxに記載
 5. mart/m_ga4_session_traffic_source_last_click.sqlx
@@ -240,7 +240,7 @@ erDiagram
   3. 5のmart/m_ga4_session_traffic_source_last_click.sqlxのtype、SELECT文 
   4. 5のmart/m_ga4_event.sqlx、mart/m_ga4_session.sqlxのconfig（type、denpendencies） 
   5. 6のreport/r_ga4_conversion.sqlxのconfig（type、denpendencies） 
-10. 再びm_ga4_event.sqlxとm_ga4_session.sqlx、m_ga4_session_traffic_source_last_click.sqlxを選択して実行 
+10. 再びm_ga4_event.sqlxとm_ga4_session.sqlx、m_ga4_session_traffic_source_last_click.sqlxを選択して実行
   1. 実行前にm_ga4_eventテーブルとm_ga4_sessionテーブルをコピーしておく（バックアップを取っておく）
   2. 前述の「実行」と同じやり方でOK
   3. 実行完了後、m_ga4_eventテーブルとm_ga4_sessionテーブルをevent_date別で件数を調べ、コピーしたテーブルと比較。
