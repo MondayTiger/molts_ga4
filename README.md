@@ -1,3 +1,4 @@
+
 # GA4->BigQuery export data gereral queries made by Dataform.
 
 # 各SQLXファイルの説明
@@ -155,37 +156,43 @@ erDiagram
      - staging.ga4_unfixed_events.sqlx
 ** session_traffic_source_last_clickカラムを使用したい場合は、xxx_ga4_mart.m_ga4_session_traffic_source_last_clickテーブルに格納されているので、m_ga4_eventテーブル、m_ga4_sessionテーブルとはuser_pseudo_id, ga_session_idでJOINすることで抽出可能 **
 
-# チャネルグループの作成
+# チャネルグループの作成＆カスタマイズ
 1. Googleシートを作成（例：https://docs.google.com/spreadsheets/d/16iDnq9G07HcQ5O09W5OTEPIaq5lbafS8Qw9JGk0179U/edit?gid=0#gid=0 ）参考：https://support.google.com/analytics/answer/9756891?hl=ja
 2. 上記のGoogleシートを参照するテーブルを作成
-  1. BigQuery Studioにて該当のプロジェクトを開く
-  2. データセットを作成（名前は任意：例 general_master）
-    - リージョンは他のデータセットと同じにする（例 東京：asia-northeast1）
-  3. テーブルを作成
-    - ソース
-      - テーブルの作成元：ドライブ
-      - ドライブのURI：GoogleシートのURL
-      - ファイル形式：Googleスプレッドシート
-      - シート範囲：空欄でOK
-    - 送信先
-      - プロジェクト：デフォルトのまま
-      - データセット：デフォルトのまま
-      - テーブル名：任意
-      - 
+	1. BigQuery Studioにて該当のプロジェクトを開く
+	2. データセットを作成（名前は任意：例 general_master）
+		 - リージョンは他のデータセットと同じにする（例 東京：asia-northeast1）
+	 3. テーブルを作成
+		  - ソース
+		      - テーブルの作成元：ドライブ
+		      - ドライブのURI：GoogleシートのURL
+		      - ファイル形式：Googleスプレッドシート
+		      - シート範囲：空欄でOK
+	     - 送信先
+		      - プロジェクト：デフォルトのまま
+		      - データセット：デフォルトのまま
+		      - テーブル名：任意
+	4. Googleシートへのアクセス権限がないユーザー・サービスアカウントはこのテーブルを使えない可能性があるため、その場合は、上記のテーブルをコピーしてテーブルを作成。
+		例： 
+		```
+		CREATE OR REPLACE TABLE  `プロジェクト名.データセット名.新しいテーブル名`
+		SELECT * FROM `プロジェクト名.データセット名.上記のGoogleシートで作成したテーブル名`
+		  ```
+		  ただし、https://support.google.com/analytics/answer/9756891?hl=ja にある定義が更新された場合は手動でこの新しいテーブルにデータを追加する必要がある
 3. includes/ga4/constants.js内の`CHANNEL_GROUP_TABLE`変数の値を上記で作成したテーブルに変更
 4. definitions/ga4/mart/m_ga4_session_channel_group.sqlx 内で独自ルールを入れるなど要変更
-  - 85行目以降：custom_channel_group：各サイトでの要件にあわせて変更
-  - 119行目以降：lp_group：各サイトのLPにあわせて変更
-  - 125行目以降：domain：各サイトごとのドメインやサブドメインのグループ分けの定義にあわせて変更
+	 - 85行目以降：custom_channel_group：各サイトでの要件にあわせて変更
+	 - 119行目以降：lp_group：各サイトのLPにあわせて変更
+	 - 125行目以降：domain：各サイトごとのドメインやサブドメインのグループ分けの定義にあわせて変更
 
 # 導入時に変更が必要な箇所
 ## includes/constants.js内すべて
-    1. GA4テーブルがあるプロジェクト
-    2. データセット: 各テーブルのデータセット名とプロジェクト名を指定
-    3. 集計対象ホスト名: クロスドメイントラッキングなどで複数のホスト名が集計対象となる場合は、HOSTNAME3など追加し、module.exports配列に追加
-    4. Measurement Protocolのイベント名 
-    5. コンバージョン対象: 現在はCV_PAGE_LOCATIONとしていますが、report/r_ga4_conversion.sqlx含め要変更
-    6. 新たに定数を作成したい場合は、このファイルで作成し、module.exports配列に追加
+1. GA4テーブルがあるプロジェクト
+2. データセット: 各テーブルのデータセット名とプロジェクト名を指定
+3. 集計対象ホスト名: クロスドメイントラッキングなどで複数のホスト名が集計対象となる場合は、HOSTNAME3など追加し、module.exports配列に追加
+4. Measurement Protocolのイベント名 
+5. コンバージョン対象: 現在はCV_PAGE_LOCATIONとしていますが、report/r_ga4_conversion.sqlx含め要変更
+6. 新たに定数を作成したい場合は、このファイルで作成し、module.exports配列に追加
 
 ## イベントパラメータを追加した場合
 ** 基本的にはすべてのファイルで修正が必要 **
@@ -197,76 +204,76 @@ erDiagram
   3. staging/やmart/内のSQLXファイルも上記と同様
 
 # 初回実行時（過去データのインポート、m_ga4_event、m_ga4_sessionテーブルの新規作成等）の対応
-    1. includes/constants.jsの更新（前述）
-    2. チャネルグループ用のテーブルの作成（前述）
-    3. source/ga4_fixed_events.sqlx
-      1. 最後のWHERE句で対象期間を最も古い日～前日に変更（デフォルトは7日前～前日）
-      * 例： _table_suffix >= FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY))
-    4.staging/s_ga4_events_add_session_item.sqlx 
-      1. サブクエリでm_ga4_sessionテーブルを参照している場合、mart_session、agg_campaign_first_3サブクエリをコメントアウトして、その下にあるagg_campaign_first_3を使用（※これが見つからない場合はここは省略可）
-        * 詳細はs_ga4_events_add_session_item.sqlxに記載
-    5. mart/m_ga4_session_traffic_source_last_click.sqlx
+1. includes/constants.jsの更新（前述）
+2. チャネルグループ用のテーブルの作成（前述）
+3. source/ga4_fixed_events.sqlx
+	1. 最後のWHERE句で対象期間を最も古い日～前日に変更（デフォルトは7日前～前日）
+	* 例： _table_suffix >= FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY))
+4. staging/s_ga4_events_add_session_item.sqlx 
+   1. サブクエリでm_ga4_sessionテーブルを参照している場合、mart_session、agg_campaign_first_3サブクエリをコメントアウトして、その下にあるagg_campaign_first_3を使用（※これが見つからない場合はここは省略可）
+     * 詳細はs_ga4_events_add_session_item.sqlxに記載
+5. mart/m_ga4_session_traffic_source_last_click.sqlx
       1. 最初にあるtypeをincrementalからtableに変更
       2. 16行目あたりのdependencies: ["m_ga4_session_traffic_source_last_click_delete_unfixed"]をコメントアウト（//を先頭に入れる）
-    5. mart/m_ga4_event.sqlx、mart/m_ga4_session.sqlx
+6. mart/m_ga4_event.sqlx、mart/m_ga4_session.sqlx
       1. 最初にあるtypeをincrementalからtableに変更
       2. 12行目あたりのdependencies: ["m_ga4_xxxxx_delete_unfixed"]をコメントアウト（//を先頭に入れる）
-    6. report/r_ga4_conversion.sqlx
+7. report/r_ga4_conversion.sqlx
       1. 最初にあるtypeをincrementalからtableに変更
       2. 12行目あたりのdependencies: ["r_ga4_conversion_delete_unfixed"]をコメントアウト（//を先頭に入れる）
-    7. 実行
-      1. 下記のいずれか1つのファイルを開き、上部の「実行を開始」ボタンをクリックし、「操作」＞ファイル名（例:m_ga4_event）または「複数のアクション」を選択
-        - mart/m_ga4_event.sqlx
-        - mart/m_ga4_session.sqlx
-        - mart/m_ga4_session_traffic_source_last_click.sqlx
-        - mart/mart-m_ga4_session_channel_group.sqlx
-        - report/r_ga4_conversion.sqlx 
+8. 実行
+    1. 下記のいずれか1つのファイルを開き、上部の「実行を開始」ボタンをクリックし、「操作」＞ファイル名（例:m_ga4_event）または「複数のアクション」を選択
+		- mart/m_ga4_event.sqlx
+		- mart/m_ga4_session.sqlx
+		- mart/m_ga4_session_traffic_source_last_click.sqlx
+		- mart/mart-m_ga4_session_channel_group.sqlx
+		- report/r_ga4_conversion.sqlx 
       2. 「SELECTION OF ACTIONS」を選択
       3. 「実行するアクションを選択」から上記5つのファイルにチェックを入れる
       4. 「依存関係を含める」にチェック
       5. 下の「実行を開始」ボタンをクリックして実行開始
       6. 「ワークフロー実行を作成しました   詳細」というダイアログが下部に表示されるので、「詳細」をクリック
       7. ステータスが表示されるので、「更新」ボタンを押して、ステータスが「成功」になればOK。失敗した場合は、エラーマークが付いているクエリの右側の「詳細」をクリックし、エラー箇所を確認。該当箇所のSQLXファイルを要修正。修正後再び6-1から再実施
-    7. 実行完了後、設定を元に戻す
+9. 実行完了後、設定を元に戻す
       1. 3のsource/ga4_fixed_events.sqlxの期間
       2. 4のstaging/s_ga4_events_add_session_item.sqlxのサブクエリ
       3. 5のmart/m_ga4_session_traffic_source_last_click.sqlxのtype、SELECT文 
       4. 5のmart/m_ga4_event.sqlx、mart/m_ga4_session.sqlxのconfig（type、denpendencies） 
       5. 6のreport/r_ga4_conversion.sqlxのconfig（type、denpendencies） 
-    8. 再びm_ga4_event.sqlxとm_ga4_session.sqlx、m_ga4_session_traffic_source_last_click.sqlxを選択して実行
-      1. 実行前にm_ga4_eventテーブルとm_ga4_sessionテーブルをコピーしておく（バックアップを取っておく）
-      2. 6と同じやり方でOK
-      3. 実行完了後、m_ga4_eventテーブルとm_ga4_sessionテーブルをevent_date別で件数を調べ、コピーしたテーブルと比較。5日前～前日のデータ件数がコピーしたテーブルよりも大きい場合は7のどこかで作業が漏れている（xxxx_delete_unfixed.sqlxが実行されていない可能性が高い）
+10. 再びm_ga4_event.sqlxとm_ga4_session.sqlx、m_ga4_session_traffic_source_last_click.sqlxを選択して実行
+		1. 実行前にm_ga4_eventテーブルとm_ga4_sessionテーブルをコピーしておく（バックアップを取っておく）
+		2. 前述の「実行」と同じやり方でOK
+		3. 実行完了後、m_ga4_eventテーブルとm_ga4_sessionテーブルをevent_date別で件数を調べ、コピーしたテーブルと比較。
+			- 5日前～前日のデータ件数がコピーしたテーブルよりも大きい場合：7のどこかで作業が漏れている（例：xxxx_delete_unfixed.sqlxが実行されていない可能性が高い）
+			-  6日前よりも古いデータがない場合：type:tableのままになっている
 
 # 日次更新（ワークフロー）の設定
   1. Dataformのメインページ（https://console.cloud.google.com/bigquery/dataform?authuser=0&project=molts-data-project ）からリポジトリを選択
   2. 「リリースとスケジュール」タブをクリック
   3. 「リリース構成」の横にある「作成」をクリックし、下記を入力した後、「保存」ボタンを押す
-
-    - リリースID：任意
-    - 頻度：毎日
-    - タイムゾーン：任意（日本）
-    - Google Cloud プロジェクト リリースID：空欄
-    - スキーマの接尾辞：空欄
-    - テーブルの接頭辞：空欄
+	   - リリースID：任意
+	   - 頻度：毎日
+	   - タイムゾーン：任意（日本）
+	   - Google Cloud プロジェクト リリースID：空欄
+	   - スキーマの接尾辞：空欄
+	   - テーブルの接頭辞：空欄
   4. 「ワークフロー構成」の横にある「作成」をクリック
-
-    - リリース構成： 上記で作成したリリースを選択
-    - サービスアカウント：デフォルトのサービスアカウント（Googleシートで作成したテーブルへ参照できない場合は、参照可能かつDataformを実行できるアカウントに要変更）
-    - 頻度：任意（例：毎朝8時の場合 0 8 * * *）
-    - タイムゾーン：日本 
-    - 「SELECTION OF ACTIONS」を選択
-      - 「すべて選択」にチェックを入れる
-      - 「依存関係を含める」にチェック
-      - 下の「保存」ボタンをクリック
+	   - リリース構成： 上記で作成したリリースを選択
+	   - サービスアカウント：デフォルトのサービスアカウント（Googleシートで作成したテーブルへ参照できない場合は、参照可能かつDataformを実行できるアカウントに要変更）
+	   - 頻度：任意（例：毎朝8時の場合 0 8 * * *）
+	   - タイムゾーン：日本 
+	   - 「SELECTION OF ACTIONS」を選択
+	     - 「すべて選択」にチェックを入れる
+	     - 「依存関係を含める」にチェック
+	     - 下の「保存」ボタンをクリック
 
 # エンゲージメントの定義
-セッション単位
+セッション単位のエンゲージメントについては下記のカラムを使用。GA4の定義では`is_bounce_no_engagement_manual`が正しいが、GA4のレポートの結果に合わせる場合は、 `is_bounce_no_engagement` を使用。（それでも若干誤差はある）
 | カラム名 | 定義 | 値 | 意味 |
 | ------------- | ------------- | ------------- | ------------- |
 | is_bounce_no_engagement | セッション内にsession_engagedパラメータが1であるイベントが1個もない | TRUE | エンゲージメントがないセッション|
 ||| FALSE | エンゲージメントがあるセッション |
-| is_bounce_no_engagement_manual | セッションの時間が10秒未満またはセッション内のページビュー（スクリーンビュー）数が2未満 | TRUE | エンゲージメントがないセッション|
+| is_bounce_no_engagement_manual | セッションの時間が10秒未満またはセッション内のページビュー（スクリーンビュー）数が2未満| TRUE | エンゲージメントがないセッション|
 ||| FALSE | エンゲージメントがあるセッション |
 
 
