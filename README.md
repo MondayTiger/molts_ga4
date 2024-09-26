@@ -154,7 +154,7 @@ erDiagram
 4. session_startイベントに参照元が入っていれば（上記2）それを採用し、入っていない場合はイベント（上記3）から取得
    - 上記2以降の対象クエリ
      - staging.ga4_unfixed_events.sqlx
-** session_traffic_source_last_clickカラムを使用したい場合は、xxx_ga4_mart.m_ga4_session_traffic_source_last_clickテーブルに格納されているので、m_ga4_eventテーブル、m_ga4_sessionテーブルとはuser_pseudo_id, ga_session_idでJOINすることで抽出可能 **
+**session_traffic_source_last_clickカラムを使用したい場合は、xxx_ga4_mart.m_ga4_session_traffic_source_last_clickテーブルに格納されているので、m_ga4_eventテーブル、m_ga4_sessionテーブルとはuser_pseudo_id, ga_session_idでJOINすることで抽出可能**
 
 # チャネルグループの作成＆カスタマイズ
 1. Googleシートを作成（例：https://docs.google.com/spreadsheets/d/16iDnq9G07HcQ5O09W5OTEPIaq5lbafS8Qw9JGk0179U/edit?gid=0#gid=0 ）参考：https://support.google.com/analytics/answer/9756891?hl=ja
@@ -195,7 +195,7 @@ erDiagram
 6. 新たに定数を作成したい場合は、このファイルで作成し、module.exports配列に追加
 
 ## イベントパラメータを追加した場合
-** 基本的にはすべてのファイルで修正が必要 **
+**基本的にはすべてのファイルで修正が必要**
   1. source/s_ga4_fixed_events.sqlx など
       event_paramsカラムから対象のパラメータを抽出
       例 114行目: ${helpers.getEventParamAll('event_category','string')}
@@ -208,44 +208,44 @@ erDiagram
 2. チャネルグループ用のテーブルの作成（前述）
 3. source/ga4_fixed_events.sqlx
 	1. 最後のWHERE句で対象期間を最も古い日～前日に変更（デフォルトは7日前～前日）
-	* 例： _table_suffix >= FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY))
+    例： _table_suffix >= FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY))
 4. staging/s_ga4_events_add_session_item.sqlx 
-   1. サブクエリでm_ga4_sessionテーブルを参照している場合、mart_session、agg_campaign_first_3サブクエリをコメントアウトして、その下にあるagg_campaign_first_3を使用（※これが見つからない場合はここは省略可）
-     * 詳細はs_ga4_events_add_session_item.sqlxに記載
+  1. サブクエリでm_ga4_sessionテーブルを参照している場合、mart_session、agg_campaign_first_3サブクエリをコメントアウトして、その下にあるagg_campaign_first_3を使用（※これが見つからない場合はここは省略可）
+    詳細はs_ga4_events_add_session_item.sqlxに記載
 5. mart/m_ga4_session_traffic_source_last_click.sqlx
-      1. 最初にあるtypeをincrementalからtableに変更
-      2. 16行目あたりのdependencies: ["m_ga4_session_traffic_source_last_click_delete_unfixed"]をコメントアウト（//を先頭に入れる）
+  1. 最初にあるtypeをincrementalからtableに変更
+  2. 16行目あたりのdependencies: ["m_ga4_session_traffic_source_last_click_delete_unfixed"]をコメントアウト（//を先頭に入れる）
 6. mart/m_ga4_event.sqlx、mart/m_ga4_session.sqlx
-      1. 最初にあるtypeをincrementalからtableに変更
-      2. 12行目あたりのdependencies: ["m_ga4_xxxxx_delete_unfixed"]をコメントアウト（//を先頭に入れる）
+  1. 最初にあるtypeをincrementalからtableに変更
+  2. 12行目あたりのdependencies: ["m_ga4_xxxxx_delete_unfixed"]をコメントアウト（//を先頭に入れる）
 7. report/r_ga4_conversion.sqlx
-      1. 最初にあるtypeをincrementalからtableに変更
-      2. 12行目あたりのdependencies: ["r_ga4_conversion_delete_unfixed"]をコメントアウト（//を先頭に入れる）
+  1. 最初にあるtypeをincrementalからtableに変更
+  2. 12行目あたりのdependencies: ["r_ga4_conversion_delete_unfixed"]をコメントアウト（//を先頭に入れる）
 8. 実行
-    1. 下記のいずれか1つのファイルを開き、上部の「実行を開始」ボタンをクリックし、「操作」＞ファイル名（例:m_ga4_event）または「複数のアクション」を選択
-		- mart/m_ga4_event.sqlx
-		- mart/m_ga4_session.sqlx
-		- mart/m_ga4_session_traffic_source_last_click.sqlx
-		- mart/mart-m_ga4_session_channel_group.sqlx
-		- report/r_ga4_conversion.sqlx 
-      2. 「SELECTION OF ACTIONS」を選択
-      3. 「実行するアクションを選択」から上記5つのファイルにチェックを入れる
-      4. 「依存関係を含める」にチェック
-      5. 下の「実行を開始」ボタンをクリックして実行開始
-      6. 「ワークフロー実行を作成しました   詳細」というダイアログが下部に表示されるので、「詳細」をクリック
-      7. ステータスが表示されるので、「更新」ボタンを押して、ステータスが「成功」になればOK。失敗した場合は、エラーマークが付いているクエリの右側の「詳細」をクリックし、エラー箇所を確認。該当箇所のSQLXファイルを要修正。修正後再び6-1から再実施
+  1. 下記のいずれか1つのファイルを開き、上部の「実行を開始」ボタンをクリックし、「操作」＞ファイル名（例:m_ga4_event）または「複数のアクション」を選択
+  - mart/m_ga4_event.sqlx
+  - mart/m_ga4_session.sqlx
+  - mart/m_ga4_session_traffic_source_last_click.sqlx
+  - mart/mart-m_ga4_session_channel_group.sqlx
+  - report/r_ga4_conversion.sqlx 
+  2. 「SELECTION OF ACTIONS」を選択
+  3. 「実行するアクションを選択」から上記5つのファイルにチェックを入れる
+  4. 「依存関係を含める」にチェック
+  5. 下の「実行を開始」ボタンをクリックして実行開始
+  6. 「ワークフロー実行を作成しました   詳細」というダイアログが下部に表示されるので、「詳細」をクリック
+  7. ステータスが表示されるので、「更新」ボタンを押して、ステータスが「成功」になればOK。失敗した場合は、エラーマークが付いているクエリの右側の「詳細」をクリックし、エラー箇所を確認。該当箇所のSQLXファイルを要修正。修正後再び6-1から再実施
 9. 実行完了後、設定を元に戻す
-      1. 3のsource/ga4_fixed_events.sqlxの期間
-      2. 4のstaging/s_ga4_events_add_session_item.sqlxのサブクエリ
-      3. 5のmart/m_ga4_session_traffic_source_last_click.sqlxのtype、SELECT文 
-      4. 5のmart/m_ga4_event.sqlx、mart/m_ga4_session.sqlxのconfig（type、denpendencies） 
-      5. 6のreport/r_ga4_conversion.sqlxのconfig（type、denpendencies） 
-10. 再びm_ga4_event.sqlxとm_ga4_session.sqlx、m_ga4_session_traffic_source_last_click.sqlxを選択して実行
-		1. 実行前にm_ga4_eventテーブルとm_ga4_sessionテーブルをコピーしておく（バックアップを取っておく）
-		2. 前述の「実行」と同じやり方でOK
-		3. 実行完了後、m_ga4_eventテーブルとm_ga4_sessionテーブルをevent_date別で件数を調べ、コピーしたテーブルと比較。
-			- 5日前～前日のデータ件数がコピーしたテーブルよりも大きい場合：7のどこかで作業が漏れている（例：xxxx_delete_unfixed.sqlxが実行されていない可能性が高い）
-			-  6日前よりも古いデータがない場合：type:tableのままになっている
+  1. 3のsource/ga4_fixed_events.sqlxの期間
+  2. 4のstaging/s_ga4_events_add_session_item.sqlxのサブクエリ
+  3. 5のmart/m_ga4_session_traffic_source_last_click.sqlxのtype、SELECT文 
+  4. 5のmart/m_ga4_event.sqlx、mart/m_ga4_session.sqlxのconfig（type、denpendencies） 
+  5. 6のreport/r_ga4_conversion.sqlxのconfig（type、denpendencies） 
+10. 再びm_ga4_event.sqlxとm_ga4_session.sqlx、m_ga4_session_traffic_source_last_click.sqlxを選択して実行 
+  1. 実行前にm_ga4_eventテーブルとm_ga4_sessionテーブルをコピーしておく（バックアップを取っておく）
+  2. 前述の「実行」と同じやり方でOK
+  3. 実行完了後、m_ga4_eventテーブルとm_ga4_sessionテーブルをevent_date別で件数を調べ、コピーしたテーブルと比較。
+  - 5日前～前日のデータ件数がコピーしたテーブルよりも大きい場合：7のどこかで作業が漏れている（例：xxxx_delete_unfixed.sqlxが実行されていない可能性が高い）
+  - 6日前よりも古いデータがない場合：type:tableのままになっている
 
 # 日次更新（ワークフロー）の設定
   1. Dataformのメインページ（https://console.cloud.google.com/bigquery/dataform?authuser=0&project=molts-data-project ）からリポジトリを選択
