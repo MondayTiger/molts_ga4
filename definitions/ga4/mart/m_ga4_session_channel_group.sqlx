@@ -81,6 +81,7 @@ WITH channel_group_table AS (
 
 SELECT
   * EXCEPT(entrance_timestamp),
+   -- 以下は各サイトでの要件にあわせて変更（特に97行目以降）
   CASE
     WHEN channel_group = 'Cross-network' THEN 'Cross-network'
     WHEN channel_group = 'Paid Shopping' THEN 'Paid Shopping'
@@ -114,18 +115,18 @@ SELECT
     WHEN session_traffic_medium = 'point' THEN 'ポイントサイト'
     ELSE 'その他'
   END AS custom_channel_group,
-  -- 各サイトのLPにあわせて要修正
+  -- 以下は各サイトのLPにあわせて変更
   CASE
     WHEN REGEXP_CONTAINS(entrance_path, r'^/sale.*') THEN 'sale'
     WHEN REGEXP_CONTAINS(entrance_host, r'^www\.abc\.jp.*') THEN '公式'
     WHEN REGEXP_CONTAINS(entrance_host, r'^www\.abc\.com.*') THEN 'その他公式'
     ELSE 'その他' END AS lp_group,
+  -- 以下は各サイトごとのドメインやサブドメインのグループ分けの定義にあわせて変更
   CASE
-  -- 各サイトごとにあわせて要修正
-  WHEN REGEXP_CONTAINS(entrance_host, r'lp\.abc\.com') THEN '新規LP'
-  WHEN REGEXP_CONTAINS(entrance_host, r'www\.abc\.com|www\.abc\.jp|abc\.jp') THEN '公式'
-  WHEN REGEXP_CONTAINS(entrance_host, r'www\.abc\.co\.jp') THEN 'その他'
-  ELSE '定義外'
+    WHEN REGEXP_CONTAINS(entrance_host, r'lp\.abc\.com') THEN '新規LP'
+    WHEN REGEXP_CONTAINS(entrance_host, r'www\.abc\.com|www\.abc\.jp|abc\.jp') THEN '公式'
+    WHEN REGEXP_CONTAINS(entrance_host, r'www\.abc\.co\.jp') THEN 'その他'
+    ELSE '定義外'
 END AS domain
 FROM
   channel_group_table
