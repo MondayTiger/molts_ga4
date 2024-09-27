@@ -11,7 +11,7 @@ config {
     description: "GA4マートデータ　イベントデータ用",
     // dependencies: ["m_ga4_event_delete_unfixed"],
     dependencies: ["r_ga4_conversion_delete_unfixed"],
-    tags: ["daily", "report"],
+    tags: ["daily", "report","workflow"],
     columns: {
         // timestamp
         event_date: "日付",

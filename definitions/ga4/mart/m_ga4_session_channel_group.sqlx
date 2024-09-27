@@ -7,7 +7,7 @@ config {
     type: "view",
     schema: constants.MART,
     description: "GA4マート チャネルグループ。m_ga4_session, m_ga4_eventテーブルとはuser_pseudo_id, ga_session_idでJOINして使用",
-    tags: ["daily", "mart"],
+    tags: ["daily", "mart","workflow"],
 
     columns: {
         user_pseudo_id: "ユニークユーザ識別用ID",

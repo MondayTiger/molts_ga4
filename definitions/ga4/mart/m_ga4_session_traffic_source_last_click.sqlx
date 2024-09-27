@@ -10,7 +10,7 @@ config {
     schema: constants.MART,
     description: "GA4マートデータ　セッションデータのtraffic_source_last_click",
     dependencies: ["m_ga4_session_traffic_source_last_click_delete_unfixed"],
-    tags: ["daily", "mart"],
+    tags: ["daily", "mart","workflow"],
     columns: {
         // timestamp
         event_date: "日付",
