@@ -76,7 +76,7 @@ WITH channel_group_table AS (
   FROM
     ${ref("m_ga4_session")} AS g
     LEFT JOIN  `${constants.CHANNEL_GROUP_TABLE}` AS c
-      ON g.session_traffic_source = c.category
+      ON g.session_traffic_source = c.source
 )
 
 SELECT
