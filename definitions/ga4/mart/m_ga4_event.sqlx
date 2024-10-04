@@ -229,7 +229,7 @@ SELECT e.*,
 s.* EXCEPT(event_date, user_pseudo_id, ga_session_id, user_id,is_fixed_data)
 FROM ${ref("s_ga4_event")} e
 LEFT JOIN ${ref("m_ga4_session_traffic_source_last_click")} s USING(event_date, user_pseudo_id, ga_session_id)
-${ when(incremental(), `WHERE event_date > (SELECT MAX(event_date) FROM ${self()})`)}
+${ when(incremental(), `WHERE event_date > (SELECT COALESCE(MAX(event_date),'2024-1-1') FROM ${self()})`)}
 
 
 
