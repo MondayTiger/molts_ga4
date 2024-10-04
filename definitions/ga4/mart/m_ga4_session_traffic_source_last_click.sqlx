@@ -61,7 +61,7 @@ config {
 
 -- Query blocks
 SELECT * FROM ${ref("s_ga4_session_traffic_source_last_click")}
- ${ when(incremental(), `WHERE event_date > (SELECT COALESCE(MAX(event_date),'2024-1-1') FROM ${self()})`)}
+ ${ when(incremental(), `WHERE event_date > (SELECT COALESCE(MAX(event_date),'${constants.GA4_FIRST_DATE}') FROM ${self()})`)}
 
 
 
