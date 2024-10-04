@@ -67,7 +67,7 @@ config {
 SELECT e.*,
 FROM ${ref("s_ec_event")} e
 -- 初期時は下記をコメントアウトして全件対象とすること
-${ when(incremental(), `WHERE event_date > (SELECT MAX(event_date) FROM ${self()})`)}
+${ when(incremental(), `WHERE event_date > (SELECT COALESCE(MAX(event_date),'2024-1-1') FROM ${self()})`)}
 
 
 
