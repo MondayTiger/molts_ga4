@@ -131,6 +131,5 @@ SELECT e.*,
 s.* EXCEPT(event_date, user_pseudo_id, ga_session_id, user_id,is_fixed_data)
 FROM ${ref("s_ga4_session")} e
 LEFT JOIN ${ref("m_ga4_session_traffic_source_last_click")} s USING(event_date, user_pseudo_id, ga_session_id)
--- 初期時は下記をコメントアウトして全件対象とすること
 ${ when(incremental(), `WHERE event_date > (SELECT  COALESCE(MAX(event_date),'${constants.GA4_FIRST_DATE}') FROM ${self()})`)}
 
