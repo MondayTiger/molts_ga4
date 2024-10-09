@@ -10,7 +10,29 @@ config {
 }
 
 with events AS(
-    SELECT *
+    SELECT 
+        event_date,
+        event_timestamp,
+        event_name,
+        event_bundle_sequence_id,
+        stream_id,
+        platform,
+        user_id,
+        user_pseudo_id,
+        user_first_touch_timestamp,
+        event_params,
+        user_properties,
+        traffic_source,
+        collected_traffic_source,
+        session_traffic_source_last_click,
+        device,
+        geo,
+        privacy_info,
+        ecommerce,
+        items,
+        batch_page_id,
+        batch_ordering_id,
+        batch_event_index,
     FROM                    
         ${ref(constants.GA4_TABLE)}
     WHERE
@@ -18,7 +40,29 @@ with events AS(
     --    _table_suffix BETWEEN '20201104' AND FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 5 DAY))  -- 初回実行時に実施
 ),
 intraday AS(
-    SELECT *
+    SELECT 
+        event_date,
+        event_timestamp,
+        event_name,
+        event_bundle_sequence_id,
+        stream_id,
+        platform,
+        user_id,
+        user_pseudo_id,
+        user_first_touch_timestamp,
+        event_params,
+        user_properties,
+        traffic_source,
+        collected_traffic_source,
+        session_traffic_source_last_click,
+        device,
+        geo,
+        privacy_info,
+        ecommerce,
+        items,
+        batch_page_id,
+        batch_ordering_id,
+        batch_event_index,
     FROM                    
         ${ref(constants.GA4_INTRADAY_TABLE)}
     WHERE
