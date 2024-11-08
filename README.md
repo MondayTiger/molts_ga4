@@ -91,7 +91,7 @@ erDiagram
     mart-m_ga4_session||..|| report-r_ga4_analysis_conversion : "対象イベントが発生した回数、発生したイベント数を参照元別などで集計"
     mart-m_ga4_event||..|| report-r_ga4_analysis_conversion : "対象イベントを集計"
     mart-m_ga4_session||..|| report-r_ga4_analysis_conversion : "対象イベントを参照元別などで集計"
-    mart-m_ga4_event||..|| report-r_ga4_analysis_event_purchase : 各purchaseまでに到達した全イベントを集計"
+    mart-m_ga4_event||..|| report-r_ga4_analysis_event_purchase : "各purchaseまでに到達した全イベントを集計"
     mart-m_ga4_session||..|| report-r_ga4_analysis_event_purchase : "各purchaseまでに到達した全イベントを参照元別などで集計"
     mart-m_ga4_event||..|| report-r_ga4_analysis_event : 各セッションで対象イベントの初回発生までに発生したイベントを集計"
     mart-m_ga4_session||..|| report-r_ga4_analysis_event : "各セッションで対象イベントの初回発生までに発生したイベント数を参照元別などで集計"
@@ -306,32 +306,39 @@ erDiagram
 ||| FALSE | エンゲージメントがあるセッション |
 
 # ページ分析ビュー、イベント分析ビューの設定
-- definitions/ga4/report/r_ga4_analysis_conversion.sqlx
-  * 対象イベントが発生した回数、発生したイベント数を参照元別などで集計。
-  * 対象イベント名：sign_up,  download_formなど ※constants.jsにて設定
-- definitions/ga4/report/r_ga4_analysis_event_purchase.sqlx
-  * イベント別購入貢献ビュー。
-  * attributePurchase:購入貢献数：各purchaseまでに到達した全イベント（ユニークイベント）に+1。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのイベント（ユニークイベント）は、購入貢献数は2。
-  * attributeSessionizedPurchase:購入貢献セッション数：1セッション内で複数回購入しても1
-  * attributePurchase_revenue:貢献金額：各purchaseまでに到達した全イベント（ユニークイベント）に売上金額が加算。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのイベント（ユニークイベント）は1回目と2回目の合計売上金額。
-- definitions/ga4/report/r_ga4_analysis_event.sqlx
-  * イベント分析ビュー。
-  * 貢献イベントの定義：各セッションで各対象イベントの初回発生までに発生したイベントに1が加算される。
-  * attributeEvents_sign_up:各セッション内でsign_upイベントが初回発生するまでにイベントが発生したイベント数。同一セッション内でsign_upイベント以前に複数回発生したらその回数分カウント。
-  * attributeSessionized_sign_up:"各セッション内でsign_upイベントが初回発生するまでにイベントが発生したセッション数。同一セッション内でイベントが複数回発生しても1としてカウント。
-  * 対象イベント：sign_up、generate_leadなど ※constants.jsにて設定
-- definitions/ga4/report/r_ga4_analysis_page_purchase.sqlx
-  * ページ別購入貢献ビュー。
-  * attributePurchase:購入貢献数：各purchaseまでに到達した全ページ（ユニークページ）に+1。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのページ（ユニークページ）は、購入貢献数は2
-  * attributeSessionizedPurchase:購入貢献セッション数：1セッション内で複数回購入しても1
-  * attributePurchase_revenue:貢献金額：各purchaseまでに到達した全イベント（ユニークイベント）に売上金額が加算。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのイベント（ユニークイベント）は1回目と2回目の合計売上金額
-- definitions/ga4/report/r_ga4_analysis_page.sqlx
-  * ページ分析ビュー。
-  * page_views: ページビュー数
-  * unique_page_views: ページ別訪問数（ベージを訪問したセッション数）
-  * sum_page_visit_time_msec: ページ別合計滞在時間（ミリ秒）※平均滞在時間は sum_page_visit_time_msec/page_viewsで算出。
-  * sum_engagement_time_msec: ページ別合計エンゲージメント時間（ミリ秒）※平均時間は sum_engagement_time_msec/page_viewsで算出。
-  * attributeEvents_sign_up:各セッション内でsign_upイベントが初回発生するまでにイベントが発生したイベント数。同一セッション内で複数回閲覧しても１としてカウントする。（対象CV：各CVの最初のCVまで。CVに到達するまでの全ページに+1（複数回ページビューがあっても1））
-  * 対象イベント：sign_up、generate_leadなど ※constants.jsにて設定
+## 1. `definitions/ga4/report/r_ga4_analysis_conversion.sqlx`
+- **説明**: コンバージョン分析ビュー。
+- **概要**: 対象イベント（コンバージョン）が発生した回数を参照元別などで集計。
+- **対象イベント**: `sign_up`, `download_form` など（※`constants.js`にて設定）
 
+## 2. `definitions/ga4/report/r_ga4_analysis_event_purchase.sqlx`
+- **説明**: イベント別購入貢献ビュー。
+- **詳細**:
+  - **attributePurchase**: 購入貢献数。各 `purchase` までに到達した全イベント（ユニークイベント）に +1。1セッション内で2回以上購入がある場合、最初の `purchase` までのイベント（ユニークイベント）は購入貢献数 2。
+  - **attributeSessionizedPurchase**: 購入貢献セッション数。1セッション内で複数回購入しても 1。
+  - **attributePurchase_revenue**: 貢献金額。各 `purchase` までに到達した全イベント（ユニークイベント）に売上金額が加算される。1セッション内で2回以上購入がある場合、最初の `purchase` までのイベント（ユニークイベント）は 1回目と 2回目の合計売上金額。
 
+## 3. `definitions/ga4/report/r_ga4_analysis_event.sqlx`
+- **説明**: イベント分析ビュー。
+- **詳細**:
+  - **貢献イベントの定義**: 各セッションで対象イベントの初回発生までに発生したイベントに +1。
+  - **attributeEvents_sign_up**: 各セッション内で `sign_up` イベントが初回発生するまでに発生したイベント数。複数回発生した場合、その回数分カウント。
+  - **attributeSessionized_sign_up**: 各セッション内で `sign_up` イベントが初回発生するまでに発生したセッション数。複数回発生しても 1としてカウント。
+- **対象イベント**: `sign_up`, `generate_lead` など（※`constants.js`にて設定）
+
+## 4. `definitions/ga4/report/r_ga4_analysis_page_purchase.sqlx`
+- **説明**: ページ別購入貢献ビュー。
+- **詳細**:
+  - **attributePurchase**: 購入貢献数。各 `purchase` までに到達した全ページ（ユニークページ）に +1。1セッション内で2回以上の購入がある場合、最初の `purchase` までのページ（ユニークページ）は購入貢献数 2。
+  - **attributeSessionizedPurchase**: 購入貢献セッション数。1セッション内で複数回購入しても 1。
+  - **attributePurchase_revenue**: 貢献金額。各 `purchase` までに到達した全イベント（ユニークイベント）に売上金額が加算される。1セッション内で2回以上の購入がある場合、最初の `purchase` までのイベント（ユニークイベント）は 1回目と 2回目の合計売上金額。
+
+## 5. `definitions/ga4/report/r_ga4_analysis_page.sqlx`
+- **説明**: ページ分析ビュー。
+- **詳細**:
+  - **page_views**: ページビュー数。
+  - **unique_page_views**: ページ別訪問数（ページを訪問したセッション数）。
+  - **sum_page_visit_time_msec**: ページ別合計滞在時間（ミリ秒）。※平均滞在時間は `sum_page_visit_time_msec/page_views` で算出。
+  - **sum_engagement_time_msec**: ページ別合計エンゲージメント時間（ミリ秒）。※平均時間は `sum_engagement_time_msec/page_views` で算出。
+  - **attributeEvents_sign_up**: 各セッション内で `sign_up` イベントが初回発生するまでにイベントが発生したイベント数。複数回閲覧しても 1としてカウント。（対象CV：各CVの最初のCVまで。CVに到達するまでの全ページに +1（複数回ページビューがあっても 1））
+- **対象イベント**: `sign_up`, `generate_lead` など（※`constants.js`にて設定）
