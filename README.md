@@ -87,18 +87,11 @@ erDiagram
 
     %% コンバージョン用データマートにデータを投入
     mart-m_ga4_event||..|| report-r_ga4_conversion : "コンバージョンデータを作成＆追加"
-    mart-m_ga4_event||..|| report-r_ga4_analysis_conversion;
-    mart-m_ga4_session||..|| report-r_ga4_analysis_conversion;
-    mart-m_ga4_event||..|| report-r_ga4_analysis_conversion;
-    mart-m_ga4_session||..|| report-r_ga4_analysis_conversion;
-    mart-m_ga4_event||..|| report-r_ga4_analysis_event_purchase;
-    mart-m_ga4_session||..|| report-r_ga4_analysis_event_purchase;
-    mart-m_ga4_event||..|| report-r_ga4_analysis_event;
-    mart-m_ga4_session||..|| report-r_ga4_analysis_event;
-    mart-m_ga4_event||..|| report-r_ga4_analysis_page_purchase;
-    mart-m_ga4_session||..|| report-r_ga4_analysis_page_purchase;
-    mart-m_ga4_event||..|| report-r_ga4_analysis_page;
-    mart-m_ga4_session||..|| report-r_ga4_analysis_page;
+    mart-m_ga4_event||..|| report-r_ga4_analysis_conversion : ""
+    mart-m_ga4_session||..|| report-r_ga4_analysis_conversion : ""
+    mart-m_ga4_event||..|| report-r_ga4_analysis_conversion : ""
+    mart-m_ga4_session||..|| report-r_ga4_analysis_conversion : ""
+
 ```
 
 
