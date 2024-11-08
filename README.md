@@ -93,11 +93,11 @@ erDiagram
     mart-m_ga4_session||..|| report-r_ga4_analysis_conversion : "対象イベントを参照元別などで集計"
     mart-m_ga4_event||..|| report-r_ga4_analysis_event_purchase : "各purchaseまでに到達した全イベントを集計"
     mart-m_ga4_session||..|| report-r_ga4_analysis_event_purchase : "各purchaseまでに到達した全イベントを参照元別などで集計"
-    mart-m_ga4_event||..|| report-r_ga4_analysis_event : 各セッションで対象イベントの初回発生までに発生したイベントを集計"
+    mart-m_ga4_event||..|| report-r_ga4_analysis_event : "各セッションで対象イベントの初回発生までに発生したイベントを集計"
     mart-m_ga4_session||..|| report-r_ga4_analysis_event : "各セッションで対象イベントの初回発生までに発生したイベント数を参照元別などで集計"
-    mart-m_ga4_event||..|| report-r_ga4_analysis_page_purchase : 売上貢献数、貢献金額を対象ページに付与"
+    mart-m_ga4_event||..|| report-r_ga4_analysis_page_purchase : "売上貢献数、貢献金額を対象ページに付与"
     mart-m_ga4_session||..|| report-r_ga4_analysis_page_purchase : "対象ページに付与された売上貢献数、貢献金額を参照元別などで集計"
-    mart-m_ga4_event||..|| report-r_ga4_analysis_page : ページ別合計滞在時間、ページ別合計エンゲージメント時間を集計"
+    mart-m_ga4_event||..|| report-r_ga4_analysis_page : "ページ別合計滞在時間、ページ別合計エンゲージメント時間を集計"
     mart-m_ga4_session||..|| report-r_ga4_analysis_page : "ページ別合計滞在時間、ページ別合計エンゲージメント時間を参照元別などで集計"
 ```
 
