@@ -1,0 +1,211 @@
+/*
+ページ別購入貢献ビュー
+attributePurchase:購入貢献数：各purchaseまでに到達した全ページ（ユニークページ）に+1。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのページ（ユニークページ）は、購入貢献数は2
+attributeSessionizedPurchase:購入貢献セッション数：1セッション内で複数回購入しても1
+attributePurchase_revenue:貢献金額：各purchaseまでに到達した全イベント（ユニークイベント）に売上金額が加算。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのイベント（ユニークイベント）は1回目と2回目の合計売上金額
+*/
+
+-- Config blocks
+config {
+  type: "view",
+  schema: constants.REPORT,
+  description: "GA4ページ別購入貢献ビュー。購入貢献数：各purchaseまでに到達した全ページ（ユニークページ）に+1と売上金額。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのページ（ユニークページ）は、購入貢献度:2、売上金額:1回目と2回目の合計売上金額。",
+  tags: ["report", "analysis"],
+  columns: {
+    page_location_canonicalize: "正規化URL",
+    hostname: "ホスト名",
+    event_date: "日付",
+    page_views:"ページビュー数",
+    unique_page_views:"ページ別訪問数（ベージを訪問したセッション数）",
+    attributePurchase:"購入貢献数：各purchaseまでに到達した全ページ（ユニークページ）に+1。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのページ（ユニークページ）は、購入貢献数は2",
+    attributeSessionizedPurchase:"購入貢献セッション数：1セッション内で複数回purchaseイベントが発生しても1",
+    attributePurchase_revenue:"貢献金額：各purchaseまでに到達した全ページ（ユニークページ）に売上金額が加算。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのページ（ユニークページ）は1回目と2回目の合計売上金額",
+   	user_traffic_source: "集客：ユーザー獲得参照元",
+    user_traffic_medium: "集客：ユーザー獲得メディア",
+    user_traffic_campaign: "集客：ユーザー獲得キャンペーン",
+    session_traffic_source: "集客：セッションの参照元",
+    session_traffic_medium: "集客：セッションのメディア",
+    session_traffic_campaign: "集客：セッションのキャンペーン",
+    session_traffic_campaign_id: "集客：セッションのキャンペーンID（utm_id）",
+    session_traffic_content: "集客：セッションの広告のコンテンツ",
+    session_traffic_term: "集客：セッションの検索キーワード",
+    session_traffic_source_platform: "集客：セッションの参照元プラットフォーム",
+    session_traffic_creative_format: "集客：セッションのクリエイティブのタイプ",
+    session_traffic_marketing_tactic: "集客：セッションのターゲティング条件",
+    platform: "プラットフォーム",
+    device_category: "デバイス カテゴリ",
+    operating_system: "OS",
+    browser: "ブラウザ",
+    session_traffic_source_last_click: {
+      description: "集客：セッションの参照元情報",
+      columns: {
+        manual_campaign: {
+          description: "集客：セッションの参照元情報",
+          columns: {
+            manual_campaign: "集客：セッションのキャンペーン",
+            campaign_id: "集客：セッションのキャンペーンID（utm_id）",
+            campaign_name: "集客：セッションのキャンペーン",
+            source: "集客：セッションの参照元",
+            medium: "集客：セッションのメディア",
+            term: "集客：セッションの検索キーワード",
+            content: "集客：セッションの広告のコンテンツ",
+            source_platform: "集客：セッションの参照元プラットフォーム",
+            creative_format: "集客：セッションのクリエイティブのタイプ",
+            marketing_tactic: "集客：セッションのターゲティング条件"
+          }
+        },
+        google_ads_campaign: {
+          description: "Google広告関連",
+          columns: {
+            customer_id: "Google 広告アカウントに関連付けられた顧客 ID",
+            account_name: "Google広告のアカウント名",
+            campaign_id: "Google広告キャンペーンID",
+            campaign_name: "Google広告キャンペーン名",
+            ad_group_id: "Google広告キャンペーン内の広告グループのID",
+            ad_group_name: "Google広告キャンペーン内の広告グループ名"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+-- Query blocks
+
+with date_range AS(
+  SELECT
+    ${constants.GA4_ANALYSIS_CV_START_DATE} AS start_date,
+    ${constants.GA4_ANALYSIS_CV_END_DATE} AS end_date
+),
+s AS(
+	SELECT DISTINCT
+	event_date,
+	user_pseudo_id,
+	ga_session_id,	
+	-- user_id,
+	-- stream_id,
+	user_traffic_source,
+	user_traffic_medium,
+	user_traffic_campaign,
+--	ga_session_number,
+	session_traffic_source,
+	session_traffic_medium,
+	session_traffic_campaign,
+	session_traffic_campaign_id,
+	session_traffic_content,
+	session_traffic_term,
+	session_traffic_source_platform,
+	session_traffic_creative_format,
+	session_traffic_marketing_tactic,
+	platform,
+	device_category,
+	-- device_mobile_brand_name,
+	-- device_mobile_model_name,
+	-- device_mobile_marketing_name,
+	-- device_mobile_os_hardware_model,
+	operating_system,
+	-- operating_system_version,
+	-- device_vendor_id,
+	-- device_advertising_id,
+	-- language,
+	browser,
+	-- browser_version,
+	-- geo_continent,
+	-- geo_country,
+	-- geo_region,
+	-- geo_city,
+	-- geo_sub_continent,
+	-- geo_metro,
+	session_traffic_source_last_click,
+	FROM ${ref("m_ga4_session")}
+  WHERE event_date BETWEEN (SELECT start_date FROM date_range) AND (SELECT end_date FROM date_range)  
+	QUALIFY ROW_NUMBER()OVER(PARTITION BY event_date, user_pseudo_id,	ga_session_id ORDER BY entrance_timestamp) = 1 
+),
+e AS(
+ SELECT DISTINCT 
+	event_date,
+	user_pseudo_id,
+	ga_session_id,
+
+	hostname,
+	page_location_canonicalize,
+	event_timestamp,
+	event_timestamp_jst,
+	event_name, 
+	engagement_time_msec,
+	COALESCE(batch_page_id,0) AS batch_page_id,
+	COALESCE(batch_ordering_id, 0) AS batch_ordering_id,
+	COALESCE(batch_event_index,0) AS batch_event_index,
+	ROW_NUMBER()OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY COALESCE(batch_page_id,0),COALESCE(batch_ordering_id, 0),event_timestamp, COALESCE(batch_event_index,0)) AS rn
+
+  -- 0 AS batch_page_id,
+  -- 0 AS batch_ordering_id,
+  -- 0 AS batch_event_index,
+	-- 	ROW_NUMBER()OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp,CASE WHEN event_name='purchase'THEN 3 WHEN event_name IN (${constants.GA4_ANALYSIS_CV_EVENTS.map(value => `'${value}'`).join(", ")}) THEN 2 ELSE 1 END) AS rn
+  FROM ${ref("m_ga4_event")}
+  WHERE event_date BETWEEN (SELECT start_date FROM date_range) AND (SELECT end_date FROM date_range)  
+),
+-- ページビュー数
+page_view AS(
+	SELECT user_pseudo_id, ga_session_id,page_location_canonicalize,hostname,event_date, 
+	COUNT(DISTINCT event_timestamp) AS page_views,
+  FROM e
+	WHERE event_name IN ('page_view','screen_view')
+	GROUP BY ALL 
+),
+-- 以下EC関連
+ec AS(
+  SELECT DISTINCT user_pseudo_id,
+  ga_session_id,
+  event_timestamp
+  event_timestamp,
+  event_timestamp_jst,
+  event_name, 
+  ecommerce.transaction_id,
+  ecommerce.purchase_revenue
+  FROM ${ref("m_ec_event")}
+  WHERE event_date BETWEEN (SELECT start_date FROM date_range) AND (SELECT end_date FROM date_range)  
+  AND event_name IN('purchase')
+),
+-- 各ページにそれ以降で最も近いpurchaseイベントのtransaction_idとpurchase_revenueを挿入し、後に累計
+new_e AS(
+SELECT e.* EXCEPT(engagement_time_msec, batch_page_id, batch_ordering_id,batch_event_index),
+	LAST_VALUE(transaction_id IGNORE NULLS)OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp DESC, IF(event_name='purchase',1,2)) AS latest_transaction_id,
+	LAST_VALUE(purchase_revenue IGNORE NULLS)OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp DESC, IF(event_name='purchase',1,2)) AS latest_purchase_revenue,
+	-- ec.transaction_id,
+	-- ec.purchase_revenue,
+	-- COUNT(ec.transaction_id)OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp, IF(event_name!='purchase',1,2)) AS cnt_transaction,
+	-- COUNT(ec.transaction_id)OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp, IF(event_name!='purchase',1,2) ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS total_transaction,
+FROM  e
+LEFT JOIN ec USING(user_pseudo_id, ga_session_id, event_timestamp, event_name)
+WHERE event_date BETWEEN (SELECT start_date FROM date_range) AND (SELECT end_date FROM date_range)  
+),
+-- 各購入までで複数回訪問したページを除外し、ユニーク化
+attribute_purchase_unique AS(
+	SELECT DISTINCT e.* EXCEPT(event_timestamp, event_timestamp_jst, rn, event_name),
+	FROM new_e e 
+	WHERE event_name IN ('page_view','screen_view')
+),
+-- 購入貢献数：各purchaseまでに到達した全ページ（ユニークページ）に+1と売上金額。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのページ（ユニークページ）は、購入貢献度:2、売上金額:1回目と2回目の合計売上金額。
+attribute_purchase AS(
+  SELECT page_location_canonicalize,hostname,event_date, 
+  SUM(page_views) AS page_views,
+  COUNT(DISTINCT CONCAT(user_pseudo_id,ga_session_id)) AS unique_page_views,
+  COUNT(DISTINCT latest_transaction_id) AS attributePurchase, -- 複数回購入したときは購入毎に1増える
+  COUNT(DISTINCT IF(latest_transaction_id IS NOT NULL,CONCAT(user_pseudo_id,ga_session_id),NULL)) AS attributeSessionizedPurchase, -- 同一セッション中は何回購入しても1
+  COALESCE(SUM(latest_purchase_revenue),0) AS attributePurchase_revenue,
+--  cp.* EXCEPT(latest_transaction_id, latest_purchase_revenue, user_pseudo_id, ga_session_id,event_date, page_location_canonicalize),
+  s.* EXCEPT(user_pseudo_id, ga_session_id,event_date)
+  FROM page_view p
+  LEFT JOIN attribute_purchase_unique cp USING(event_date, user_pseudo_id, ga_session_id, page_location_canonicalize,hostname)
+  LEFT JOIN s USING(event_date, user_pseudo_id, ga_session_id)
+  GROUP BY ALL 
+-- ORDER BY 1,2,3,4
+)
+SELECT *
+FROM attribute_purchase cp 
+
+
+
+

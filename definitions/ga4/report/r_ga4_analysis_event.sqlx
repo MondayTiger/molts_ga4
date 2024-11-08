@@ -1,0 +1,221 @@
+/*
+イベント分析ビュー
+貢献イベントの定義：各セッションで各対象イベントの初回発生までに発生したイベントに1が加算される。
+  attributeEvents_sign_up:各セッション内でsign_upイベントが初回発生するまでにイベントが発生したイベント数。同一セッション内でsign_upイベント以前に複数回発生したらその回数分カウント。
+  attributeSessionized_sign_up:"各セッション内でsign_upイベントが初回発生するまでにイベントが発生したセッション数。同一セッション内でイベントが複数回発生しても1としてカウント。
+対象イベント：sign_up、generate_leadなど ※constants.jsにて設定
+*/
+
+-- Config blocks
+config {
+  type: "view",
+  schema: constants.REPORT,
+  description: "GA4イベント分析ビュー。各セッションで指定したコンバージョンイベントの初回発生までに発生したイベントを計測。",
+  tags: ["report", "analysis"],
+  columns: {
+    event_date: "日付",
+    event_name: "イベント名",
+    events:"イベント数",
+    attributeEvents_generate_lead:"各セッション内でgenerate_leadイベントが初回発生するまでにイベントが発生したイベント数。同一セッション内でgenerate_leadイベント以前に複数回発生したらその回数分カウント。",
+    attributeEvents_sign_up:"各セッション内でsign_upイベントが初回発生するまでにイベントが発生したイベント数。同一セッション内でsign_upイベント以前に複数回発生したらその回数分カウント。",
+    attributeEvents_download_form:"各セッション内でdownload_formイベントが初回発生するまでにイベントが発生したイベント数。同一セッション内でdownload_formイベント以前に複数回発生したらその回数分カウント。",
+    attributeEvents_file_download:"各セッション内でfile_downloadイベントが初回発生するまでにイベントが発生したイベント数。同一セッション内でfile_downloadイベント以前に複数回発生したらその回数分カウント。",
+
+    attributeSessionized_generate_lead:"各セッション内でgenerate_leadイベントが初回発生するまでにイベントが発生したセッション数。同一セッション内でイベントが複数回発生しても1としてカウント。",
+    attributeSessionized_sign_up:"各セッション内でsign_upイベントが初回発生するまでにイベントが発生したセッション数。同一セッション内でイベントが複数回発生しても1としてカウント。",
+    attributeSessionized_download_form:"各セッション内でdownload_formイベントが初回発生するまでにイベントが発生したセッション数。同一セッション内でイベントが複数回発生しても1としてカウント。",
+    attributeSessionized_file_download:"各セッション内でfile_downloadイベントが初回発生するまでにイベントが発生したセッション数。同一セッション内でイベントが複数回発生しても1としてカウント。",
+    user_traffic_source: "集客：ユーザー獲得参照元",
+    user_traffic_medium: "集客：ユーザー獲得メディア",
+    user_traffic_campaign: "集客：ユーザー獲得キャンペーン",
+    session_traffic_source: "集客：セッションの参照元",
+    session_traffic_medium: "集客：セッションのメディア",
+    session_traffic_campaign: "集客：セッションのキャンペーン",
+    session_traffic_campaign_id: "集客：セッションのキャンペーンID（utm_id）",
+    session_traffic_content: "集客：セッションの広告のコンテンツ",
+    session_traffic_term: "集客：セッションの検索キーワード",
+    session_traffic_source_platform: "集客：セッションの参照元プラットフォーム",
+    session_traffic_creative_format: "集客：セッションのクリエイティブのタイプ",
+    session_traffic_marketing_tactic: "集客：セッションのターゲティング条件",
+    platform: "プラットフォーム",
+    device_category: "デバイス カテゴリ",
+    operating_system: "OS",
+    browser: "ブラウザ",
+    browser_version: "ブラウザのバージョン",
+    geo_continent: "大陸",
+    geo_country: "国",
+    geo_region: "地域",
+    geo_city: "市区町村",
+    geo_sub_continent: "亜大陸",
+    geo_metro: "大都市圏",
+    hostname: "ホスト名",
+    event_name: "イベント名",
+    session_traffic_source_last_click: {
+      description: "集客：セッションの参照元情報",
+      columns: {
+        manual_campaign: {
+          description: "Description of the manual_campaign RECORD",
+          columns: {
+            manual_campaign: "集客：セッションのキャンペーン",
+            campaign_id: "集客：セッションのキャンペーンID（utm_id）",
+            campaign_name: "集客：セッションのキャンペーン",
+            source: "集客：セッションの参照元",
+            medium: "集客：セッションのメディア",
+            term: "集客：セッションの検索キーワード",
+            content: "集客：セッションの広告のコンテンツ",
+            source_platform: "集客：セッションの参照元プラットフォーム",
+            creative_format: "集客：セッションのクリエイティブのタイプ",
+            marketing_tactic: "集客：セッションのターゲティング条件"
+          }
+        },
+        google_ads_campaign: {
+          description: "Google広告関連",
+          columns: {
+            customer_id: "Google 広告アカウントに関連付けられた顧客 ID",
+            account_name: "Google広告のアカウント名",
+            campaign_id: "Google広告キャンペーンID",
+            campaign_name: "Google広告キャンペーン名",
+            ad_group_id: "Google広告キャンペーン内の広告グループのID",
+            ad_group_name: "Google広告キャンペーン内の広告グループ名"
+          }
+        }
+      }
+    }
+  }
+}
+
+-- Query blocks
+with date_range AS(
+  SELECT
+    ${constants.GA4_ANALYSIS_CV_START_DATE} AS start_date,
+    ${constants.GA4_ANALYSIS_CV_END_DATE} AS end_date
+),
+s AS(
+	SELECT DISTINCT
+	event_date,
+	user_pseudo_id,
+	ga_session_id,	
+	-- user_id,
+	-- stream_id,
+	user_traffic_source,
+	user_traffic_medium,
+	user_traffic_campaign,
+--	ga_session_number,
+	session_traffic_source,
+	session_traffic_medium,
+	session_traffic_campaign,
+	session_traffic_campaign_id,
+	session_traffic_content,
+	session_traffic_term,
+	session_traffic_source_platform,
+	session_traffic_creative_format,
+	session_traffic_marketing_tactic,
+	platform,
+	device_category,
+	-- device_mobile_brand_name,
+	-- device_mobile_model_name,
+	-- device_mobile_marketing_name,
+	-- device_mobile_os_hardware_model,
+	operating_system,
+	-- operating_system_version,
+	-- device_vendor_id,
+	-- device_advertising_id,
+	-- language,
+	browser,
+	-- browser_version,
+	-- geo_continent,
+	-- geo_country,
+	-- geo_region,
+	-- geo_city,
+	-- geo_sub_continent,
+	-- geo_metro,
+	session_traffic_source_last_click,
+	FROM ${ref("m_ga4_session")}
+  WHERE event_date BETWEEN (SELECT start_date FROM date_range) AND (SELECT end_date FROM date_range)  
+	QUALIFY ROW_NUMBER()OVER(PARTITION BY event_date, user_pseudo_id,	ga_session_id ORDER BY entrance_timestamp) = 1 
+),
+e AS(
+ SELECT DISTINCT 
+	event_date,
+	user_pseudo_id,
+	ga_session_id,
+
+	hostname,
+	page_location_canonicalize,
+	event_timestamp,
+	event_timestamp_jst,
+	event_name, 
+	engagement_time_msec,
+	COALESCE(batch_page_id,0) AS batch_page_id,
+	COALESCE(batch_ordering_id, 0) AS batch_ordering_id,
+	COALESCE(batch_event_index,0) AS batch_event_index,
+	ROW_NUMBER()OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY COALESCE(batch_page_id,0),COALESCE(batch_ordering_id, 0),event_timestamp, COALESCE(batch_event_index,0), IF(event_name IN (${constants.GA4_ANALYSIS_CV_EVENTS.map(value => `'${value}'`).join(", ")}),2,1)) AS rn
+
+  -- 0 AS batch_page_id,
+  -- 0 AS batch_ordering_id,
+  -- 0 AS batch_event_index,
+	-- ROW_NUMBER()OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp,CASE WHEN event_name='purchase'THEN 3 WHEN event_name IN('generated_lead') THEN 2 ELSE 1 END) AS rn
+  FROM ${ref("m_ga4_event")}
+  WHERE event_date BETWEEN (SELECT start_date FROM date_range) AND (SELECT end_date FROM date_range)  
+),
+event_count AS(
+  SELECT user_pseudo_id, ga_session_id, event_date, event_name,COUNT(1) AS events,
+  FROM e
+  GROUP BY ALL 
+),
+key_events AS(
+	SELECT keys FROM UNNEST([${constants.GA4_ANALYSIS_CV_EVENTS.map(value => `'${value}'`).join(", ")}]) AS keys
+),
+-- 各キーイベントで最初のコンバージョンを取得
+first_cv AS(
+  SELECT DISTINCT event_date, user_pseudo_id, ga_session_id, event_name,event_timestamp --page_location_canonicalize
+  FROM e
+  WHERE event_name IN (SELECT keys FROM key_events)
+  QUALIFY ROW_NUMBER()OVER(PARTITION BY user_pseudo_id, ga_session_id, event_name ORDER BY rn) = 1
+),
+-- CV貢献：各セッションの最初のページから各CVのセッション内最初のCVまでが対象。同一セッション内で同じイベントが複数回発生しても１としてカウントする。（対象CV：各CVの最初のCVまで。CVに到達するまでの全イベントに+1（複数回イベントが発生しても1））（各キーイベントの最初のコンバージョンよりも前のユニークイベントを抽出）
+attribute_conversion AS(
+	SELECT user_pseudo_id, ga_session_id, event_date, event_name,
+  ${constants.GA4_ANALYSIS_CV_EVENTS.map(value => `	COALESCE(${value},0) AS ${value},`).join("\n")}
+	FROM (
+	  SELECT f.event_name AS cv_event_name, e.user_pseudo_id, e.ga_session_id, e.event_date, e.event_name, -- イベントが複数回発生したらその回数分カウント
+	  FROM first_cv f LEFT JOIN e USING(user_pseudo_id, ga_session_id)
+	  WHERE e.event_name NOT IN (${constants.GA4_ANALYSIS_CV_EVENTS.map(value => `'${value}'`).join(", ")})
+	  AND e.event_timestamp <= f.event_timestamp 
+	)
+	PIVOT (
+	  COUNT(cv_event_name) FOR cv_event_name IN (${constants.GA4_ANALYSIS_CV_EVENTS.map(value => `'${value}'`).join(", ")}) -- ,'purchase','file_download','view_form_inquiry','view_form_sign_up')
+	)
+)
+,result AS(
+	SELECT a.event_name, a.event_date,
+    SUM(c.events) AS events,
+    ${constants.GA4_ANALYSIS_CV_EVENTS.map(value => `SUM(${value}) AS attributeEvents_${value},`).join("\n	")}
+    ${constants.GA4_ANALYSIS_CV_EVENTS.map(value => `COUNT(DISTINCT IF(${value}>0,CONCAT(user_pseudo_id,ga_session_id),NULL)) AS attributeSessionized_${value},`).join("\n	")}
+	s.* EXCEPT(user_pseudo_id, ga_session_id,event_date)
+	FROM attribute_conversion a
+  LEFT JOIN event_count c USING(user_pseudo_id, ga_session_id,event_date,event_name)
+	LEFT JOIN s USING(user_pseudo_id, ga_session_id,event_date)
+	GROUP BY 
+		event_name,
+		event_date,
+		user_traffic_source,
+		user_traffic_medium,
+		user_traffic_campaign,
+		session_traffic_source,
+		session_traffic_medium,
+		session_traffic_campaign,
+		session_traffic_campaign_id,
+		session_traffic_content,
+		session_traffic_term,
+		session_traffic_source_platform,
+		session_traffic_creative_format,
+		session_traffic_marketing_tactic,
+		platform,
+		device_category,
+		operating_system,
+		browser,
+		session_traffic_source_last_click
+)
+SELECT *
+FROM result

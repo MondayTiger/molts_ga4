@@ -36,7 +36,11 @@
     - report
        - r_ga4_conversion_delete_unfixed.sqlx
        - r_ga4_conversion.sqlx
-
+       - r_ga4_analysis_conversion.sqlx
+       - r_ga4_analysis_event_purchase.sqlx
+       - r_ga4_analysis_event.sqlx
+       - r_ga4_analysis_page_purchase.sqlx
+       - r_ga4_analysis_page.sqlx
 - includes/
     - constatns.js : GCPプロジェクト名、対象ホスト名などの定数をまとめたファイル
     - helpers.js : SQLXを簡略化するための関数が入ったファイル 
@@ -83,7 +87,20 @@ erDiagram
 
     %% コンバージョン用データマートにデータを投入
     mart-m_ga4_event||..|| report-r_ga4_conversion : "コンバージョンデータを作成＆追加"
+    mart-m_ga4_event||..|| report-r_ga4_analysis_conversion : "対象イベントが発生した回数、発生したイベント数を参照元別などで集計"
+    mart-m_ga4_session||..|| report-r_ga4_analysis_conversion : "対象イベントが発生した回数、発生したイベント数を参照元別などで集計"
+    mart-m_ga4_event||..|| report-r_ga4_analysis_conversion : "対象イベントを集計"
+    mart-m_ga4_session||..|| report-r_ga4_analysis_conversion : "対象イベントを参照元別などで集計"
+    mart-m_ga4_event||..|| report-r_ga4_analysis_event_purchase : 各purchaseまでに到達した全イベントを集計"
+    mart-m_ga4_session||..|| report-r_ga4_analysis_event_purchase : "各purchaseまでに到達した全イベントを参照元別などで集計"
+    mart-m_ga4_event||..|| report-r_ga4_analysis_event : 各セッションで対象イベントの初回発生までに発生したイベントを集計"
+    mart-m_ga4_session||..|| report-r_ga4_analysis_event : "各セッションで対象イベントの初回発生までに発生したイベント数を参照元別などで集計"
+    mart-m_ga4_event||..|| report-r_ga4_analysis_page_purchase : 売上貢献数、貢献金額を対象ページに付与"
+    mart-m_ga4_session||..|| report-r_ga4_analysis_page_purchase : "対象ページに付与された売上貢献数、貢献金額を参照元別などで集計"
+    mart-m_ga4_event||..|| report-r_ga4_analysis_page : ページ別合計滞在時間、ページ別合計エンゲージメント時間を集計"
+    mart-m_ga4_session||..|| report-r_ga4_analysis_page : "ページ別合計滞在時間、ページ別合計エンゲージメント時間を参照元別などで集計"
 ```
+
 
 # 処理の流れ
 1. GA4からエクスポートされたテーブル（analytics_xxxxxxx.events_YYYYMMDD, analytics_xxxxxxx.events_intraday_YYYYMMDD）内のevent_paramsカラムなどをフラット化し、1つのビューにまとめる
@@ -141,6 +158,18 @@ erDiagram
     - definitions/ga4/report/r_ga4_conversion.sqlx
       * 今回はthanksを含むページに到達したイベントを対象
       * 設定箇所：includes/constants.js内で設定したCV_PAGE_LOCATION = 'https://https://moltsinc.co.jp/%thanks%';
+14. 分析ビューを作成
+    - definitions/ga4/report/r_ga4_analysis_conversion.sqlx
+      * コンバージョン分析ビュー。対象イベントが発生した回数、発生したイベント数を参照元別などで集計。
+    - definitions/ga4/report/r_ga4_analysis_event_purchase.sqlx
+      * イベント別購入貢献ビュー。各purchaseまでに到達した全イベント（ユニークイベント）に+1。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのイベント（ユニークイベント）は、購入貢献数は2。
+    - definitions/ga4/report/r_ga4_analysis_event.sqlx
+      * イベント分析ビュー。各セッションで各対象イベント（例：sign_up）の初回発生までに発生したイベント（例：scroll, click等）に1が加算される。
+    - definitions/ga4/report/r_ga4_analysis_page_purchase.sqlx
+      * ページ別購入貢献ビュー。各purchaseまでに到達した全ページ（ユニークページ）に+1。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのページ（ユニークページ）は、購入貢献数は2。
+    - definitions/ga4/report/r_ga4_analysis_page.sqlx
+      * ページ分析ビュー。各ページのページビュー数、ページ別訪問者数、ページ別合計滞在時間、ページ別合計エンゲージメント時間。
+
 
 # 各セッションの参照元・メディア・キャンペーンなどの取得手順
 1. 各イベントのcollected_traffic_source.manual_source（ない場合はevent_params内のsource）を取得。メディアやキャンペーンなども同様。※collected_traffic_sourceカラムは2023年中頃から追加されたため、それ以前の場合は下記ファイルのコメントアウト箇所を要変更。
@@ -260,12 +289,12 @@ erDiagram
   4. 「ワークフロー構成」の横にある「作成」をクリック
 	   - リリース構成： 上記で作成したリリースを選択
 	   - サービスアカウント：デフォルトのサービスアカウント（Googleシートで作成したテーブルへ参照できない場合は、参照可能かつDataformを実行できるアカウントに要変更）
-	   - 頻度：任意（例：毎朝8時の場合 0 8 * * *）
+	   - 頻度：任意（例：毎朝11時の場合 0 11 * * *）※GA4のテーブルが生成される時間を調べて決めるべき
 	   - タイムゾーン：日本 
-	   - 「SELECTION OF ACTIONS」を選択
-	     - 「すべて選択」にチェックを入れる
+	   - 「SELECTION OF TAGS」を選択
+	     - 実行するタグを選択：workflow 
 	     - 「依存関係を含める」にチェック
-	     - 下の「保存」ボタンをクリック
+	   - 下の「保存」ボタンをクリック
 
 # エンゲージメントの定義
 セッション単位のエンゲージメントについては下記のカラムを使用。GA4の定義では`is_bounce_no_engagement_manual`が正しいが、GA4のレポートの結果に合わせる場合は、 `is_bounce_no_engagement` を使用。（それでも若干誤差はある）
@@ -276,6 +305,33 @@ erDiagram
 | is_bounce_no_engagement_manual | セッションの時間が10秒未満またはセッション内のページビュー（スクリーンビュー）数が2未満| TRUE | エンゲージメントがないセッション|
 ||| FALSE | エンゲージメントがあるセッション |
 
-
+# ページ分析ビュー、イベント分析ビューの設定
+- definitions/ga4/report/r_ga4_analysis_conversion.sqlx
+  * 対象イベントが発生した回数、発生したイベント数を参照元別などで集計。
+  * 対象イベント名：sign_up,  download_formなど ※constants.jsにて設定
+- definitions/ga4/report/r_ga4_analysis_event_purchase.sqlx
+  * イベント別購入貢献ビュー。
+  * attributePurchase:購入貢献数：各purchaseまでに到達した全イベント（ユニークイベント）に+1。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのイベント（ユニークイベント）は、購入貢献数は2。
+  * attributeSessionizedPurchase:購入貢献セッション数：1セッション内で複数回購入しても1
+  * attributePurchase_revenue:貢献金額：各purchaseまでに到達した全イベント（ユニークイベント）に売上金額が加算。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのイベント（ユニークイベント）は1回目と2回目の合計売上金額。
+- definitions/ga4/report/r_ga4_analysis_event.sqlx
+  * イベント分析ビュー。
+  * 貢献イベントの定義：各セッションで各対象イベントの初回発生までに発生したイベントに1が加算される。
+  * attributeEvents_sign_up:各セッション内でsign_upイベントが初回発生するまでにイベントが発生したイベント数。同一セッション内でsign_upイベント以前に複数回発生したらその回数分カウント。
+  * attributeSessionized_sign_up:"各セッション内でsign_upイベントが初回発生するまでにイベントが発生したセッション数。同一セッション内でイベントが複数回発生しても1としてカウント。
+  * 対象イベント：sign_up、generate_leadなど ※constants.jsにて設定
+- definitions/ga4/report/r_ga4_analysis_page_purchase.sqlx
+  * ページ別購入貢献ビュー。
+  * attributePurchase:購入貢献数：各purchaseまでに到達した全ページ（ユニークページ）に+1。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのページ（ユニークページ）は、購入貢献数は2
+  * attributeSessionizedPurchase:購入貢献セッション数：1セッション内で複数回購入しても1
+  * attributePurchase_revenue:貢献金額：各purchaseまでに到達した全イベント（ユニークイベント）に売上金額が加算。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのイベント（ユニークイベント）は1回目と2回目の合計売上金額
+- definitions/ga4/report/r_ga4_analysis_page.sqlx
+  * ページ分析ビュー。
+  * page_views: ページビュー数
+  * unique_page_views: ページ別訪問数（ベージを訪問したセッション数）
+  * sum_page_visit_time_msec: ページ別合計滞在時間（ミリ秒）※平均滞在時間は sum_page_visit_time_msec/page_viewsで算出。
+  * sum_engagement_time_msec: ページ別合計エンゲージメント時間（ミリ秒）※平均時間は sum_engagement_time_msec/page_viewsで算出。
+  * attributeEvents_sign_up:各セッション内でsign_upイベントが初回発生するまでにイベントが発生したイベント数。同一セッション内で複数回閲覧しても１としてカウントする。（対象CV：各CVの最初のCVまで。CVに到達するまでの全ページに+1（複数回ページビューがあっても1））
+  * 対象イベント：sign_up、generate_leadなど ※constants.jsにて設定
 
 
