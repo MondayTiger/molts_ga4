@@ -87,7 +87,7 @@ erDiagram
 
     %% コンバージョン用データマートにデータを投入
     mart-m_ga4_event||..|| report-r_ga4_conversion : "コンバージョンデータを作成＆追加"
-    mart-m_ga4_event||..|| report-r_ga4_analysis_conversionなど : "分析ビューを作成"
+    mart-m_ga4_event||..|| report-r_ga4_analysis_conversion etc : "分析ビューを作成"
 
 ```
 
