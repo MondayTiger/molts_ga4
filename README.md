@@ -179,130 +179,194 @@ GA4からエクスポートされたテーブル（`analytics_xxxxxxx.events_YYY
   - ページ分析ビュー
 
 
-# 各セッションの参照元・メディア・キャンペーンなどの取得手順
-1. 各イベントのcollected_traffic_source.manual_source（ない場合はevent_params内のsource）を取得。メディアやキャンペーンなども同様。※collected_traffic_sourceカラムは2023年中頃から追加されたため、それ以前の場合は下記ファイルのコメントアウト箇所を要変更。
-   - 対象クエリ
-      - source.ga4_fixed_events.sqlx
-      - source.ga4_unfixed_events_intraday.sqlx
-      - source.ga4_unfixed_events.sqlx
-2. session_startイベントから上記を取得
-3. 各セッションで上記1が存在する最も古いイベントから取得
-4. session_startイベントに参照元が入っていれば（上記2）それを採用し、入っていない場合はイベント（上記3）から取得
-   - 上記2以降の対象クエリ
-     - staging.ga4_unfixed_events.sqlx
-**session_traffic_source_last_clickカラムを使用したい場合は、xxx_ga4_mart.m_ga4_session_traffic_source_last_clickテーブルに格納されているので、m_ga4_eventテーブル、m_ga4_sessionテーブルとはuser_pseudo_id, ga_session_idでJOINすることで抽出可能**
+# 各セッションの参照元・メディア・キャンペーンの取得手順
+## 1. イベントから参照元・メディア・キャンペーンの取得
+- 各イベントの`collected_traffic_source.manual_source`を取得（ない場合は`event_params`内の`source`を使用）。
+- メディアやキャンペーンも同様に取得。
+- **注意**: `collected_traffic_source`カラムは2023年中頃から追加されたため、それ以前の場合は、下記ファイルのコメントアウト部分を変更する必要があります。
+  - **対象クエリ**:
+    - `source.ga4_fixed_events.sqlx`
+    - `source.ga4_unfixed_events_intraday.sqlx`
+    - `source.ga4_unfixed_events.sqlx`
 
-# チャネルグループの作成＆カスタマイズ
-1. Googleシートを作成（例：https://docs.google.com/spreadsheets/d/16iDnq9G07HcQ5O09W5OTEPIaq5lbafS8Qw9JGk0179U/edit?gid=0#gid=0 ）参考：https://support.google.com/analytics/answer/9756891?hl=ja
-2. 上記のGoogleシートを参照するテーブルを作成
-	1. BigQuery Studioにて該当のプロジェクトを開く
-	2. データセットを作成（名前は任意：例 general_master）
-		 - リージョンは他のデータセットと同じにする（例 東京：asia-northeast1）
-	 3. テーブルを作成
-		  - ソース
-		      - テーブルの作成元：ドライブ
-		      - ドライブのURI：GoogleシートのURL
-		      - ファイル形式：Googleスプレッドシート
-		      - シート範囲：空欄でOK
-	     - 送信先
-		      - プロジェクト：デフォルトのまま
-		      - データセット：デフォルトのまま
-		      - テーブル名：任意
-	4. Googleシートへのアクセス権限がないユーザー・サービスアカウントはこのテーブルを使えない可能性があるため、その場合は、上記のテーブルをコピーしてテーブルを作成。
-		例： 
-		```
-		CREATE OR REPLACE TABLE  `プロジェクト名.データセット名.新しいテーブル名`
-		SELECT * FROM `プロジェクト名.データセット名.上記のGoogleシートで作成したテーブル名`
-		  ```
-		  ただし、https://support.google.com/analytics/answer/9756891?hl=ja にある定義が更新された場合は手動でこの新しいテーブルにデータを追加する必要がある
-3. includes/ga4/constants.js内の`CHANNEL_GROUP_TABLE`変数の値を上記で作成したテーブルに変更
-4. definitions/ga4/mart/m_ga4_session_channel_group.sqlx 内で独自ルールを入れるなど要変更
-	 - 85行目以降：custom_channel_group：各サイトでの要件にあわせて変更
-	 - 119行目以降：lp_group：各サイトのLPにあわせて変更
-	 - 125行目以降：domain：各サイトごとのドメインやサブドメインのグループ分けの定義にあわせて変更
+## 2. `session_start`イベントから取得
+- `session_start`イベントで参照元情報を取得します。
+
+## 3. セッション内の最も古いイベントから取得
+- 各セッションで`collected_traffic_source`が存在する最も古いイベントから情報を取得します。
+
+## 4. `session_start`イベントの情報の優先使用
+- `session_start`イベントに参照元情報が入っている場合は、それを優先して使用します。
+- 入っていない場合は、各セッション内の最も古いイベント（ステップ3）から情報を取得します。
+- **対象クエリ（ステップ2以降）**:
+  - `staging.ga4_unfixed_events.sqlx`
+
+## 補足: `session_traffic_source_last_click`カラムの使用
+- `session_traffic_source_last_click`カラムを使用したい場合は、`xxx_ga4_mart.m_ga4_session_traffic_source_last_click`テーブルに格納されています。
+- `m_ga4_event`テーブルや`m_ga4_session`テーブルと`user_pseudo_id`、`ga_session_id`でJOINすることで抽出が可能です。
+
+# チャネルグループの作成＆カスタマイズ手順
+
+## 1. Googleシートの作成
+- Googleシートを作成し、チャネルグループを定義します。
+  - 例: [Googleシートのリンク](https://docs.google.com/spreadsheets/d/16iDnq9G07HcQ5O09W5OTEPIaq5lbafS8Qw9JGk0179U/edit?gid=0#gid=0)
+  - 参考: [Googleサポートページ](https://support.google.com/analytics/answer/9756891?hl=ja)
+
+## 2. BigQueryでのテーブル作成
+1. **BigQuery Studio**でプロジェクトを開きます。
+2. **データセットを作成**します。
+   - データセット名は任意（例: `general_master`）
+   - リージョンは他のデータセットと同じに設定（例: `東京` → `asia-northeast1`）
+3. **テーブルを作成**します。
+   - **ソース**:
+     - テーブルの作成元: ドライブ
+     - ドライブのURI: GoogleシートのURL
+     - ファイル形式: Googleスプレッドシート
+     - シート範囲: 空欄のままでOK
+   - **送信先**:
+     - プロジェクト: デフォルトのまま
+     - データセット: デフォルトのまま
+     - テーブル名: 任意
+4. **注意**: Googleシートへのアクセス権限がないユーザーやサービスアカウントは、このテーブルを使用できない場合があります。その場合、作成したテーブルをコピーして新しいテーブルを作成します。
+   - **例**:
+     ```sql
+     CREATE OR REPLACE TABLE `プロジェクト名.データセット名.新しいテーブル名`
+     AS SELECT * FROM `プロジェクト名.データセット名.作成したテーブル名`
+     ```
+   - 注意: 定義が更新された場合、手動で新しいテーブルにデータを追加する必要があります。参考: [Googleサポートページ](https://support.google.com/analytics/answer/9756891?hl=ja)
+
+## 3. 定数の設定
+- `includes/ga4/constants.js`内の`CHANNEL_GROUP_TABLE`変数を、作成したテーブルに変更します。
+
+## 4. カスタマイズ（`m_ga4_session_channel_group.sqlx`）
+- `definitions/ga4/mart/m_ga4_session_channel_group.sqlx`で独自ルールを設定します。
+  - **85行目以降**: `custom_channel_group` → 各サイトの要件に合わせて変更
+  - **119行目以降**: `lp_group` → 各サイトのLPに合わせて変更
+  - **125行目以降**: `domain` → 各サイトのドメインやサブドメインのグループ分け定義を変更
+
 
 # 導入時に変更が必要な箇所
-## includes/constants.js内すべて
-1. GA4テーブルがあるプロジェクト
-2. データセット: 各テーブルのデータセット名とプロジェクト名を指定
-3. 集計対象ホスト名: クロスドメイントラッキングなどで複数のホスト名が集計対象となる場合は、HOSTNAME3など追加し、module.exports配列に追加
-4. Measurement Protocolのイベント名 
-5. コンバージョン対象: 現在はCV_PAGE_LOCATIONとしていますが、report/r_ga4_conversion.sqlx含め要変更
-6. 新たに定数を作成したい場合は、このファイルで作成し、module.exports配列に追加
 
-## イベントパラメータを追加した場合
-**基本的にはすべてのファイルで修正が必要**
-1. source/s_ga4_fixed_events.sqlx など
-    - event_paramsカラムから対象のパラメータを抽出
-    例 114行目: ${helpers.getEventParamAll('event_category','string')}
-2. cleanse/c_ga4_fixed_events.sqlx など
-    - 上記で抽出したカラムを追加
-3. staging/やmart/内のSQLXファイルも上記と同様
+## 1. GA4テーブルがあるプロジェクト
+- **includes/constants.js**内でGA4テーブルが存在するプロジェクトを指定します。
 
-# 初回実行時（過去データのインポート、m_ga4_event、m_ga4_sessionテーブルの新規作成等）の対応
-1. includes/constants.jsの更新（前述）
-2. チャネルグループ用のテーブルの作成（前述）
-3. source/ga4_fixed_events.sqlx
-    1. 最後のWHERE句で対象期間を最も古い日～前日に変更（デフォルトは7日前～前日）
-      例： _table_suffix >= FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY))
-4. staging/s_ga4_events_add_session_item.sqlx
-   1. サブクエリでm_ga4_sessionテーブルを参照している場合、mart_session、agg_campaign_first_3サブクエリをコメントアウトして、その下にあるagg_campaign_first_3を使用（※これが見つからない場合はここは省略可）
-      詳細はs_ga4_events_add_session_item.sqlxに記載
-5. mart/m_ga4_session_traffic_source_last_click.sqlx
-   1. 最初にあるtypeをincrementalからtableに変更
-   2. 16行目あたりのdependencies: ["m_ga4_session_traffic_source_last_click_delete_unfixed"]をコメントアウト（//を先頭に入れる）
-6. mart/m_ga4_event.sqlx、mart/m_ga4_session.sqlx
-   1. 最初にあるtypeをincrementalからtableに変更
-   2. 12行目あたりのdependencies: ["m_ga4_xxxxx_delete_unfixed"]をコメントアウト（//を先頭に入れる）
-7. report/r_ga4_conversion.sqlx
-   1. 最初にあるtypeをincrementalからtableに変更
-   2. 12行目あたりのdependencies: ["r_ga4_conversion_delete_unfixed"]をコメントアウト（//を先頭に入れる）
-8. 実行
-    1. 上部の「実行を開始」ボタンをクリックし、「タグ」＞ 「workflow」を選択
-    2. 「SELECTION OF TAGS」が選択されていることを確認
-        - 「実行するタグ」で「workflow」が選択されていることを確認
-    3. 「依存関係を含める」にチェック
-    4. 「実行対象として 5 個のアクションが選択されています」に下記5つのファイルがあることを確認
-        - mart/m_ga4_event.sqlx
-        - mart/m_ga4_session.sqlx
-        - mart/m_ga4_session_traffic_source_last_click.sqlx
-        - mart/m_ga4_session_channel_group.sqlx
-        - report/r_ga4_conversion.sqlx 
-    5. 下の「実行を開始」ボタンをクリックして実行開始
-    6. 「ワークフロー実行を作成しました 詳細」というダイアログが下部に表示されるので、「詳細」をクリック
-    7. ステータスが表示されるので、「更新」ボタンを押して、ステータスが「成功」になればOK。失敗した場合は、エラーマークが付いているクエリの右側の「詳細」をクリックし、エラー箇所を確認。該当箇所のSQLXファイルを要修正。修正後再び6-1から再実施
-9. 実行完了後、設定を元に戻す
-    1. 3のsource/ga4_fixed_events.sqlxの期間
-    2. 4のstaging/s_ga4_events_add_session_item.sqlxのサブクエリ
-    3. 5のmart/m_ga4_session_traffic_source_last_click.sqlxのtype、SELECT文 
-    4. 5のmart/m_ga4_event.sqlx、mart/m_ga4_session.sqlxのconfig（type、denpendencies） 
-    5. 6のreport/r_ga4_conversion.sqlxのconfig（type、denpendencies） 
-10. 再びm_ga4_event.sqlxとm_ga4_session.sqlx、m_ga4_session_traffic_source_last_click.sqlxを選択して実行
-    1. 実行前にm_ga4_eventテーブルとm_ga4_sessionテーブルをコピーしておく（バックアップを取っておく）
-    2. 前述の「実行」と同じやり方でOK
-    3. 実行完了後、m_ga4_eventテーブルとm_ga4_sessionテーブルをevent_date別で件数を調べ、コピーしたテーブルと比較。
-        - 5日前～前日のデータ件数がコピーしたテーブルよりも大きい場合：7のどこかで作業が漏れている（例：xxxx_delete_unfixed.sqlxが実行されていない可能性が高い）
-        - 6日前よりも古いデータがない場合：type:tableのままになっている
+## 2. データセット
+- 各テーブルのデータセット名とプロジェクト名を指定します。
 
-# 日次更新（ワークフロー）の設定
-  1. Dataformのメインページ（https://console.cloud.google.com/bigquery/dataform?authuser=0&project=molts-data-project ）からリポジトリを選択
-  2. 「リリースとスケジュール」タブをクリック
-  3. 「リリース構成」の横にある「作成」をクリックし、下記を入力した後、「保存」ボタンを押す
-	   - リリースID：任意
-	   - 頻度：毎日
-	   - タイムゾーン：任意（日本）
-	   - Google Cloud プロジェクト リリースID：空欄
-	   - スキーマの接尾辞：空欄
-	   - テーブルの接頭辞：空欄
-  4. 「ワークフロー構成」の横にある「作成」をクリック
-	   - リリース構成： 上記で作成したリリースを選択
-	   - サービスアカウント：デフォルトのサービスアカウント（Googleシートで作成したテーブルへ参照できない場合は、参照可能かつDataformを実行できるアカウントに要変更）
-	   - 頻度：任意（例：毎朝11時の場合 0 11 * * *）※GA4のテーブルが生成される時間を調べて決めるべき
-	   - タイムゾーン：日本 
-	   - 「SELECTION OF TAGS」を選択
-	     - 実行するタグを選択：workflow 
-	     - 「依存関係を含める」にチェック
-	   - 下の「保存」ボタンをクリック
+## 3. 集計対象ホスト名
+- クロスドメイントラッキングなどで複数のホスト名が集計対象となる場合、`HOSTNAME3`などを追加し、`module.exports`配列に追加します。
+
+## 4. Measurement Protocolのイベント名
+- Measurement Protocolに関連するイベント名を指定します。
+
+## 5. コンバージョン対象の設定
+- 現在は`CV_PAGE_LOCATION`を使用していますが、`report/r_ga4_conversion.sqlx`を含めて必要に応じて変更します。
+
+## 6. 新しい定数の作成
+- 新しい定数を作成する場合は、このファイル内で作成し、`module.exports`配列に追加します。
+
+# イベントパラメータを追加した場合
+**基本的にはすべてのファイルで修正が必要です。**
+
+## 1. `source/s_ga4_fixed_events.sqlx`などの修正
+- `event_params`カラムから対象のパラメータを抽出します。
+  - 例（114行目）: `${helpers.getEventParamAll('event_category', 'string')}`
+
+## 2. `cleanse/c_ga4_fixed_events.sqlx`などの修正
+- 上記で抽出したカラムを追加します。
+
+## 3. `staging/`や`mart/`内のSQLXファイルも同様に修正
+
+# 初回実行時の対応（過去データのインポート、`m_ga4_event`、`m_ga4_session`テーブルの新規作成など）
+
+## 1. `includes/constants.js`の更新
+- 前述の内容に従って更新します。
+
+## 2. チャネルグループ用のテーブル作成
+- 前述の手順を参照してください。
+
+## 3. `source/ga4_fixed_events.sqlx`の修正
+- 最後の`WHERE`句で対象期間を「最も古い日～前日」に変更します（デフォルトは「7日前～前日」）。
+  - 例:
+    ```sql
+    _table_suffix >= FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY))
+    ```
+
+## 4. `staging/s_ga4_events_add_session_item.sqlx`の修正
+- `m_ga4_session`テーブルを参照しているサブクエリを確認し、`mart_session`、`agg_campaign_first_3`サブクエリをコメントアウトし、その下にある`agg_campaign_first_3`を使用します。
+  - **注**: 見つからない場合はこの手順は省略可能です（詳細はファイル内に記載）。
+
+## 5. `mart/m_ga4_session_traffic_source_last_click.sqlx`の修正
+1. `type`を`incremental`から`table`に変更します。
+2. 16行目あたりの`dependencies: ["m_ga4_session_traffic_source_last_click_delete_unfixed"]`をコメントアウトします（`//`を追加）。
+
+## 6. `mart/m_ga4_event.sqlx`、`mart/m_ga4_session.sqlx`の修正
+1. `type`を`incremental`から`table`に変更します。
+2. 12行目あたりの`dependencies: ["m_ga4_xxxxx_delete_unfixed"]`をコメントアウトします（`//`を追加）。
+
+## 7. `report/r_ga4_conversion.sqlx`の修正
+1. `type`を`incremental`から`table`に変更します。
+2. 12行目あたりの`dependencies: ["r_ga4_conversion_delete_unfixed"]`をコメントアウトします（`//`を追加）。
+
+## 8. 実行手順
+1. 上部の「実行を開始」ボタンをクリックし、「タグ」→「workflow」を選択します。
+2. 「SELECTION OF TAGS」が選択されていることを確認します。
+   - 「実行するタグ」で「workflow」が選択されていることを確認。
+3. 「依存関係を含める」にチェックを入れます。
+4. 実行対象として5つのファイルが選択されていることを確認します。
+   - `mart/m_ga4_event.sqlx`
+   - `mart/m_ga4_session.sqlx`
+   - `mart/m_ga4_session_traffic_source_last_click.sqlx`
+   - `mart/m_ga4_session_channel_group.sqlx`
+   - `report/r_ga4_conversion.sqlx`
+5. 下部の「実行を開始」ボタンをクリックして実行を開始します。
+6. 「ワークフロー実行を作成しました 詳細」というダイアログが表示されたら、「詳細」をクリックします。
+7. ステータスが「成功」になるまで「更新」ボタンを押して確認します。失敗した場合はエラー箇所を確認し、該当のSQLXファイルを修正して再実施します。
+
+## 9. 実行完了後の設定戻し
+1. `source/ga4_fixed_events.sqlx`の期間を元に戻します。
+2. `staging/s_ga4_events_add_session_item.sqlx`のサブクエリを元に戻します。
+3. `mart/m_ga4_session_traffic_source_last_click.sqlx`の`type`と`SELECT`文を元に戻します。
+4. `mart/m_ga4_event.sqlx`、`mart/m_ga4_session.sqlx`の`config`（`type`、`dependencies`）を元に戻します。
+5. `report/r_ga4_conversion.sqlx`の`config`（`type`、`dependencies`）を元に戻します。
+
+## 10. 再度実行
+1. `m_ga4_event.sqlx`と`m_ga4_session.sqlx`、`m_ga4_session_traffic_source_last_click.sqlx`を再度選択して実行します。
+   - 実行前に`m_ga4_event`テーブルと`m_ga4_session`テーブルをバックアップとしてコピーしておきます。
+2. 実行は前述の「実行」と同じ手順でOKです。
+3. 実行後、`event_date`別に件数を調べ、バックアップと比較します。
+   - 5日前～前日のデータ件数がコピーしたテーブルより多い場合は作業漏れが考えられます（例: `xxxx_delete_unfixed.sqlx`が実行されていない可能性）。
+   - 6日前よりも古いデータがない場合は`type: table`のままになっている可能性があります。
+
+# 日次更新（ワークフロー）の設定手順
+
+## 1. リポジトリの選択
+- Dataformのメインページ（[リンク](https://console.cloud.google.com/bigquery/dataform?authuser=0&project=molts-data-project)）にアクセスし、リポジトリを選択します。
+
+## 2. 「リリースとスケジュール」タブの操作
+- 「リリースとスケジュール」タブをクリックします。
+
+## 3. リリース構成の作成
+- 「リリース構成」の横にある「作成」をクリックし、以下を入力して「保存」を押します。
+  - **リリースID**: 任意
+  - **頻度**: 毎日
+  - **タイムゾーン**: 任意（例: 日本）
+  - **Google Cloud プロジェクト リリースID**: 空欄
+  - **スキーマの接尾辞**: 空欄
+  - **テーブルの接頭辞**: 空欄
+
+## 4. ワークフロー構成の作成
+- 「ワークフロー構成」の横にある「作成」をクリックし、以下を設定します。
+  - **リリース構成**: 上記で作成したリリースを選択
+  - **サービスアカウント**: デフォルトのサービスアカウントを使用
+    - Googleシートで作成したテーブルにアクセスできない場合は、参照可能かつDataformを実行できるアカウントに変更します。
+  - **頻度**: 任意（例: 毎朝11時に実行 → `0 11 * * *`）
+    - **注意**: GA4テーブルが生成される時間を調べて設定してください。
+  - **タイムゾーン**: 日本
+  - **タグの選択**: 「SELECTION OF TAGS」を選択し、「workflow」を指定
+    - **依存関係を含める**: チェックを入れます。
+- **「保存」ボタン**をクリックして完了します。
+
 
 # エンゲージメントの定義
 セッション単位のエンゲージメントについては下記のカラムを使用。GA4の定義では`is_bounce_no_engagement_manual`が正しいが、GA4のレポートの結果に合わせる場合は、 `is_bounce_no_engagement` を使用。（それでも若干誤差はある）
