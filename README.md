@@ -94,72 +94,89 @@ erDiagram
 
 
 # 処理の流れ
-1. GA4からエクスポートされたテーブル（analytics_xxxxxxx.events_YYYYMMDD, analytics_xxxxxxx.events_intraday_YYYYMMDD）内のevent_paramsカラムなどをフラット化し、1つのビューにまとめる
-    - definitions/ga4/sourceディレクトリ内のSQLXファイル
-      * 直近4日間のデータについては、is_fixed_dataカラムをfalseとする（9以降で使用）
-2. 上記で生成されたデータ（ビューの結果）に対して、下記を実施
-    - definitions/ga4/cleanseディレクトリ内のSQLXファイル
-      * イベントの発生時刻を日本時間に変更
-      * URLからパラメータを除去したカラムを追加
-      * link URLからパラメータを除去したカラムを追加
-3. 上記で生成されたデータ（ビューの結果）をテーブル化（テーブル名：xxx_ga4_staging.s_ga4_events_union）
-    - definitions/ga4/staging/s_ga4_events_union.sqlx
-4. イベントを除外、イベントデータをカスタマイズする場合は実施（デフォルトでは何もしない）
-    - definitions/ga4/staging/s_ga4_events_event_update.sqlx
-      * デバッグモードや内部アクセスのイベントを除外
-      * 計測対象のホスト名を指定（指定していないホスト名は除外される）
-      * Measurement Protocol用のイベントがある場合は含める
-5. セッション情報を追加
-    - definitions/ga4/staging/s_ga4_events_add_session_item.sqlx
-      * セッションの参照元情報
-      * セッション時間
-      * セッションごとのページビュー（スクリーンビュー）数
-6. session_traffic_source_last_clickカラムから参照元データを別途作成
-    - definitions/ga4/staging/s_ga4_session_traffic_source_last_click.sqlx
-7. 各page_view/screen_viewイベントに関する下記のデータを追加
-    - definitions/ga4/staging/s_ga4_event.sqlx
-      * 前後3ページ（スクリーン）のパス
-      * ページ滞在時間
-      * ランディングページを判定するフラグ
-      * 直帰、離脱を判定するフラグ
-8. 上記で作成したsession_traffic_source_last_clickカラムをmartデータセット内のテーブルに格納
-    - definitions/ga4/mart/m_ga4_session_traffic_source_last_click_delete_unfixed.sqlx
-      * 直近分のデータを（is_fixed_dataカラムがfalse）削除
-    - definitions/ga4/mart/m_ga4_session_traffic_source_last_click.sqlx
-      * s_ga4_session_traffic_source_last_click.sqlxの結果を追加
-9. 上記7で作成したイベントデータを ga4_mart.m_ga4_event に格納
-    - definitions/ga4/mart/m_ga4_event_delete_unfixed.sqlx
-      * 直近分のデータを（is_fixed_dataカラムがfalse）削除
-    - definitions/ga4/mart/m_ga4_event.sqlx
-      * 今回作成した7の結果を追加
-10. 上記5のデータ（ビュー）からセッション単位のデータを作成
-    - definitions/ga4/staging/s_ga4_session.sqlx
-11. 上記で作成したセッションデータを ga4_mart.m_ga4_session に格納
-    - definitions/ga4/mart/m_ga4_session_delete_unfixed.sqlx
-      * 直近分のデータを（is_fixed_dataカラムがfalse）削除
-    - definitions/ga4/mart/m_ga4_session.sqlx
-      * 上記の結果とm_ga4_session_traffic_source_last_clickを追加
-12. セッションデータからチャネルグループを各セッションごとに作成
-    - definitions/ga4/mart/m_ga4_session_channel_group.sqlx
-      * 必要に応じて中身を要変更
-      * もととなるテーブル（molts-data-project.general_master_us.ga4_channel_grouping_base）をGoogleシートから作成する必要あり
-13. コンバージョンデータを ga4_report.r_ga4_conversion に格納
-    - definitions/ga4/mart/r_ga4_conversion_delete_unfixed.sqlx
-      * 直近分のデータを（is_fixed_dataカラムがfalse）削除
-    - definitions/ga4/report/r_ga4_conversion.sqlx
-      * 今回はthanksを含むページに到達したイベントを対象
-      * 設定箇所：includes/constants.js内で設定したCV_PAGE_LOCATION = 'https://https://moltsinc.co.jp/%thanks%';
-14. 分析ビューを作成
-    - definitions/ga4/report/r_ga4_analysis_conversion.sqlx
-      * コンバージョン分析ビュー。対象イベントが発生した回数、発生したイベント数を参照元別などで集計。
-    - definitions/ga4/report/r_ga4_analysis_event_purchase.sqlx
-      * イベント別購入貢献ビュー。各purchaseまでに到達した全イベント（ユニークイベント）に+1。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのイベント（ユニークイベント）は、購入貢献数は2。
-    - definitions/ga4/report/r_ga4_analysis_event.sqlx
-      * イベント分析ビュー。各セッションで各対象イベント（例：sign_up）の初回発生までに発生したイベント（例：scroll, click等）に1が加算される。
-    - definitions/ga4/report/r_ga4_analysis_page_purchase.sqlx
-      * ページ別購入貢献ビュー。各purchaseまでに到達した全ページ（ユニークページ）に+1。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのページ（ユニークページ）は、購入貢献数は2。
-    - definitions/ga4/report/r_ga4_analysis_page.sqlx
-      * ページ分析ビュー。各ページのページビュー数、ページ別訪問者数、ページ別合計滞在時間、ページ別合計エンゲージメント時間。
+## 1. イベントデータのフラット化とビュー作成
+GA4からエクスポートされたテーブル（`analytics_xxxxxxx.events_YYYYMMDD`、`analytics_xxxxxxx.events_intraday_YYYYMMDD`）の`event_params`カラムなどをフラット化し、1つのビューにまとめます。
+- **ディレクトリ**: `definitions/ga4/source`
+  - 直近4日間のデータは`is_fixed_data`カラムを`false`に設定（ステップ9以降で使用）
+
+## 2. データのクレンジング
+生成されたデータに対して以下を実施します。
+- **ディレクトリ**: `definitions/ga4/cleanse`
+  - イベント発生時刻を日本時間に変更
+  - URLからパラメータを除去したカラムを追加
+  - `link` URLからパラメータを除去したカラムを追加
+
+## 3. ビュー結果のテーブル化
+データをテーブルに格納（テーブル名：`xxx_ga4_staging.s_ga4_events_union`）。
+- **ファイル**: `definitions/ga4/staging/s_ga4_events_union.sqlx`
+
+## 4. イベントの除外とカスタマイズ
+イベントの除外やデータのカスタマイズを実施します（デフォルトでは何もしません）。
+- **ファイル**: `definitions/ga4/staging/s_ga4_events_event_update.sqlx`
+  - デバッグモードや内部アクセスのイベントを除外
+  - 計測対象のホスト名を指定（指定外は除外）
+  - Measurement Protocol用のイベントを含める場合あり
+
+## 5. セッション情報の追加
+- **ファイル**: `definitions/ga4/staging/s_ga4_events_add_session_item.sqlx`
+  - セッション参照元情報
+  - セッション時間
+  - ページビュー数（スクリーンビュー数）
+
+## 6. `session_traffic_source_last_click`カラムの別作成
+- **ファイル**: `definitions/ga4/staging/s_ga4_session_traffic_source_last_click.sqlx`
+
+## 7. ページビュー/スクリーンビューイベントのデータ追加
+- **ファイル**: `definitions/ga4/staging/s_ga4_event.sqlx`
+  - 前後3ページのパス
+  - ページ滞在時間
+  - ランディングページ判定フラグ
+  - 直帰、離脱判定フラグ
+
+## 8. セッション参照元データのテーブル格納
+- **ファイル**: `definitions/ga4/mart/m_ga4_session_traffic_source_last_click_delete_unfixed.sqlx`
+  - 直近データ（`is_fixed_data`が`false`）を削除
+- **ファイル**: `definitions/ga4/mart/m_ga4_session_traffic_source_last_click.sqlx`
+  - `s_ga4_session_traffic_source_last_click.sqlx`の結果を追加
+
+## 9. イベントデータのテーブル格納
+- **ファイル**: `definitions/ga4/mart/m_ga4_event_delete_unfixed.sqlx`
+  - 直近データ（`is_fixed_data`が`false`）を削除
+- **ファイル**: `definitions/ga4/mart/m_ga4_event.sqlx`
+  - ステップ7の結果を追加
+
+## 10. セッション単位のデータ作成
+- **ファイル**: `definitions/ga4/staging/s_ga4_session.sqlx`
+
+## 11. セッションデータのテーブル格納
+- **ファイル**: `definitions/ga4/mart/m_ga4_session_delete_unfixed.sqlx`
+  - 直近データ（`is_fixed_data`が`false`）を削除
+- **ファイル**: `definitions/ga4/mart/m_ga4_session.sqlx`
+  - ステップ5と`m_ga4_session_traffic_source_last_click`の結果を追加
+
+## 12. チャネルグループの作成
+- **ファイル**: `definitions/ga4/mart/m_ga4_session_channel_group.sqlx`
+  - 必要に応じて編集
+  - 基盤となるテーブルは`molts-data-project.general_master_us.ga4_channel_grouping_base`（Googleシートから作成）
+
+## 13. コンバージョンデータの格納
+- **ファイル**: `definitions/ga4/mart/r_ga4_conversion_delete_unfixed.sqlx`
+  - 直近データ（`is_fixed_data`が`false`）を削除
+- **ファイル**: `definitions/ga4/report/r_ga4_conversion.sqlx`
+  - `thanks`ページに到達したイベントを対象
+  - 設定: `includes/constants.js`内で`CV_PAGE_LOCATION = 'https://moltsinc.co.jp/%thanks%';`
+
+## 14. 分析ビューの作成
+- **ファイル**: `definitions/ga4/report/r_ga4_analysis_conversion.sqlx`
+  - コンバージョン分析ビュー
+- **ファイル**: `definitions/ga4/report/r_ga4_analysis_event_purchase.sqlx`
+  - イベント別購入貢献ビュー
+- **ファイル**: `definitions/ga4/report/r_ga4_analysis_event.sqlx`
+  - イベント分析ビュー
+- **ファイル**: `definitions/ga4/report/r_ga4_analysis_page_purchase.sqlx`
+  - ページ別購入貢献ビュー
+- **ファイル**: `definitions/ga4/report/r_ga4_analysis_page.sqlx`
+  - ページ分析ビュー
 
 
 # 各セッションの参照元・メディア・キャンペーンなどの取得手順
