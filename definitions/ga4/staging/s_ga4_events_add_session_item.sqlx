@@ -216,16 +216,16 @@ session_start AS(
             user_pseudo_id,
             ga_session_id,
             ARRAY_AGG(STRUCT(
-                g.event_traffic_source,
-                g.event_traffic_medium,
-                g.event_traffic_campaign,
-                g.event_traffic_content,
-                g.event_traffic_term,
-                g.event_traffic_source_platform,
-                g.event_traffic_creative_format,
-                g.event_traffic_marketing_tactic,
-                g.event_traffic_campaign_id,
-                g.event_traffic_gclid
+                COALESCE(g.collected_traffic_source.manual_source, g.event_traffic_source) AS event_traffic_source,
+                COALESCE(g.collected_traffic_source.manual_medium, g.event_traffic_medium) AS event_traffic_medium,
+                COALESCE(g.collected_traffic_source.manual_campaign_name, g.event_traffic_campaign) AS event_traffic_campaign,
+                COALESCE(g.collected_traffic_source.manual_content, g.event_traffic_content) AS event_traffic_content,
+                COALESCE(g.collected_traffic_source.manual_term, g.event_traffic_term) AS event_traffic_term,
+                COALESCE(g.collected_traffic_source.manual_source_platform, g.event_traffic_source_platform) AS event_traffic_source_platform,
+                COALESCE(g.collected_traffic_source.manual_creative_format, g.event_traffic_creative_format) AS event_traffic_creative_format,
+                COALESCE(g.collected_traffic_source.manual_marketing_tactic, g.event_traffic_marketing_tactic) AS event_traffic_marketing_tactic,
+                COALESCE(g.collected_traffic_source.manual_campaign_id, g.event_traffic_campaign_id) AS event_traffic_campaign_id,
+                COALESCE(g.collected_traffic_source.gclid, g.event_traffic_gclid) AS event_traffic_gclid
             ) ORDER BY event_timestamp ASC LIMIT 1)[OFFSET(0)].*
         FROM ga g
         WHERE event_name ="session_start"
@@ -239,16 +239,16 @@ agg_campaign AS(
         user_pseudo_id,
         ga_session_id,
         ARRAY_AGG(STRUCT(
-            g.event_traffic_source,
-            g.event_traffic_medium,
-            g.event_traffic_campaign,
-            g.event_traffic_content,
-            g.event_traffic_term,
-            g.event_traffic_source_platform,
-            g.event_traffic_creative_format,
-            g.event_traffic_marketing_tactic,
-            g.event_traffic_campaign_id,
-            g.event_traffic_gclid
+            COALESCE(g.collected_traffic_source.manual_source, g.event_traffic_source) AS event_traffic_source,
+            COALESCE(g.collected_traffic_source.manual_medium, g.event_traffic_medium) AS event_traffic_medium,
+            COALESCE(g.collected_traffic_source.manual_campaign_name, g.event_traffic_campaign) AS event_traffic_campaign,
+            COALESCE(g.collected_traffic_source.manual_content, g.event_traffic_content) AS event_traffic_content,
+            COALESCE(g.collected_traffic_source.manual_term, g.event_traffic_term) AS event_traffic_term,
+            COALESCE(g.collected_traffic_source.manual_source_platform, g.event_traffic_source_platform) AS event_traffic_source_platform,
+            COALESCE(g.collected_traffic_source.manual_creative_format, g.event_traffic_creative_format) AS event_traffic_creative_format,
+            COALESCE(g.collected_traffic_source.manual_marketing_tactic, g.event_traffic_marketing_tactic) AS event_traffic_marketing_tactic,
+            COALESCE(g.collected_traffic_source.manual_campaign_id, g.event_traffic_campaign_id) AS event_traffic_campaign_id,
+            COALESCE(g.collected_traffic_source.gclid, g.event_traffic_gclid) AS event_traffic_gclid
         ) ORDER BY event_timestamp ASC LIMIT 1)[OFFSET(0)].*
     FROM ga g
     WHERE (
