@@ -74,7 +74,7 @@ FROM sources
 with d AS(
 	SELECT 
 	  SUBSTR(table_name, 8, 8) AS event_date 
-	FROM `${constants.GA4_DATABASE}.${constants.GA4_DATASET}.INFORMATION_SCHEMA.COLUMNS`
+	FROM `${constants.GA4_DATABASE}.region-xx.INFORMATION_SCHEMA.COLUMNS` -- GA4のevntsテーブルのリージョンを確認して要変更（例：region-us）
 	WHERE 
 	  column_name = 'session_traffic_source_last_click'
 	  AND table_name LIKE 'events_%'
@@ -91,6 +91,7 @@ with d AS(
     * EXCEPT(event_date,user_id),
   FROM `${constants.GA4_DATABASE}.${constants.GA4_DATASET}.events_*`
   WHERE _table_suffix >= (SELECT event_date FROM d)
+  AND _table_suffix >= '20240701' -- コスト削減目的（session_traffic_source_last_clickが導入されたのが2024年7月以降なため）
 ),events AS(
   SELECT * EXCEPT(user_id),
     FIRST_VALUE(user_id IGNORE NULLS)OVER(PARTITION BY event_date, user_pseudo_id, ga_session_id ORDER BY event_timestamp, event_name) AS user_id,
@@ -104,7 +105,8 @@ with d AS(
         ga_session_id,
         ARRAY_AGG(STRUCT(
           user_id,
-          session_traffic_source_last_click,
+          STRUCT(session_traffic_source_last_click.manual_campaign,session_traffic_source_last_click.google_ads_campaign) AS session_traffic_source_last_click,
+--          session_traffic_source_last_click,
           is_fixed_data
         ) ORDER BY event_timestamp ASC LIMIT 1)[OFFSET(0)].*
     FROM events
