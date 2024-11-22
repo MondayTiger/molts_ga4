@@ -25,9 +25,9 @@ const CHANNEL_GROUP_TABLE = 'molts-data-project.general_master_us.ga4_channel_gr
 // GA4データの最も古い日
 const GA4_FIRST_DATE = '2020-1-1';
 // events_テーブルの更新対象期間（通常は9日～前日）DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 9 DAY)
-const GA4_EVENTS_DATE_RANGE = 9
+const GA4_EVENTS_DATE_RANGE = 9 // 9日前
 const GA4_EVENTS_START_DATE ="DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL " + GA4_EVENTS_DATE_RANGE + " DAY)"
-const GA4_EVENTS_END_DATE = "DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY)"
+const GA4_EVENTS_END_DATE = "DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY)"  // 前日※こちらは変更する事はまずない
 
 // レポート関連 
 // report/r_ga4_conversion.sqlx 内のコンバージョンページURL ※r_ga4_conversionテーブルに格納されるのはpage_view, screen_viewイベントのみ
