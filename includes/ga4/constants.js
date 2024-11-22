@@ -24,6 +24,10 @@ const CHANNEL_GROUP_TABLE = 'molts-data-project.general_master_us.ga4_channel_gr
 
 // GA4データの最も古い日
 const GA4_FIRST_DATE = '2020-1-1';
+// events_テーブルの更新対象期間（通常は9日～前日）DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 9 DAY)
+const GA4_EVENTS_DATE_RANGE = 9
+const GA4_EVENTS_START_DATE ="DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL " + GA4_EVENTS_DATE_RANGE + " DAY)"
+const GA4_EVENTS_END_DATE = "DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY)"
 
 // レポート関連 
 // report/r_ga4_conversion.sqlx 内のコンバージョンページURL ※r_ga4_conversionテーブルに格納されるのはpage_view, screen_viewイベントのみ
@@ -31,11 +35,9 @@ const CV_PAGE_LOCATION = 'https://moltsinc.co.jp/%thanks%';
 // コンバージョン分析ビュー（definitions/ga4/report/r_ga4_analysis_conversion.sqlx）などで使用する対象イベント
 const GA4_ANALYSIS_CV_EVENTS = ['generate_lead','sign_up','download_form', 'contact_service_thanks','file_download'];
 
-
-
 // columns オブジェクトを事前に作成
 const GA4_ANALYSIS_CV_EVENTS_CONFIG = GA4_ANALYSIS_CV_EVENTS.map(val => `${val}: "${val}のイベント数"`).join(",\n");
 const GA4_ANALYSIS_CV_START_DATE = "DATE('2024-09-01')";
 const GA4_ANALYSIS_CV_END_DATE = "DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY)" ;
 
-module.exports = {GA4_DATABASE, GA4_DATASET, GA4_TABLE, GA4_INTRADAY_TABLE,PROJECT, CLEANSE, MART, REPORT ,SOURCE, STAGING, HOSTNAME1, HOSTNAME2,  MP_EVENT1, MP_EVENT2, CV_PAGE_LOCATION, CHANNEL_GROUP_TABLE,GA4_FIRST_DATE,GA4_ANALYSIS_CV_EVENTS,GA4_ANALYSIS_CV_EVENTS_CONFIG,GA4_ANALYSIS_CV_START_DATE,GA4_ANALYSIS_CV_END_DATE}
+module.exports = {GA4_DATABASE, GA4_DATASET, GA4_TABLE, GA4_INTRADAY_TABLE,PROJECT, CLEANSE, MART, REPORT ,SOURCE, STAGING, HOSTNAME1, HOSTNAME2,  MP_EVENT1, MP_EVENT2, CV_PAGE_LOCATION, CHANNEL_GROUP_TABLE,GA4_FIRST_DATE,GA4_EVENTS_START_DATE,GA4_EVENTS_END_DATE,GA4_ANALYSIS_CV_EVENTS,GA4_ANALYSIS_CV_EVENTS_CONFIG,GA4_ANALYSIS_CV_START_DATE,GA4_ANALYSIS_CV_END_DATE}

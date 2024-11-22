@@ -47,8 +47,8 @@ SELECT
     debug_event,
 
     -- add_column
-    IF(event_date <= FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 5 DAY)),true, false) AS is_fixed_data,
-
+    IF(event_date <= FORMAT_DATE("%Y%m%d", ${constants.GA4_EVENTS_START_DATE}), TRUE, FALSE) AS is_fixed_data,
+    
     -- event order
     batch_page_id,
     batch_ordering_id,

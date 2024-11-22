@@ -37,7 +37,8 @@ STRUCT(device.web_info.browser,device.web_info.browser_version,device.web_info.h
     FROM                    
         ${ref(constants.GA4_TABLE)}
     WHERE
-        _table_suffix BETWEEN FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 7 DAY)) AND FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY))
+        _table_suffix BETWEEN FORMAT_DATE("%Y%m%d", ${constants.GA4_EVENTS_START_DATE}) AND FORMAT_DATE("%Y%m%d",  ${constants.GA4_EVENTS_END_DATE})
+        -- _table_suffix BETWEEN FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 7 DAY)) AND FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY))
     --    _table_suffix BETWEEN '20201104' AND FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 5 DAY))  -- 初回実行時に実施
 ),
 intraday AS(

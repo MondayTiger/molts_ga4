@@ -244,5 +244,5 @@ module.exports = {
   getEventParamAll,
   getUserProperty,
   getUserPropertyNoColumnName,
-  getUserPropertyAll,
+  getUserPropertyAll
 };
