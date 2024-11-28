@@ -5,13 +5,15 @@
 
 | SQLXファイル名 | 対象 |
 | ------------- | ------------- |
-| fixed_events.sqlx | クエリ実行の7日前～前日のデータ(テーブル)が対象 |
+| fixed_events.sqlx | クエリ実行の9日前～前日のデータ(テーブル)が対象 |
 | unfixed_events_intraday.sqlx | クエリ実行の当日のデータが対象 |
 | events_union.sqlx | 上記の両データが対象 |
 
 # ディレクトリ構成
 - definitions/ga4/
     - source
+       - declarations.js
+       - declarations_intraday.js
        - ga4_fixed_events.sqlx
        - ga4_unfixed_events_intraday.sqlx
        - ga4_events_union.sqlx    
@@ -41,10 +43,9 @@
        - r_ga4_analysis_event.sqlx
        - r_ga4_analysis_page_purchase.sqlx
        - r_ga4_analysis_page.sqlx
-- includes/
+- includes/ 
     - constatns.js : GCPプロジェクト名、対象ホスト名などの定数をまとめたファイル
     - helpers.js : SQLXを簡略化するための関数が入ったファイル 
-
 
 # Data Flow
 ```mermaid
