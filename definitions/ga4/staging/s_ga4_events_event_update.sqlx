@@ -20,6 +20,7 @@ WITH exclude_internal AS(
         AND (
             hostname IN ('${constants.HOSTNAME1}','${constants.HOSTNAME2}') -- 計測対象ドメインを追加 
             OR event_name IN ('${constants.MP_EVENT1}','${constants.MP_EVENT2}') -- Measurement Protocolなどhostnameがないケースに設定
+            OR event_name LIKE '${constants.MP_EVENT_LIKE1}' -- Measurement Protocolなどhostnameがないケースに設定
         )
 ), events AS(
     SELECT

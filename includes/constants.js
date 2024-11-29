@@ -18,7 +18,9 @@ const HOSTNAME1 = 'moltsinc.co.jp';
 const HOSTNAME2 = 'moltsinc.co.jp';  
 // Measurement Protocolで使うイベント名 s_ga4_events_exclude_internal.sqlxでMeasurement Protocolで取得するイベント名の指定を行うが、ここにイベント名を記述。複数ある場合はここに追加し、s_ga4_events_exclude_internalにも追加すること
 const MP_EVENT1 = 'Measurement Protocol用イベント1';
-const MP_EVENT2 = 'Measurement Protocol用イベント2';
+const MP_EVENT2 = 'Measurement Protocol用イベント2';    // 条件の指定方法が event_name IN( 'Measurement Protocol用イベント1','Measurement Protocol用イベント2')
+const MP_EVENT_LIKE1 = '%Measurement Protocol用イベント1%';    // 条件の指定方法が event_name LIKE '%Measurement Protocol用イベント1%'
+
 // デフォルトチャネルグループのテーブル名（共通）　https://docs.google.com/spreadsheets/d/1gu6JfV0PD9QgfzPZT5EUCCvh1YHtENvpCENogSrxtd4/edit?gid=0#gid=0
 const CHANNEL_GROUP_TABLE = 'molts-data-project.general_master_us.ga4_channel_grouping_base';
 
@@ -40,4 +42,4 @@ const GA4_ANALYSIS_CV_EVENTS_CONFIG = GA4_ANALYSIS_CV_EVENTS.map(val => `${val}:
 const GA4_ANALYSIS_CV_START_DATE = "DATE('2024-09-01')";
 const GA4_ANALYSIS_CV_END_DATE = "DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY)" ;
 
-module.exports = {GA4_DATABASE, GA4_DATASET, GA4_TABLE, GA4_INTRADAY_TABLE,PROJECT, CLEANSE, MART, REPORT ,SOURCE, STAGING, HOSTNAME1, HOSTNAME2,  MP_EVENT1, MP_EVENT2, CV_PAGE_LOCATION, CHANNEL_GROUP_TABLE,GA4_FIRST_DATE,GA4_EVENTS_START_DATE,GA4_EVENTS_END_DATE,GA4_ANALYSIS_CV_EVENTS,GA4_ANALYSIS_CV_EVENTS_CONFIG,GA4_ANALYSIS_CV_START_DATE,GA4_ANALYSIS_CV_END_DATE}
+module.exports = {GA4_DATABASE, GA4_DATASET, GA4_TABLE, GA4_INTRADAY_TABLE,PROJECT, CLEANSE, MART, REPORT ,SOURCE, STAGING, HOSTNAME1, HOSTNAME2,  MP_EVENT1, MP_EVENT2, MP_EVENT_LIKE1, CV_PAGE_LOCATION, CHANNEL_GROUP_TABLE,GA4_FIRST_DATE,GA4_EVENTS_START_DATE,GA4_EVENTS_END_DATE,GA4_ANALYSIS_CV_EVENTS,GA4_ANALYSIS_CV_EVENTS_CONFIG,GA4_ANALYSIS_CV_START_DATE,GA4_ANALYSIS_CV_END_DATE}
