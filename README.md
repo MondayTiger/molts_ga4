@@ -89,7 +89,7 @@ erDiagram
 ## 1. イベントデータのフラット化とビュー作成
 GA4からエクスポートされたテーブル（`analytics_xxxxxxx.events_YYYYMMDD`、`analytics_xxxxxxx.events_intraday_YYYYMMDD`）の`event_params`カラムなどをフラット化し、1つのビューにまとめます。
 - **ディレクトリ**: `definitions/ga4/source`
-  - 直近4日間のデータは`is_fixed_data`カラムを`false`に設定（ステップ9以降で使用）
+  - 直近8日間のデータは`is_fixed_data`カラムを`false`に設定（ステップ9以降で使用）
 
 ## 2. データのクレンジング
 生成されたデータに対して以下を実施します。
@@ -277,30 +277,23 @@ GA4からエクスポートされたテーブル（`analytics_xxxxxxx.events_YYY
 ## 2. チャネルグループ用のテーブル作成
 - 前述の手順を参照してください。
 
-## 3. `source/ga4_fixed_events.sqlx`の修正
-- 最後の`WHERE`句で対象期間を「最も古い日～前日」に変更します（デフォルトは「7日前～前日」）。
-  - 例:
-    ```sql
-    _table_suffix >= FORMAT_DATE("%Y%m%d", DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 1 DAY))
-    ```
-
-## 4. `staging/s_ga4_events_add_session_item.sqlx`の修正
+## 3. `staging/s_ga4_events_add_session_item.sqlx`の修正
 - `m_ga4_session`テーブルを参照しているサブクエリを確認し、`mart_session`、`agg_campaign_first_3`サブクエリをコメントアウトし、その下にある`agg_campaign_first_3`を使用します。
   - **注**: 見つからない場合はこの手順は省略可能です（詳細はファイル内に記載）。
 
-## 5. `mart/m_ga4_session_traffic_source_last_click.sqlx`の修正
+## 4. `mart/m_ga4_session_traffic_source_last_click.sqlx`の修正
 1. `type`を`incremental`から`table`に変更します。
 2. 16行目あたりの`dependencies: ["m_ga4_session_traffic_source_last_click_delete_unfixed"]`をコメントアウトします（`//`を追加）。
 
-## 6. `mart/m_ga4_event.sqlx`、`mart/m_ga4_session.sqlx`の修正
+## 5. `mart/m_ga4_event.sqlx`、`mart/m_ga4_session.sqlx`の修正
 1. `type`を`incremental`から`table`に変更します。
 2. 12行目あたりの`dependencies: ["m_ga4_xxxxx_delete_unfixed"]`をコメントアウトします（`//`を追加）。
 
-## 7. `report/r_ga4_conversion.sqlx`の修正
+## 6. `report/r_ga4_conversion.sqlx`の修正
 1. `type`を`incremental`から`table`に変更します。
 2. 12行目あたりの`dependencies: ["r_ga4_conversion_delete_unfixed"]`をコメントアウトします（`//`を追加）。
 
-## 8. 実行手順
+## 7. 実行手順
 1. 上部の「実行を開始」ボタンをクリックし、「タグ」→「workflow」を選択します。
 2. 「SELECTION OF TAGS」が選択されていることを確認します。
    - 「実行するタグ」で「workflow」が選択されていることを確認。
@@ -315,14 +308,14 @@ GA4からエクスポートされたテーブル（`analytics_xxxxxxx.events_YYY
 6. 「ワークフロー実行を作成しました 詳細」というダイアログが表示されたら、「詳細」をクリックします。
 7. ステータスが「成功」になるまで「更新」ボタンを押して確認します。失敗した場合はエラー箇所を確認し、該当のSQLXファイルを修正して再実施します。
 
-## 9. 実行完了後の設定戻し
+## 8. 実行完了後の設定戻し
 1. `source/ga4_fixed_events.sqlx`の期間を元に戻します。
 2. `staging/s_ga4_events_add_session_item.sqlx`のサブクエリを元に戻します。
 3. `mart/m_ga4_session_traffic_source_last_click.sqlx`の`type`と`SELECT`文を元に戻します。
 4. `mart/m_ga4_event.sqlx`、`mart/m_ga4_session.sqlx`の`config`（`type`、`dependencies`）を元に戻します。
 5. `report/r_ga4_conversion.sqlx`の`config`（`type`、`dependencies`）を元に戻します。
 
-## 10. 再度実行
+## 9. 再度実行
 1. `m_ga4_event.sqlx`と`m_ga4_session.sqlx`、`m_ga4_session_traffic_source_last_click.sqlx`を再度選択して実行します。
    - 実行前に`m_ga4_event`テーブルと`m_ga4_session`テーブルをバックアップとしてコピーしておきます。
 2. 実行は前述の「実行」と同じ手順でOKです。

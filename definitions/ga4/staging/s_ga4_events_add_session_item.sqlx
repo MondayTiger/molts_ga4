@@ -184,7 +184,8 @@ config {
 -- Query blocks
 WITH  event_update2 AS(
     SELECT * EXCEPT(event_index),
-    SAFE_CAST(CONCAT(FORMAT_DATE("%Y%m%d",event_date),FORMAT('%04d',ROW_NUMBER() OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp, batch_page_id,batch_ordering_id,batch_event_index,event_index,event_name,unique_key))) AS INT64) AS event_index --日をまたいだセッションの場合、 日次でクエリを実行する際に古い日のイベントがクエリの対象から外れてしまい1が複数存在してしまうため、日付を入れて重複を避ける。また桁数を揃えることで文字列のまま判定できるようにする
+    --日をまたいだセッションの場合、 日次でクエリを実行する際に古い日のイベントがクエリの対象から外れてしまい1が複数存在してしまうため、日付を入れて重複を避ける。また桁数を揃えることで文字列のまま判定できるようにする
+    SAFE_CAST(CONCAT(FORMAT_DATE("%Y%m%d",event_date),FORMAT('%04d',ROW_NUMBER() OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp, batch_page_id,batch_ordering_id,batch_event_index,event_index,event_name,unique_key))) AS INT64) AS event_index 
     FROM ${ref("s_ga4_events_event_update")}
 ),
 -- 以下 s_ga4_events_add_session_item.sqlx
