@@ -1,21 +1,11 @@
 
 # GA4->BigQuery export data gereral queries made by Dataform.
 
-# 各SQLXファイルの説明
-
-| SQLXファイル名 | 対象 |
-| ------------- | ------------- |
-| fixed_events.sqlx | クエリ実行の9日前～前日のデータ(テーブル)が対象 |
-| unfixed_events_intraday.sqlx | クエリ実行の当日のデータが対象 |
-| events_union.sqlx | 上記の両データが対象 |
-
 # ディレクトリ構成
 - definitions/ga4/
     - source
        - declarations.js
        - declarations_intraday.js
-       - ga4_fixed_events.sqlx
-       - ga4_unfixed_events_intraday.sqlx
        - ga4_events_union.sqlx    
     - cleanse
        - c_ga4_events_union.sqlx
@@ -51,10 +41,8 @@
 ```mermaid
 erDiagram
 		%% GA4のイベントデータからソースデータを構築
-    t-analytics_PROPERTY_ID-events_yyyymmdd ||--|| source-ga4_fixed_events : "GA4データの読み込み"
-    t-analytics_PROPERTY_ID-events_intraday_yyyymmdd ||--|| source-ga4_unfixed_events_intraday : "GA4データの読み込み"
-    source-ga4_fixed_events ||--|| source-ga4_events_union : "統合＆フラット化"
-    source-ga4_unfixed_events_intraday ||--|| source-ga4_events_union : "統合＆フラット化"
+    t-analytics_PROPERTY_ID-events_yyyymmdd ||--|| source-ga4_events_union : "GA4データの読み込み"
+    t-analytics_PROPERTY_ID-events_intraday_yyyymmdd ||--|| source-ga4_events_union : "GA4データの読み込み"
 
 		%% ソースデータをクレンジング
     source-ga4_events_union ||--|| cleanse-c_ga4_events_union : ""
