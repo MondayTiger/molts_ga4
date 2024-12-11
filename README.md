@@ -236,63 +236,51 @@ GA4からエクスポートされたテーブル（`analytics_xxxxxxx.events_YYY
 
 
 # 導入時に変更が必要な箇所
+**includes/constants.js**内でGA4テーブルが存在するプロジェクトを指定します。
 
-## 1. GA4テーブルがあるプロジェクト
-- **includes/constants.js**内でGA4テーブルが存在するプロジェクトを指定します。
-
-## 2. データセット
+## 1. データマート格納先プロジェクト＆データセット
 - 各テーブルのデータセット名とプロジェクト名を指定します。
 
-## 3. 集計対象ホスト名
-- クロスドメイントラッキングなどで複数のホスト名が集計対象となる場合、`HOSTNAME3`などを追加し、`module.exports`配列に追加します。
+## 2. GA4テーブルがあるプロジェクト＆データセット
+- データセット名とプロジェクト名を指定します。
 
-## 4. Measurement Protocolのイベント名
-- Measurement Protocolに関連するイベント名を指定します。
+## 3. GA4データがBigQueryにエクスポートされた最も古い日
 
-## 5. コンバージョン対象の設定
-- 現在は`CV_PAGE_LOCATION`を使用していますが、`report/r_ga4_conversion.sqlx`を含めて必要に応じて変更します。
+## 4. 集計対象ホスト名
+- クロスドメイントラッキングなどで複数のホスト名が集計対象となる場合、ホスト名が完全に特定できる場合はHOSTNAME配列に追加（複数追加可能）し、部分一致の場合はHOSTNAME_LIKEに記述します。
 
-## 6. イベントパラメータを追加したい場合
-- **includes/constants.js**内の `EVENT_PARAMS`変数にパラメータ名と型を追加します。ユーザープロパティを追加したい場合は、`USER_PROPERTIES`変数に同様に追加します。
+## 5. 独自のイベントパラメータ、ユーザープロパティを追加
+- **includes/constants.js**内の `EVENT_PARAMS`変数にパラメータ名と型を追加します。ユーザープロパティを追加したい場合は、`USER_PROPERTIES`変数に同様に追加します。ただし、1度Dataformを実行するとデータマート（m_ga4_eventテーブル）が作成されるため、ここに追加して実行するとエラーになります。そのため、m_ga4_eventテーブルにカラムを手動で追加する必要があります。
 ```
 const EVENT_PARAMS = [  
     {'click_text':'string'},
     {'click_url':'string'}
 ]
-xxx_ga4_martqconst USER_PROPERTIES = [
+const USER_PROPERTIES = [
    {'user_id':'string'}
 ]
 ```
 
-## 7. 新しい定数の作成
-- 新しい定数を作成する場合は、このファイル内で作成し、`module.exports`配列に追加します。
+## 6. Measurement Protocolのイベント名
+- Measurement Protocolに関連するイベント名を指定します。前述の集計対象ホスト名と同様に、イベント名がが完全に特定できる場合はMP_EVENT配列に追加（複数追加可能）し、部分一致の場合はMP_EVENT_LIKEに記述します。
+
+## 7. コンバージョン対象の設定
+- `CV_PAGE_LOCATION`を使用していますが、`report/r_ga4_conversion.sqlx`を含めて必要に応じて変更します。イベントはpage_viewのみが対象になります。
 
 
 # 初回実行時の対応（過去データのインポート、`m_ga4_event`、`m_ga4_session`テーブルの新規作成など）
 
 ## 1. `includes/constants.js`の更新
 - 前述の内容に従って更新します。
+**初期導入判定フラグ（INITIALIZATION）**を**true**にします。
+```
+const INITIALIZATION = true // 最初に導入する場合はtrue,それ以外はfalse
+```
 
 ## 2. チャネルグループ用のテーブル作成
 - 前述の手順を参照してください。
 
-## 3. `staging/s_ga4_events_add_session_item.sqlx`の修正
-- `m_ga4_session`テーブルを参照しているサブクエリを確認し、`mart_session`、`agg_campaign_first_3`サブクエリをコメントアウトし、その下にある`agg_campaign_first_3`を使用します。
-  - **注**: 見つからない場合はこの手順は省略可能です（詳細はファイル内に記載）。
-
-## 4. `mart/m_ga4_session_traffic_source_last_click.sqlx`の修正
-1. `type`を`incremental`から`table`に変更します。
-2. 16行目あたりの`dependencies: ["m_ga4_session_traffic_source_last_click_delete_unfixed"]`をコメントアウトします（`//`を追加）。
-
-## 5. `mart/m_ga4_event.sqlx`、`mart/m_ga4_session.sqlx`の修正
-1. `type`を`incremental`から`table`に変更します。
-2. 12行目あたりの`dependencies: ["m_ga4_xxxxx_delete_unfixed"]`をコメントアウトします（`//`を追加）。
-
-## 6. `report/r_ga4_conversion.sqlx`の修正
-1. `type`を`incremental`から`table`に変更します。
-2. 12行目あたりの`dependencies: ["r_ga4_conversion_delete_unfixed"]`をコメントアウトします（`//`を追加）。
-
-## 7. 実行手順
+## 3. 実行手順
 1. 上部の「実行を開始」ボタンをクリックし、「タグ」→「workflow」を選択します。
 2. 「SELECTION OF TAGS」が選択されていることを確認します。
    - 「実行するタグ」で「workflow」が選択されていることを確認。
@@ -307,20 +295,16 @@ xxx_ga4_martqconst USER_PROPERTIES = [
 6. 「ワークフロー実行を作成しました 詳細」というダイアログが表示されたら、「詳細」をクリックします。
 7. ステータスが「成功」になるまで「更新」ボタンを押して確認します。失敗した場合はエラー箇所を確認し、該当のSQLXファイルを修正して再実施します。
 
-## 8. 実行完了後の設定戻し
-1. `source/ga4_fixed_events.sqlx`の期間を元に戻します。
-2. `staging/s_ga4_events_add_session_item.sqlx`のサブクエリを元に戻します。
-3. `mart/m_ga4_session_traffic_source_last_click.sqlx`の`type`と`SELECT`文を元に戻します。
-4. `mart/m_ga4_event.sqlx`、`mart/m_ga4_session.sqlx`の`config`（`type`、`dependencies`）を元に戻します。
-5. `report/r_ga4_conversion.sqlx`の`config`（`type`、`dependencies`）を元に戻します。
+## 4. 実行完了後の設定戻し
+1. `includes/constants.js`のINITIALIZATIONの値を**false**に戻します。
 
-## 9. 再度実行
-1. `m_ga4_event.sqlx`と`m_ga4_session.sqlx`、`m_ga4_session_traffic_source_last_click.sqlx`を再度選択して実行します。
-   - 実行前に`m_ga4_event`テーブルと`m_ga4_session`テーブルをバックアップとしてコピーしておきます。
-2. 実行は前述の「実行」と同じ手順でOKです。
-3. 実行後、`event_date`別に件数を調べ、バックアップと比較します。
-   - 5日前～前日のデータ件数がコピーしたテーブルより多い場合は作業漏れが考えられます（例: `xxxx_delete_unfixed.sqlx`が実行されていない可能性）。
-   - 6日前よりも古いデータがない場合は`type: table`のままになっている可能性があります。
+## 5. 再度実行
+1. 念のため実行前に`m_ga4_event`テーブルと`m_ga4_session`テーブルをバックアップとしてコピーしておきます。
+2. 前述の「実行手順」と同じ手順を実行
+4. 実行後、`event_date`別に件数を調べ、バックアップと比較します。
+   - 前日までは件数が同じであり、当日だけ若干データが増えていれば正常です。
+   - 10日前～前日のデータ件数がコピーしたテーブルより多い場合は作業漏れが考えられます（例: `xxxx_delete_unfixed.sqlx`が実行されていない可能性）。
+   - 10日前よりも古いデータがない場合は`type: table`のままになっている可能性があります。
 
 # 日次更新（ワークフロー）の設定手順
 
