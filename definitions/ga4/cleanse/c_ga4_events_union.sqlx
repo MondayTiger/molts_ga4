@@ -114,6 +114,8 @@ SELECT
     outbound,
     file_extension,
     file_name,
+    value,
+    method,
 
     -- video
     video_title,
@@ -160,8 +162,15 @@ SELECT
     batch_page_id,
     batch_ordering_id,
     batch_event_index,
-    
+
     unique_key,
+
+    -- event_parameter
+    ${helpers.getCustomEventParamKeyAll()} -- ※EVENT_PARAMSの中身がある場合は、${helpers.getCustomEventParamAll()}の後ろに , を入れる
+
+    -- user_property
+    ${helpers.getCustomUserPropertyKeyAll()}   -- ※USER_PROPERTIESの中身がある場合は、${helpers.getCustomUserPropertyAll()}の後ろに , を入れる
+
 
 FROM                    
 	${ref("ga4_events_union")}

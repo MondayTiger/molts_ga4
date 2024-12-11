@@ -177,9 +177,7 @@ GA4からエクスポートされたテーブル（`analytics_xxxxxxx.events_YYY
 - メディアやキャンペーンも同様に取得。
 - **注意**: `collected_traffic_source`カラムは2023年中頃から追加されたため、それ以前の場合は、下記ファイルのコメントアウト部分を変更する必要があります。
   - **対象クエリ**:
-    - `source.ga4_fixed_events.sqlx`
-    - `source.ga4_unfixed_events_intraday.sqlx`
-    - `source.ga4_unfixed_events.sqlx`
+    - `definitions/ga4/source/ga4_events_union.sqlx`
 
 ## 2. `session_start`イベントから取得
 - `session_start`イベントで参照元情報を取得します。
@@ -254,20 +252,21 @@ GA4からエクスポートされたテーブル（`analytics_xxxxxxx.events_YYY
 ## 5. コンバージョン対象の設定
 - 現在は`CV_PAGE_LOCATION`を使用していますが、`report/r_ga4_conversion.sqlx`を含めて必要に応じて変更します。
 
-## 6. 新しい定数の作成
+## 6. イベントパラメータを追加したい場合
+- **includes/constants.js**内の `EVENT_PARAMS`変数にパラメータ名と型を追加します。ユーザープロパティを追加したい場合は、`USER_PROPERTIES`変数に同様に追加します。
+```
+const EVENT_PARAMS = [  
+    {'click_text':'string'},
+    {'click_url':'string'}
+]
+xxx_ga4_martqconst USER_PROPERTIES = [
+   {'user_id':'string'}
+]
+```
+
+## 7. 新しい定数の作成
 - 新しい定数を作成する場合は、このファイル内で作成し、`module.exports`配列に追加します。
 
-# イベントパラメータを追加した場合
-**基本的にはすべてのファイルで修正が必要です。**
-
-## 1. `source/s_ga4_fixed_events.sqlx`などの修正
-- `event_params`カラムから対象のパラメータを抽出します。
-  - 例（114行目）: `${helpers.getEventParamAll('event_category', 'string')}`
-
-## 2. `cleanse/c_ga4_fixed_events.sqlx`などの修正
-- 上記で抽出したカラムを追加します。
-
-## 3. `staging/`や`mart/`内のSQLXファイルも同様に修正
 
 # 初回実行時の対応（過去データのインポート、`m_ga4_event`、`m_ga4_session`テーブルの新規作成など）
 

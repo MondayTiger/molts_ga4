@@ -1,3 +1,4 @@
+const { EVENT_PARAMS, USER_PROPERTIES } = require('./constants.js');
 /**********************************************
 URLパラメータ（クエリストリング） の処理用
 **********************************************/
@@ -149,6 +150,23 @@ const getEventParamAll = (eventParamName, eventParamType = "string", columnName 
 };
 
 
+// event_params内のカスタムパラメータを一括で抽出（型がどれで入っているか不明な場合）
+function getCustomEventParamAll() {
+  return EVENT_PARAMS.map(obj => {
+    const [key, value] = Object.entries(obj)[0]; // オブジェクトのキーと値を取得
+    return getEventParamAll(key, value);
+    // return `\${helpers.getEventParamAll('${key}','${value}')}`;
+  }).join(',\n'); // 結果を文字列として結合
+};
+
+
+// event_params内のカスタムパラメータのKEY部分だけを一括で抽出（型がどれで入っているか不明な場合）
+function getCustomEventParamKeyAll(){
+ return EVENT_PARAMS.map(obj => {
+    const [key, value] = Object.entries(obj)[0]; // オブジェクトのキーと値を取得
+    return key;
+ }).join(',\n');
+};
 
 /**********************************************
 user_property の抽出用
@@ -222,6 +240,21 @@ const getUserPropertyAll = (userPropertyName , userPropertyType = "string", colu
   }
 };
 
+// user_property内のカスタムパラメータを一括で抽出（型がどれで入っているか不明な場合）
+function getCustomUserPropertyAll() {
+  return USER_PROPERTIES.map(obj => {
+    const [key, value] = Object.entries(obj)[0]; // オブジェクトのキーと値を取得
+    return getUserPropertyAll(key, value);
+  }).join(',\n'); // 結果を文字列として結合
+};
+
+// user_property内のカスタムパラメータのKEY部分だけを一括で抽出（型がどれで入っているか不明な場合）
+function getCustomUserPropertyKeyAll(){
+ return USER_PROPERTIES.map(obj => {
+    const [key, value] = Object.entries(obj)[0]; // オブジェクトのキーと値を取得
+    return key;
+ }).join(',\n'); // 結果を文字列として結合
+};
 
 
 /**********************************************
@@ -244,5 +277,9 @@ module.exports = {
   getEventParamAll,
   getUserProperty,
   getUserPropertyNoColumnName,
-  getUserPropertyAll
+  getUserPropertyAll,
+  getCustomEventParamAll,
+  getCustomEventParamKeyAll,
+  getCustomUserPropertyAll,
+  getCustomUserPropertyKeyAll
 };

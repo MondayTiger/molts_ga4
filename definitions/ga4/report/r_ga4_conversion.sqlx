@@ -1,7 +1,7 @@
 -- Config blocks
 config {
     //typeは初期構築時は"table"、増分更新時は"incremental"とする。初期構築時の作業手順はREADME.mdを要参照
-    type: "incremental",
+    type: constants.MART_TYPE,
     bigquery: {
         // パーティションとクラスタリングを設定
         partitionBy: "event_date",
@@ -9,7 +9,6 @@ config {
     },
     schema: constants.REPORT,
     description: "GA4マートデータ　イベントデータ用",
-    // dependencies: ["m_ga4_event_delete_unfixed"],
     dependencies: ["r_ga4_conversion_delete_unfixed"],
     tags: ["daily", "report","workflow"],
     columns: {
@@ -166,6 +165,8 @@ WHERE
     page_location LIKE '${constants.CV_PAGE_LOCATION}' -- 'https://moltsinc.co.jp/%thanks%'
     AND event_name IN ('page_view','screen_view')
     ${ when(incremental(), `AND event_date > (SELECT COALESCE(MAX(event_date),'${constants.GA4_FIRST_DATE}') FROM ${self()})`)} 
-    ${ when(incremental(), ` AND event_date >= DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL 7 DAY)`)}  -- incrementalで過去7日よりも古いデータを追加したい場合はこの行をコメントアウト
+    ${ when(incremental(), ` AND event_date >= ${constants.GA4_EVENTS_START_DATE}`)}  -- incrementalで過去10日よりも古いデータを追加したい場合はこの行をコメントアウト
+
+
 
 

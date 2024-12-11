@@ -141,6 +141,9 @@ SELECT
     ecommerce,
     items,
 
+    -- is_fixed_data
+    IF(event_date <= FORMAT_DATE("%Y%m%d", DATE_ADD(${constants.GA4_EVENTS_START_DATE}, INTERVAL 1 DAY)), TRUE, FALSE) AS is_fixed_data,
+
     -- event_parameter
     -- ${helpers.getEventParamAll('event_parameter_name','string')},
     -- ${helpers.getEventParamAll('event_parameter_name','int')},

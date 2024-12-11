@@ -139,7 +139,9 @@ config {
         outbound: "アウトバウンド",
         file_extension: "ファイルの拡張子",
         file_name: "ファイル名",
-
+        value: "数量",
+        method: "手段",
+        
         // video
         video_title: "動画タイトル",
         video_provider: "動画プロバイダー",
@@ -367,6 +369,8 @@ SELECT
     g.outbound,
     g.file_extension,
     g.file_name,
+    g.value,
+    g.method,
 
     -- video
     g.video_title,
@@ -409,6 +413,12 @@ SELECT
 
     g.unique_key,
     g.event_index,
+
+    -- event_parameter
+    ${helpers.getCustomEventParamKeyAll()} -- ※EVENT_PARAMSの中身がある場合は、${helpers.getCustomEventParamAll()}の後ろに , を入れる
+
+    -- user_property
+    ${helpers.getCustomUserPropertyKeyAll()}   -- ※USER_PROPERTIESの中身がある場合は、${helpers.getCustomUserPropertyAll()}の後ろに , を入れる
 
 FROM
     ga AS g

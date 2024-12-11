@@ -64,7 +64,8 @@ WITH exclude_internal AS(
         AND debug_event IS NULL -- デバッグモードを除外
         AND traffic_type IS NULL -- 内部アクセスを除外
         AND (
-            hostname IN ('${constants.HOSTNAME1}','${constants.HOSTNAME2}') -- 計測対象ドメインを追加 
+            hostname IN (${constants.HOSTNAMES}) -- 計測対象ドメインを追加
+            OR hostname LIKE '${constants.HOSTNAME_LIKE}'
             OR event_name IN ('${constants.MP_EVENT1}','${constants.MP_EVENT2}') -- Measurement Protocolなどhostnameがないケースに設定
             OR event_name LIKE '${constants.MP_EVENT_LIKE1}' -- Measurement Protocolなどhostnameがないケースに設定
         )

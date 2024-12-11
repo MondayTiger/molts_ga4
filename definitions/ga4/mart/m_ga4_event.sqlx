@@ -1,7 +1,7 @@
 -- Config blocks
 config {
     //typeは初期構築時は"table"、増分更新時は"incremental"とする。初期構築時の作業手順はREADME.mdを要参照
-    type: "incremental",
+    type: constants.MART_TYPE,
     bigquery: {
         // パーティションとクラスタリングを設定
         partitionBy: "event_date",
@@ -146,7 +146,9 @@ config {
         outbound: "アウトバウンド",
         file_extension: "ファイルの拡張子",
         file_name: "ファイル名",
-
+        value: "数量",
+        method: "手段",
+        
         // video
         video_title: "動画タイトル",
         video_provider: "動画プロバイダー",
