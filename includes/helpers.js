@@ -152,22 +152,30 @@ const getEventParamAll = (eventParamName, eventParamType = "string", columnName 
 
 // event_params内のカスタムパラメータを一括で抽出（型がどれで入っているか不明な場合）
 function getCustomEventParamAll() {
-  return EVENT_PARAMS.map(obj => {
+  if (EVENT_PARAMS.length === 0) {
+    return ''; // 配列が空の場合は空文字列を返す
+  }
+
+  const result = EVENT_PARAMS.map(obj => {
     const [key, value] = Object.entries(obj)[0]; // オブジェクトのキーと値を取得
     return getEventParamAll(key, value);
     // return `\${helpers.getEventParamAll('${key}','${value}')}`;
   }).join(',\n'); // 結果を文字列として結合
-};
 
+  return result + ',\n'; // 最後に',\n'を追加
+}
 
 // event_params内のカスタムパラメータのKEY部分だけを一括で抽出（型がどれで入っているか不明な場合）
 function getCustomEventParamKeyAll(){
- return EVENT_PARAMS.map(obj => {
-    const [key, value] = Object.entries(obj)[0]; // オブジェクトのキーと値を取得
-    return key;
- }).join(',\n');
+  if (EVENT_PARAMS.length === 0) {
+    return ''; // 配列が空の場合は空文字列を返す
+  }else{
+    return EVENT_PARAMS.map(obj => {
+        const [key, value] = Object.entries(obj)[0]; // オブジェクトのキーと値を取得
+        return key;
+    }).join(',\n') + ',\n';
+  }
 };
-
 /**********************************************
 user_property の抽出用
 **********************************************/
@@ -242,20 +250,29 @@ const getUserPropertyAll = (userPropertyName , userPropertyType = "string", colu
 
 // user_property内のカスタムパラメータを一括で抽出（型がどれで入っているか不明な場合）
 function getCustomUserPropertyAll() {
-  return USER_PROPERTIES.map(obj => {
+  if (USER_PROPERTIES.length === 0) {
+    return ''; // 配列が空の場合は空文字列を返す
+  }
+
+  const result = USER_PROPERTIES.map(obj => {
     const [key, value] = Object.entries(obj)[0]; // オブジェクトのキーと値を取得
     return getUserPropertyAll(key, value);
   }).join(',\n'); // 結果を文字列として結合
-};
+
+  return result + ',\n'; // 最後に',\n'を追加
+}
 
 // user_property内のカスタムパラメータのKEY部分だけを一括で抽出（型がどれで入っているか不明な場合）
 function getCustomUserPropertyKeyAll(){
- return USER_PROPERTIES.map(obj => {
-    const [key, value] = Object.entries(obj)[0]; // オブジェクトのキーと値を取得
-    return key;
- }).join(',\n'); // 結果を文字列として結合
+  if (EVENT_PARAMS.length === 0) {
+    return ''; // 配列が空の場合は空文字列を返す
+  }else{
+    return USER_PROPERTIES.map(obj => {
+      const [key, value] = Object.entries(obj)[0]; // オブジェクトのキーと値を取得
+      return key;
+    }).join(',\n') + ',\n'; // 結果を文字列として結合
+  }
 };
-
 
 /**********************************************
 上記で作成したモジュールをエクスポート

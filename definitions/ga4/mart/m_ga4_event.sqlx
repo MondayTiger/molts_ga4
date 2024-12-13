@@ -56,9 +56,9 @@ config {
         event_traffic_campaign: "集客：イベントのキャンペーン",
         event_traffic_content: "集客：イベントの広告のコンテンツ",
         event_traffic_term: "集客：イベントの検索キーワード",
-        event_source_platform: "集客：イベントの参照元プラットフォーム",
-        event_creative_format: "集客：イベントのクリエイティブのタイプ",
-        event_marketing_tactic: "集客：イベントのターゲティング条件",
+        event_traffic_source_platform: "集客：イベントの参照元プラットフォーム",
+        event_traffic_creative_format: "集客：イベントのクリエイティブのタイプ",
+        event_traffic_marketing_tactic: "集客：イベントのターゲティング条件",
         event_traffic_campaign_id: "集客：イベントのキャンペーンID（utm_id）",
         event_traffic_gclid: "集客：イベントのgclid",
 
