@@ -264,7 +264,7 @@ function getCustomUserPropertyAll() {
 
 // user_property内のカスタムパラメータのKEY部分だけを一括で抽出（型がどれで入っているか不明な場合）
 function getCustomUserPropertyKeyAll(){
-  if (EVENT_PARAMS.length === 0) {
+  if (USER_PROPERTIES.length === 0) {
     return ''; // 配列が空の場合は空文字列を返す
   }else{
     return USER_PROPERTIES.map(obj => {
