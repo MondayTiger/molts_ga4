@@ -79,6 +79,7 @@ agg_campaign_first_3 AS(
 -- Config blocks
 config {
     type: "view",
+    database: constants.PROJECT,
     schema: constants.STAGING,
     description: "GA4ステージングデータ セッションデータを追加",
     tags: ["daily", "staging"],

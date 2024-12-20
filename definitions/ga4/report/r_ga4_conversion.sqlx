@@ -7,6 +7,7 @@ config {
         partitionBy: "event_date",
         clusterBy: ["user_pseudo_id", "ga_session_id", "event_name"]
     },
+    database: constants.PROJECT,
     schema: constants.REPORT,
     description: "GA4マートデータ　イベントデータ用",
     dependencies: ["r_ga4_conversion_delete_unfixed"],
@@ -162,7 +163,10 @@ SELECT
 FROM
     ${ref("m_ga4_event")}
 WHERE
-    page_location LIKE '${constants.CV_PAGE_LOCATION}' -- 'https://moltsinc.co.jp/%thanks%'
+    (
+        page_location LIKE '${constants.CV_PAGE_LOCATION_LIKE}' -- 'https://moltsinc.co.jp/%thanks%'
+        OR page_location IN (${constants.CV_PAGE_LOCATIONS}) 
+    )
     AND event_name IN ('page_view','screen_view')
     ${ when(incremental(), `AND event_date > (SELECT COALESCE(MAX(event_date),'${constants.GA4_FIRST_DATE}') FROM ${self()})`)} 
     ${ when(incremental(), ` AND event_date >= ${constants.GA4_EVENTS_START_DATE}`)}  -- incrementalで過去10日よりも古いデータを追加したい場合はこの行をコメントアウト

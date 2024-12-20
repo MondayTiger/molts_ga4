@@ -9,6 +9,7 @@
 -- Config blocks
 config {
   type: "view",
+  database: constants.PROJECT,
   schema: constants.REPORT,
   description: "GA4イベント分析ビュー。各セッションで指定したコンバージョンイベントの初回発生までに発生したイベントを計測。",
   tags: ["report", "analysis"],

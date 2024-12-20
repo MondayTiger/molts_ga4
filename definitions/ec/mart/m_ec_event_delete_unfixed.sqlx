@@ -2,7 +2,8 @@
 config {
     //typeは初期構築時はtable、増分更新時は"incremental"とする。増分更新時は最終行のコメントアウトも外すこと。
     type: "operations",
-    schema: "df_molts_ga4_mart",
+    database: constants.PROJECT,
+    schema: constants.MART,
     description: "GA4マートデータ ECイベント用 ",
     tags: ["daily", "mart","ec","deletion_query"],
 }

@@ -1,6 +1,7 @@
 -- Config blocks
 config {
     type: "operations",
+    database: constants.PROJECT,
     schema: constants.MART,
     description: "GA4マートデータ　セッション参照元（session_traffic_source_last_click）用",
     tags: ["daily", "mart", "deletion_query"],

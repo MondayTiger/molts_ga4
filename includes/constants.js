@@ -25,8 +25,22 @@ const HOSTNAME = ['moltsinc.co.jp','moltsinc2.co.jp','moltsinc3.co.jp']; // 完�
 const HOSTNAME_LIKE= '%molts%' // 条件の指定方法が hostname LIKE '%molts%'  ※空にしたい場合は ''とすること
 // 抽出したいカスタムイベントパラメータとその型を入力 ※1度Dataformを走らせてから実行してから追加する場合は m_ga4_eventテーブルへ書き込み時にエラーとなるのでm_ga4_eventテーブルを手動で修正する必要あり
 const EVENT_PARAMS = [  
-//    {'click_text':'string'},
-//    {'click_url':'string'}
+    // {'article_tag':'string'},
+    // {'click_area_click':'string'},
+    // {'click_area_pv':'string'},
+    // {'description':'string'},
+    // {'directory1':'string'},
+    // {'directory2':'string'},
+    // {'directory3':'string'},
+    // {'error_url':'string'},
+    // {'ignore_referrer':'string'},
+    // {'service_page_cta_count':'int'},
+    // {'synthetic_bundle':'int'},
+    // {'client_timestamp':'int'},
+    // {'contact_cta_count':'int'},
+    // {'download_cta_count':'int'},
+    // {'error_count':'int'},
+    // {'error_line':'int'}
 ]
 // 抽出したいカスタムのユーザープロパティとその型
 const USER_PROPERTIES = [
@@ -39,15 +53,17 @@ const MP_EVENT_LIKE = '%Measurement Protocol用イベント1%';    // 条件の�
 // デフォルトチャネルグループのテーブル名（共通）　https://docs.google.com/spreadsheets/d/1gu6JfV0PD9QgfzPZT5EUCCvh1YHtENvpCENogSrxtd4/edit?gid=0#gid=0
 const CHANNEL_GROUP_TABLE = 'molts-data-project.general_master_us.ga4_channel_grouping_base';
 
+// definitions/ga4/mart/m_ga4_session_channel_group.sqlxの118行目以降のlp_group, domainを手動で設定
+
 // レポート関連 
 // report/r_ga4_conversion.sqlx 内のコンバージョンページURL ※r_ga4_conversionテーブルに格納されるのはpage_view, screen_viewイベントのみ
-const CV_PAGE_LOCATION = 'https://moltsinc.co.jp/%thanks%';
+const CV_PAGE_LOCATION_LIKE = 'https://moltsinc.co.jp/%thanks%';    // 部分一致
+const CV_PAGE_LOCATION = ['https://moltsinc.co.jp/conversion','https://moltsinc.co.jp/complete']    // 完全一致
 // コンバージョン分析ビュー（definitions/ga4/report/r_ga4_analysis_conversion.sqlx）などで使用する対象イベント
 const GA4_ANALYSIS_CV_EVENTS = ['generate_lead','sign_up','download_form', 'contact_service_thanks','file_download'];
 // 分析ビューの対象期間の開始日と終了日
 const GA4_ANALYSIS_CV_START_DATE = "DATE('2024-09-01')";    // 開始日
 const GA4_ANALYSIS_CV_END_DATE = "CURRENT_DATE('Asia/Tokyo')" ; // 終了日 ※今日
-
 
 
 // 以下、日次更新関連 基本的には変更不要
@@ -61,13 +77,14 @@ const MART_TYPE = INITIALIZATION ? "table":"incremental";    // m_ga4_eventな�
 const GA4_ANALYSIS_CV_EVENTS_CONFIG = GA4_ANALYSIS_CV_EVENTS.map(val => `${val}: "${val}のイベント数"`).join(",\n");
 const HOSTNAMES = HOSTNAME.map(val => `'${val}'`).join(", ");
 const MP_EVENTS = MP_EVENT.map(val => `'${val}'`).join(", ");
+const CV_PAGE_LOCATIONS = CV_PAGE_LOCATION.map(val => `'${val}'`).join(", ");
 
 module.exports = {GA4_DATABASE, GA4_DATASET, GA4_TABLE, GA4_INTRADAY_TABLE,
     PROJECT, CLEANSE, MART, REPORT ,SOURCE, STAGING, 
     HOSTNAMES, HOSTNAME_LIKE, EVENT_PARAMS, USER_PROPERTIES,
     MP_EVENTS, MP_EVENT_LIKE,
     CHANNEL_GROUP_TABLE,
-    CV_PAGE_LOCATION,GA4_ANALYSIS_CV_EVENTS,
+    CV_PAGE_LOCATION_LIKE,CV_PAGE_LOCATIONS, GA4_ANALYSIS_CV_EVENTS,
     INITIALIZATION, GA4_FIRST_DATE,
     GA4_EVENTS_DEFAULT_START_DATE,
     GA4_EVENTS_START_DATE,GA4_EVENTS_END_DATE,MART_TYPE,

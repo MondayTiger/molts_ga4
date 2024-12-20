@@ -38,6 +38,7 @@ session_traffic_source_last_click追加作業手順
 */
 config {
     type: "view",
+    database: constants.PROJECT,
     schema: constants.STAGING,
     description: "セッションの参照元。各セッションの最初のイベントのsession_traffic_source_last_click 値を返す",
     tags: ["daily", "source"]

@@ -4,6 +4,7 @@
 -- Config blocks
 config {
     type: "view",
+    database: constants.PROJECT,
     schema: constants.SOURCE,
 //    schema: "df_molts_ga4_source",
     description: "GA4データソース 統合",

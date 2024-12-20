@@ -1,6 +1,7 @@
 -- Config blocks
 config {
     type: "view",
+    database: constants.PROJECT,
     schema: constants.STAGING,
     description: "GA4ステージングデータ 全イベント更新差分データ",
     tags: ["daily", "staging"],

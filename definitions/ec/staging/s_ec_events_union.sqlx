@@ -1,7 +1,8 @@
 -- Config blocks
 config {
     type: "table",
-    schema: "df_molts_ga4_staging",
+    database: constants.PROJECT,
+    schema: constants.STAGING,
     description: "GA4ステージングデータ クレンジングしたデータを統合 EC用",
     tags: ["daily", "staging","ec"]
 }

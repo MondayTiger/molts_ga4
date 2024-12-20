@@ -1,6 +1,7 @@
 -- Config blocks
 config {
     type: "operations",
+    database: constants.PROJECT,
     schema: constants.MART,
     description: "GA4マートデータ unfixedセッションデータを削除",
     tags: ["daily", "mart", "deletion_query"],

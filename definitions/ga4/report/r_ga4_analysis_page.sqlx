@@ -11,6 +11,7 @@ attributeEvents_sign_up:各セッション内でsign_upイベントが初回発�
 -- Config blocks
 config {
   type: "view",
+  database: constants.PROJECT,
   schema: constants.REPORT,
   description: "GA4ページ分析ビュー。ページ滞在時間、ページ別エンゲージメント時間、ページ別CV貢献：各セッションの最初のページから各CVのセッション内最初のCVまでが対象。同一セッション内で複数回閲覧しても１としてカウントする。（対象CV：各CVの最初のCVまで。CVに到達するまでの全ページに+1（複数回ページビューがあっても1））",
   tags: ["report", "analysis"],

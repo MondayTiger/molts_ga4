@@ -8,6 +8,7 @@ attributePurchase_revenue:貢献金額：各purchaseまでに到達した全イ�
 -- Config blocks
 config {
   type: "view",
+  database: constants.PROJECT,
   schema: constants.REPORT,
   description: "GA4イベント別購入貢献ビュー。購入貢献数：各purchaseまでに到達した全イベント（ユニークイベント）に+1と売上金額。１セッション内で2回以上の購入がある場合、最初のpurchaseまでのイベント（ユニークイベント）は、購入貢献度:2、売上金額:1回目と2回目の合計売上金額。",
   tags: ["report", "analysis"],

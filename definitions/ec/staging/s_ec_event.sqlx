@@ -1,7 +1,8 @@
 -- Config blocks
 config {
     type: "view",
-    schema: "df_molts_ga4_staging",
+    database: constants.PROJECT,
+    schema: constants.STAGING,
     description: "GA4ステージングデータ セッションデータを追加 EC用",
     tags: ["daily", "staging"],
     columns: {

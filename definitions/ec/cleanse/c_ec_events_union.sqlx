@@ -1,7 +1,8 @@
 -- Config blocks
 config {
     type: "view",
-    schema: "df_molts_ga4_cleanse",
+    database: constants.PROJECT,
+    schema: constants.CLEANSE,
     description: "GA4クレンジングデータ 確定&未確定データ EC用",
     tags: ["daily", "cleanse","ec"]
 }

@@ -7,6 +7,7 @@ config {
         partitionBy: "event_date",
         clusterBy: ["user_pseudo_id", "ga_session_id", "event_name"]
     },
+    database: constants.PROJECT,
     schema: constants.MART, 
     description: "GA4マートデータ イベントデータ用",
     dependencies: ["m_ga4_event_delete_unfixed"],

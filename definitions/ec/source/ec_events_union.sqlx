@@ -4,7 +4,8 @@
 -- Config blocks
 config {
     type: "view",
-    schema: "df_molts_ga4_source",
+    database: constants.PROJECT,
+    schema: constants.SOURCE,
     description: "GA4データソース 確定&未確定データ統合 EC用",
     tags: ["daily", "source","ec"]
 }
