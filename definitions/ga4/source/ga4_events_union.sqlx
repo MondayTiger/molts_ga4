@@ -273,13 +273,13 @@ SELECT
     IF(event_date <= FORMAT_DATE("%Y%m%d", DATE_ADD(${constants.GA4_EVENTS_START_DATE}, INTERVAL 1 DAY)), TRUE, FALSE) AS is_fixed_data,
 
     -- event_parameter includes/constants.jsのEVENT_PARAMSにてパラメータ名と型を指定すれば一括で抽出
-    ${helpers.getCustomEventParamAll()} -- ※EVENT_PARAMSの中身がある場合は、${helpers.getCustomEventParamAll()}の後ろに , を入れる
+    ${helpers.getCustomEventParamAll()} 
     -- ${helpers.getEventParamAll('event_parameter_name','string')},
     -- ${helpers.getEventParamAll('event_parameter_name','int')},
     -- ${helpers.getEventParamAll('event_parameter_name','double')},
 
     -- user_property includes/constants.jsのUSER_PROPERTIESにてパラメータ名と型を指定すれば一括で抽出
-    ${helpers.getCustomUserPropertyAll()}   -- ※USER_PROPERTIESの中身がある場合は、${helpers.getCustomUserPropertyAll()}の後ろに , を入れる
+    ${helpers.getCustomUserPropertyAll()} 
     -- ${helpers.getUserPropertyAll('user_property_name','string')},
     -- ${helpers.getUserPropertyAll('user_property_name','int')},
     -- ${helpers.getUserPropertyAll('user_property_name','double')},

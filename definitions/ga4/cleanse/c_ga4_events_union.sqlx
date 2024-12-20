@@ -167,11 +167,10 @@ SELECT
     unique_key,
 
     -- event_parameter
-    ${helpers.getCustomEventParamKeyAll()} -- ※EVENT_PARAMSの中身がある場合は、${helpers.getCustomEventParamAll()}の後ろに , を入れる
+    ${helpers.getCustomEventParamKeyAll()} 
 
     -- user_property
-    ${helpers.getCustomUserPropertyKeyAll()}   -- ※USER_PROPERTIESの中身がある場合は、${helpers.getCustomUserPropertyAll()}の後ろに , を入れる
-
+    ${helpers.getCustomUserPropertyKeyAll()}  
 
 FROM                    
 	${ref("ga4_events_union")}
