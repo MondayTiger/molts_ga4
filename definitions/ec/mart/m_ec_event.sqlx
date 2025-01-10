@@ -24,7 +24,7 @@ config {
     schema: constants.MART,
     description: "GA4マートデータ ECイベントデータ用",
     dependencies: ["m_ec_event_delete_unfixed"],
-    tags: ["daily", "mart","ec"],
+    tags: ["daily", "mart","ec","workflow"], 
     columns: {
         // timestamp
         event_date: "日付",

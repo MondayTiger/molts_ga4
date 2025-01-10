@@ -270,7 +270,8 @@ SELECT
     COALESCE(${helpers.getEventParamNoColumnName('item_list_name','string')}, (SELECT items[SAFE_OFFSET(0)].item_list_name),'item_list_name') AS item_list_name,
 
     -- is_fixed_data
-    IF(event_date <= FORMAT_DATE("%Y%m%d", DATE_ADD(${constants.GA4_EVENTS_START_DATE}, INTERVAL 1 DAY)), TRUE, FALSE) AS is_fixed_data,
+--    IF(event_date <= FORMAT_DATE("%Y%m%d", DATE_ADD(${constants.GA4_EVENTS_START_DATE}, INTERVAL 1 DAY)), TRUE, FALSE) AS is_fixed_data,
+    IF(event_date <= FORMAT_DATE("%Y%m%d", DATE_ADD(DATE_SUB(CURRENT_DATE('Asia/Tokyo'), INTERVAL ${constants.GA4_EVENTS_DATE_RANGE} DAY), INTERVAL 1 DAY)), TRUE, FALSE) AS is_fixed_data,
 
     -- event_parameter includes/constants.jsのEVENT_PARAMSにてパラメータ名と型を指定すれば一括で抽出
     ${helpers.getCustomEventParamAll()} 
