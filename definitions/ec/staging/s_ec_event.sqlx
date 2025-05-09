@@ -4,7 +4,7 @@ config {
     database: constants.PROJECT,
     schema: constants.STAGING,
     description: "GA4ステージングデータ セッションデータを追加 EC用",
-    tags: ["daily", "staging"],
+    tags: ["daily", "staging","ec"],
     columns: {
         // timestamp
         event_date: "日付",
@@ -59,7 +59,7 @@ WITH exclude_internal AS(
     SELECT
         *
     FROM
-        ${ref("s_ec_events_union")}
+        ${ref("s_ga4_events_union")}
     WHERE
         debug_mode IS NULL -- デバッグモードを除外
         AND debug_event IS NULL -- デバッグモードを除外

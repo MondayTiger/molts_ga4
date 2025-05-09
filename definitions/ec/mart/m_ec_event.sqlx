@@ -14,7 +14,7 @@ config {
         11. 再びm_ga4_event.sqlxとm_ga4_session.sqlxを実行（依存関係を含めるにチェック）
         12. 日別セッション数などを確認
     */
-    type: "incremental",
+    type: constants.MART_TYPE,
     bigquery: {
         // パーティションとクラスタリングを設定
         partitionBy: "event_date",

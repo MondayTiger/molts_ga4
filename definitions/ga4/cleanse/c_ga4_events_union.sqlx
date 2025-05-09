@@ -95,6 +95,8 @@ SELECT
     page_title,
     entrances,
     flg_reload, -- original
+    screen_class,
+    screen_name,
 
     -- referrer
     page_referrer,
@@ -159,6 +161,10 @@ SELECT
     cwv_value,
     cwv_delta,
 
+    -- ecommerce
+    ecommerce,
+    items,
+
     -- event order
     batch_page_id,
     batch_ordering_id,
@@ -171,6 +177,7 @@ SELECT
 
     -- user_property
     ${helpers.getCustomUserPropertyKeyAll()}  
+
 
 FROM                    
 	${ref("ga4_events_union")}

@@ -32,12 +32,13 @@ with events AS(
 STRUCT(device.web_info.browser,device.web_info.browser_version,device.web_info.hostname) AS web_info) AS device,
         STRUCT(geo.city,geo.country,geo.continent,geo.region,geo.sub_continent,geo.metro) AS geo,
         STRUCT(privacy_info.analytics_storage,privacy_info.ads_storage,privacy_info.uses_transient_token) AS privacy_info, 
+        -- ecommerce
         STRUCT(ecommerce.total_item_quantity,ecommerce.purchase_revenue_in_usd,ecommerce.purchase_revenue,ecommerce.refund_value_in_usd,ecommerce.refund_value,ecommerce.shipping_value_in_usd,ecommerce.shipping_value,ecommerce.tax_value_in_usd,ecommerce.tax_value,ecommerce.unique_items,ecommerce.transaction_id) AS ecommerce,
         items,
+
         batch_page_id,
         batch_ordering_id,
         batch_event_index,   
-
     FROM                    
         ${ref(constants.GA4_TABLE)}
     WHERE
@@ -65,8 +66,10 @@ intraday AS(
 STRUCT(device.web_info.browser,device.web_info.browser_version,device.web_info.hostname) AS web_info) AS device,
         STRUCT(geo.city,geo.country,geo.continent,geo.region,geo.sub_continent,geo.metro) AS geo,
         STRUCT(privacy_info.analytics_storage,privacy_info.ads_storage,privacy_info.uses_transient_token) AS privacy_info, 
+        -- ecommerce
         STRUCT(ecommerce.total_item_quantity,ecommerce.purchase_revenue_in_usd,ecommerce.purchase_revenue,ecommerce.refund_value_in_usd,ecommerce.refund_value,ecommerce.shipping_value_in_usd,ecommerce.shipping_value,ecommerce.tax_value_in_usd,ecommerce.tax_value,ecommerce.unique_items,ecommerce.transaction_id) AS ecommerce,
         items,
+
         batch_page_id,
         batch_ordering_id,
         batch_event_index,
@@ -284,6 +287,10 @@ SELECT
     -- ${helpers.getUserPropertyAll('user_property_name','string')},
     -- ${helpers.getUserPropertyAll('user_property_name','int')},
     -- ${helpers.getUserPropertyAll('user_property_name','double')},
+
+    -- ecommerce
+    ecommerce,
+    items
 
 FROM ga_union
 )
