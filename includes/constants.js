@@ -42,9 +42,9 @@ const EVENT_PARAMS = [
     // {'error_count':'int'},
     // {'error_line':'int'}
 ]
-// 抽出したいカスタムのユーザープロパティとその型
+// 抽出したいカスタムのユーザープロパティとその型 ※user_idは不要
 const USER_PROPERTIES = [
-//   {'user_id':'string'}
+//   {'abc':'string'}
 ]
 
 // Measurement Protocolで使うイベント名 s_ga4_events_exclude_internal.sqlxでMeasurement Protocolで取得するイベント名の指定を行うが、ここにイベント名を記述。複数ある場合はここに追加し、s_ga4_events_exclude_internalにも追加すること
