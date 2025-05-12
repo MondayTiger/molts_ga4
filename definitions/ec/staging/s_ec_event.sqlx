@@ -70,7 +70,21 @@ WITH exclude_internal AS(
             OR event_name IN (${constants.MP_EVENTS}) -- Measurement Protocolなどhostnameがないケースに設定
             OR event_name LIKE '${constants.MP_EVENT_LIKE}' -- Measurement Protocolなどhostnameがないケースに設定
         )
-
+        AND event_name IN ('add_payment_info',
+            'add_shipping_info',
+            'add_to_cart',
+            'add_to_wishlist',
+            'begin_checkout',
+            'purchase',
+            'refund',
+            'remove_from_cart',
+            'select_item',
+            'select_promotion',
+            'view_cart',
+            'view_item',
+            'view_item_list',
+            'view_promotion'
+        )
 ),
  ga AS (
     SELECT

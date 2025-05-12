@@ -115,6 +115,7 @@ SELECT
     ${helpers.getEventParamAll('ga_session_id','string')},
     ${helpers.getEventParam('ga_session_number','int')},
     ${helpers.getEventParamAll('session_engaged','int')},
+    ${helpers.getEventParamAll('engaged_session_event','int')}, -- session_engagedが0（STRING）のときはこのパラメータは存在しない
 
    -- event_acquisition_channel
    -- collected_traffic_sourceから参照元などを取得。ない場合はイベントパラメータから取得 （collected_traffic_source.manual_sourceが存在しない場合は自動的にイベントパラメータから取得するため切り替え時期をきにする必要はない）

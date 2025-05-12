@@ -38,7 +38,8 @@ SELECT
     ga_session_id,
     ga_session_number,
     session_engaged,
-
+    engaged_session_event,
+    
     -- event_acquisition_channel
     event_traffic_source,
     event_traffic_medium,
