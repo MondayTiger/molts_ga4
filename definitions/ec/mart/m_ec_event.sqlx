@@ -67,7 +67,7 @@ config {
 -- Query blocks
 SELECT e.*,
 FROM ${ref("s_ec_event")} e
-${ when(incremental(), `WHERE event_date > (SELECT COALESCE(MAX(event_date),'${constants.GA4_FIRST_DATE}') FROM ${self()})`)}
+${ when(incremental(), `WHERE event_date > (SELECT COALESCE(MAX(event_date),DATE_SUB('${constants.GA4_FIRST_DATE}', INTERVAL 1 DAY)) FROM ${self()})`)}
 
 
 
