@@ -1,5 +1,6 @@
 /*
  GA4の元データを統合
+ 100行以上のレコードが生成された場合は, events_YYYYMMDDは生成されず、events_intraday_YYYYMMDDが残るため、そちらを採用する
 */
 -- Config blocks
 config {
@@ -12,7 +13,24 @@ config {
 }
 
 -- Query blocks
-with events AS(
+-- チェックしたい日付範囲を作成
+WITH date_range AS (
+  SELECT
+    FORMAT_DATE('%Y%m%d', d) AS date_str
+  FROM
+    UNNEST(GENERATE_DATE_ARRAY( ${constants.GA4_EVENTS_START_DATE}, ${constants.GA4_EVENTS_END_DATE})) AS d
+),
+-- 実際に存在する `events_YYYYMMDD` テーブルの日付部分を抽出
+existing_tables AS (
+  SELECT
+    REGEXP_EXTRACT(table_name, r'events_(\d{8})') AS date_str
+  FROM
+    `${constants.GA4_DATABASE}.${constants.GA4_DATASET}.INFORMATION_SCHEMA.TABLES`
+  WHERE
+    table_name LIKE 'events_%'
+    AND REGEXP_CONTAINS(table_name, r'events_\d{8}')
+),
+events AS(
     SELECT 
         event_date,
         event_timestamp,
@@ -79,6 +97,11 @@ STRUCT(device.web_info.browser,device.web_info.browser_version,device.web_info.h
         _table_suffix BETWEEN
             (SELECT FORMAT_DATE("%Y%m%d",PARSE_DATE("%Y%m%d", MAX(event_date)) + 1) FROM events)
             AND FORMAT_DATE("%Y%m%d",(CURRENT_DATE('Asia/Tokyo')))
+        -- events_YYYYMMDDに無い日を追加
+        OR _TABLE_SUFFIX NOT IN (
+            SELECT DISTINCT date_str
+            FROM existing_tables
+        ) 
 ),
 ga_union AS(
     SELECT *
