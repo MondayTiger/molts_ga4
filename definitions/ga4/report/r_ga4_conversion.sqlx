@@ -44,9 +44,9 @@ config {
         ga_session_id: "セッションID",
         ga_session_number: "通算セッション数",
         session_duration: "セッション時間（秒）",
-        session_total_engagement_time: "セッション合計エンゲージメント時間（秒）",
-        session_total_page_view: "セッション合計ページビュー",
-        session_total_screen_view: "セッション合計スクリーンビュー",
+        session_total_engagement_time: "セッションのこの日の合計エンゲージメント時間（秒）※セッションが日をまたいだ場合は別々に集計される",
+        session_total_page_view: "セッションのこの日の合計ページビュー ※セッションが日をまたいだ場合は別々に集計される",
+        session_total_screen_view: "セッションのこの日の合計スクリーンビュー※セッションが日をまたいだ場合は別々に集計される",
         is_bounce_no_transition: "直帰_遷移なし",
         is_bounce_no_engagement: "直帰_エンゲージメントなし",
 

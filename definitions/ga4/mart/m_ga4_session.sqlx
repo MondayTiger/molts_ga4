@@ -47,10 +47,10 @@ config {
 
         // entrance_exit_page
         entrance_page: "セッション内の閲覧開始ページ",
-        entrance_page_title: "閲覧開始ページのタイトル",
+        entrance_page_title: "セッション内の閲覧開始ページのタイトル",
         exit_page: "セッション内の離脱ページ",
-        exit_page_title: "離脱ページのタイトル",
-        
+        exit_page_title: "セッション内の離脱ページのタイトル",
+                
         // session_acquisition_channel
         session_traffic_source: "集客：セッションの参照元",
         session_traffic_medium: "集客：セッションのメディア",
