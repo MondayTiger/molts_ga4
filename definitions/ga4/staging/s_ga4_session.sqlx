@@ -40,7 +40,9 @@ config {
 
         // entrance_exit_page
         entrance_page: "セッション内の閲覧開始ページ",
+        entrance_page_title: "閲覧開始ページのタイトル",
         exit_page: "セッション内の離脱ページ",
+        exit_page_title: "離脱ページのタイトル",
 
         // session_acquisition_channel
         session_traffic_source: "集客：セッションの参照元",
@@ -125,7 +127,9 @@ WITH ga AS (
 
         -- entrance_exit_page
         entrance_page,
+        entrance_page_title,
         exit_page,
+        exit_page_title,
 
         -- session_acquisition_channel
         session_traffic_source,

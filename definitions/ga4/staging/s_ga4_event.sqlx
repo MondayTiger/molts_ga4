@@ -105,7 +105,9 @@ config {
         page_title: "ページタイトル",
         entrances: "閲覧開始フラグ(GA4の entrances イベントパラメータ)",
         entrance_page: "セッション内の閲覧開始ページ",
+        entrance_page_title: "閲覧開始ページのタイトル",
         exit_page: "セッション内の離脱ページ",
+        exit_page_title: "離脱ページのタイトル",
         flg_reload: "リロードフラグ",
 
         // page_path_analytics
@@ -337,7 +339,9 @@ SELECT
     g.page_title,
     g.entrances,
     g.entrance_page,
+    g.entrance_page_title,
     g.exit_page,
+    g.exit_page_title,
     g.flg_reload, -- original
     IFNULL(IFNULL(p1.pv_sequence,p2.pv_sequence),1) AS pv_sequence,
     IFNULL(p1.prev_path_3,p2.prev_path_3) AS prev_path_3,

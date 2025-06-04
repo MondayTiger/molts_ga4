@@ -182,10 +182,11 @@ config {
         page_location_canonicalize: "正規化URL",
         content_group: "コンテンツグループ",
         page_title: "ページタイトル",
-        entrances: "閲覧開始フラグ(GA4の entrances イベントパラメータ)",
         entrance_page: "セッション内の閲覧開始ページ",
+        entrance_page_title: "セッション内の閲覧開始ページのタイトル",
         exit_page: "セッション内の離脱ページ",
-        flg_reload: "リロードフラグ",
+        exit_page_title: "セッション内の離脱ページのタイトル",
+         flg_reload: "リロードフラグ",
 
         // referrer
         page_referrer: "リファラー",
@@ -287,7 +288,9 @@ ga AS (
 
         -- Landing/Exit Page
         ${helpers.getFirstValue('page_location','entrance_page')},
+        ${helpers.getFirstValue('page_title','entrance_page_title')},
         ${helpers.getLastValue('page_location','exit_page')},
+        ${helpers.getLastValue('page_title','exit_page_title')},
 
     FROM
 	    event_update2

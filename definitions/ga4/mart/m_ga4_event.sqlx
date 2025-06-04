@@ -112,7 +112,9 @@ config {
         page_title: "ページタイトル",
         entrances: "閲覧開始フラグ(GA4の entrances イベントパラメータ)",
         entrance_page: "セッション内の閲覧開始ページ",
+        entrance_page_title: "閲覧開始ページのタイトル",
         exit_page: "セッション内の離脱ページ",
+        exit_page_title: "離脱ページのタイトル",
         flg_reload: "リロードフラグ",
 
         // page_path_analytics
