@@ -434,5 +434,5 @@ FROM
         AND g.event_timestamp <= p2.pv_end_time
         AND g.user_pseudo_id = p2.user_pseudo_id
         AND g.ga_session_id = p2.ga_session_id
-        AND g.event_name = p2.event_name
+        -- AND g.event_name = p2.event_name
 
