@@ -428,10 +428,11 @@ SELECT
 FROM
     ga AS g
     LEFT JOIN pv_data_2 AS p1
-        USING (event_timestamp, user_pseudo_id, ga_session_id)
+        USING (event_timestamp, user_pseudo_id, ga_session_id, event_name)
     LEFT JOIN pv_data_2 AS p2
         ON  g.event_timestamp > p2.pv_start_time
         AND g.event_timestamp <= p2.pv_end_time
         AND g.user_pseudo_id = p2.user_pseudo_id
         AND g.ga_session_id = p2.ga_session_id
+        AND g.event_name = p2.event_name
 
