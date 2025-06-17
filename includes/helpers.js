@@ -66,15 +66,14 @@ const getLastValueNoColumnName = (value) => {
 
 // 前のパスを返す
 const getPreviousPath = (value, depth, columnName) => {
-  return `LAG(${value}, ${depth}) OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp) AS ${columnName}`;
+  return `LAG(${value}, ${depth}) OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp, COALESCE(batch_ordering_id,0), COALESCE(batch_event_index,0)) AS ${columnName}`;
 };
 
 
 // 次のパスを返す
 const getNextPath = (value, depth, columnName) => {
-  return `LEAD(${value}, ${depth}) OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp) AS ${columnName}`;
+  return `LEAD(${value}, ${depth}) OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp, COALESCE(batch_ordering_id,0), COALESCE(batch_event_index,0)) AS ${columnName}`;
 };
-
 
 
 /**********************************************

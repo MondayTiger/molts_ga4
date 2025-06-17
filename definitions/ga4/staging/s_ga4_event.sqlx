@@ -207,6 +207,7 @@ pv_data_1 AS (
         page_location,
         entrance_timestamp,
         exit_timestamp,
+        batch_page_id, batch_ordering_id, batch_event_index,
         ${helpers.setNumber('pv_sequence')},
         ${helpers.getNextPath('event_timestamp', 1, 'next_event_timestamp')},
         ${helpers.getPreviousPath('page_location_canonicalize', 3, 'prev_path_3')},
@@ -234,7 +235,7 @@ pv_data_2 AS (
             WHEN pv_sequence >= 2 AND next_event_timestamp IS NULL THEN (exit_timestamp - event_timestamp) / 1000000
             ELSE NULL END AS page_duration,
         IF(pv_sequence >= 2,event_timestamp,entrance_timestamp) AS pv_start_time,
-        IFNULL(LEAD(event_timestamp, 1) OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp),exit_timestamp) AS pv_end_time,
+        IFNULL(LEAD(event_timestamp, 1) OVER(PARTITION BY user_pseudo_id, ga_session_id ORDER BY event_timestamp, batch_ordering_id, batch_event_index),exit_timestamp) AS pv_end_time,
     FROM
         pv_data_1
 )
@@ -428,7 +429,7 @@ SELECT
 FROM
     ga AS g
     LEFT JOIN pv_data_2 AS p1
-        USING (event_timestamp, user_pseudo_id, ga_session_id, event_name)
+        USING (event_timestamp, user_pseudo_id, ga_session_id,event_name, batch_page_id, batch_ordering_id, batch_event_index)
     LEFT JOIN pv_data_2 AS p2
         ON  g.event_timestamp > p2.pv_start_time
         AND g.event_timestamp <= p2.pv_end_time
